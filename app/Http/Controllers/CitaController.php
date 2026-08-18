@@ -17,10 +17,34 @@ class CitaController extends Controller
         return (int) auth()->user()->empresa_id;
     }
 
+    // ============================================================
+    // NUEVO MÉTODO PARA VALIDAR CHOQUES DE HORARIO
+    // ============================================================
+    private function hayChoque(?int $medicoId, string $fecha, string $hora, ?int $duracion, ?int $ignorarId = null): bool
+    {
+        if (! $medicoId) return false;
+
+        $inicio = \Carbon\Carbon::parse($fecha.' '.$hora);
+        $fin = $inicio->copy()->addMinutes($duracion ?: 30);
+
+        return Cita::where('empresa_id', $this->empresaId())
+            ->where('medico_id', $medicoId)
+            ->whereDate('fecha', $fecha)
+            ->whereNotIn('estado', ['cancelada', 'no_asistio'])
+            ->when($ignorarId, fn ($q) => $q->where('id', '!=', $ignorarId))
+            ->get()
+            ->contains(function ($c) use ($inicio, $fin) {
+                $cInicio = \Carbon\Carbon::parse($c->fecha->format('Y-m-d').' '.$c->hora);
+                $cFin = $cInicio->copy()->addMinutes($c->duracion ?: 30);
+                return $inicio < $cFin && $cInicio < $fin;
+            });
+    }
+
     public function index(Request $request)
     {
         $estado = $request->get('estado');
         $citas = Cita::where('empresa_id', $this->empresaId())
+                    ->when(auth()->user()->isMedico(), fn ($q) => $q->where('medico_id', auth()->id()))
             ->when($estado, fn ($q) => $q->where('estado', $estado))
             ->with(['paciente', 'medico', 'especialidad'])
             ->orderBy('fecha', 'desc')->orderBy('hora')
@@ -29,16 +53,25 @@ class CitaController extends Controller
         return view('citas.index', compact('citas', 'estado'));
     }
 
-    public function create()
+       public function create(Request $request)
     {
         return view('citas.form', [
-            'cita' => new Cita(['fecha' => now()->toDateString(), 'hora' => '09:00']),
+            'cita' => new Cita([
+                'fecha' => $request->get('fecha', now()->toDateString()),
+                'hora' => '09:00',
+            ]),
         ] + $this->opciones());
     }
 
     public function store(Request $request)
     {
         $data = $this->validated($request);
+
+        // VALIDACIÓN DE CHOQUE DE HORARIO
+        if ($this->hayChoque($data['medico_id'] ?? null, $data['fecha'], $data['hora'], $data['duracion'] ?? 30)) {
+            return back()->withInput()->withErrors(['hora' => 'El médico ya tiene otra cita en ese horario.']);
+        }
+
         $data['empresa_id'] = $this->empresaId();
         $cita = Cita::create($data);
 
@@ -70,7 +103,15 @@ class CitaController extends Controller
     public function update(Request $request, Cita $cita)
     {
         abort_unless($cita->empresa_id === $this->empresaId(), 403);
-        $cita->update($this->validated($request));
+        
+        $data = $this->validated($request);
+
+        // VALIDACIÓN DE CHOQUE DE HORARIO (ignorando la cita actual)
+        if ($this->hayChoque($data['medico_id'] ?? null, $data['fecha'], $data['hora'], $data['duracion'] ?? 30, $cita->id)) {
+            return back()->withInput()->withErrors(['hora' => 'El médico ya tiene otra cita en ese horario.']);
+        }
+
+        $cita->update($data);
 
         return redirect()->route('citas.index')->with('ok', 'Cita actualizada.');
     }

@@ -36,14 +36,16 @@
                         @if($c->es_teleconsulta)
                             <a href="{{ $c->sala_video_url }}" target="_blank" class="btn btn-light btn-sm" title="Videollamada"><i class="fa-solid fa-video"></i></a>
                         @endif
-                        @if($c->whatsapp_url)
+                                             @if($c->whatsapp_url)
                             <a href="{{ $c->whatsapp_url }}" target="_blank" class="btn btn-light btn-sm" title="Recordar por WhatsApp" style="color:#25d366"><i class="fa-brands fa-whatsapp"></i></a>
                         @endif
+                        @unless(auth()->user()->isMedico())
                         <a href="{{ route('citas.edit',$c) }}" class="btn btn-light btn-sm"><i class="fa-solid fa-pen"></i></a>
                         <form method="POST" action="{{ route('citas.destroy',$c) }}" style="display:inline" onsubmit="return confirm('¿Eliminar cita?')">
                             @csrf @method('DELETE')
                             <button class="btn btn-danger btn-sm"><i class="fa-solid fa-trash"></i></button>
                         </form>
+                        @endunless
                     </td>
                 </tr>
             @empty

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Especialidad;
+use Illuminate\Validation\Rule;
 use App\Models\Paciente;
 use App\Support\WhoLms;
 use Illuminate\Http\Request;
@@ -18,6 +19,7 @@ class PacienteController extends Controller
     {
         $q = $request->get('q');
         $pacientes = Paciente::where('empresa_id', $this->empresaId())
+                    ->when(auth()->user()->isMedico(), fn ($q) => $q->whereHas('citas', fn ($c) => $c->where('medico_id', auth()->id())))
             ->when($q, fn ($query) => $query->where(function ($sub) use ($q) {
                 $sub->where('nombres', 'like', "%{$q}%")
                     ->orWhere('apellidos', 'like', "%{$q}%")
@@ -48,6 +50,7 @@ class PacienteController extends Controller
     }
 
     public function show(Paciente $paciente)
+    
     {
         $this->authorizeEmpresa($paciente);
         $paciente->load(['especialidad', 'consultas.medico', 'pagos', 'adjuntos.user', 'citas' => fn ($q) => $q->latest('fecha')]);
@@ -67,7 +70,7 @@ class PacienteController extends Controller
     public function update(Request $request, Paciente $paciente)
     {
         $this->authorizeEmpresa($paciente);
-        $paciente->update($this->validated($request));
+               $paciente->update($this->validated($request, $paciente));
 
         return redirect()->route('pacientes.index')->with('ok', 'Paciente actualizado.');
     }
@@ -143,13 +146,18 @@ class PacienteController extends Controller
         ]);
     }
 
-    private function validated(Request $request): array
+        private function validated(Request $request, ?Paciente $paciente = null): array
     {
         return $request->validate([
             'nombres' => ['required', 'string', 'max:120'],
             'apellidos' => ['required', 'string', 'max:120'],
             'tipo_documento' => ['nullable', 'string', 'max:20'],
-            'documento' => ['nullable', 'string', 'max:30'],
+            'documento' => [
+                'nullable', 'string', 'max:30',
+                Rule::unique('pacientes', 'documento')
+                    ->where('empresa_id', $this->empresaId())
+                    ->ignore($paciente?->id),
+            ],
             'fecha_nacimiento' => ['nullable', 'date'],
             'sexo' => ['nullable', 'in:M,F,O'],
             'telefono' => ['nullable', 'string', 'max:30'],

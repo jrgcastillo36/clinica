@@ -3,6 +3,14 @@
 
 @section('content')
     <div class="page-head">
+                @unless(auth()->user()->isMedico())
+        <select id="filtroMedico" style="max-width:220px">
+            <option value="">Todos los médicos</option>
+            @foreach($medicos as $m)
+                <option value="{{ $m->id }}">{{ $m->name }}</option>
+            @endforeach
+        </select>
+        @endunless
         <div><h1>Agenda</h1><p>Calendario de citas · arrastra una cita para reprogramarla.</p></div>
 @unless(auth()->user()->isMedico())
 <a href="{{ route('citas.create') }}" class="btn btn-primary"><i class="fa-solid fa-calendar-plus"></i> Nueva cita</a>
@@ -111,6 +119,14 @@
     .fc .fc-timegrid-event .ev{white-space:normal}
     .fc .fc-more-link{color:var(--violet);font-weight:600;font-size:11px}
 
+        .ev-med-dot{width:7px;height:7px;border-radius:50%;flex:0 0 7px;margin-left:auto}
+    .cita-tooltip{position:absolute;z-index:9999;background:#1f2937;color:#fff;padding:10px 14px;
+        border-radius:10px;font-size:12.5px;line-height:1.7;box-shadow:0 10px 30px rgba(0,0,0,.25);
+        max-width:240px;pointer-events:none}
+    .cita-tooltip b{font-size:13.5px;display:block;margin-bottom:4px}
+    .cita-tooltip i{width:14px;opacity:.75;margin-right:4px}
+    .cita-tooltip .tt-estado{margin-top:6px;font-weight:700;text-transform:uppercase;font-size:10.5px;letter-spacing:.4px;opacity:.85}
+
     /* ---- Vistas Semana y Día (timeGrid) ---- */
     .fc .fc-timegrid-col.fc-day-sun{background:#fffbfb}
     .fc .fc-timegrid-col.fc-day-mon{background:#fbfaff}
@@ -143,6 +159,33 @@
 
         function esHoy(d){ const t=new Date(); return d.getFullYear()===t.getFullYear() && d.getMonth()===t.getMonth() && d.getDate()===t.getDate(); }
         function enSemana(d){ const t=new Date(); const day=(t.getDay()+6)%7; const ini=new Date(t); ini.setHours(0,0,0,0); ini.setDate(t.getDate()-day); const fin=new Date(ini); fin.setDate(ini.getDate()+7); return d>=ini && d<fin; }
+                const paletaMedicos = ['#0d9488','#2563eb','#d97706','#db2777','#7c3aed','#16a34a','#dc2626','#0891b2'];
+        function colorMedico(medicoId){
+            return paletaMedicos[medicoId % paletaMedicos.length];
+        }
+
+        let tooltipEl = null;
+        function mostrarTooltip(event, mouseEvent){
+            const p = event.extendedProps;
+            ocultarTooltip();
+            tooltipEl = document.createElement('div');
+            tooltipEl.className = 'cita-tooltip';
+            tooltipEl.innerHTML =
+                '<b>' + event.title + '</b>' +
+                (p.hora ? '<div><i class="fa-regular fa-clock"></i> ' + p.hora + '</div>' : '') +
+                (p.especialidad ? '<div><i class="fa-solid fa-stethoscope"></i> ' + p.especialidad + '</div>' : '') +
+                (p.medico ? '<div><i class="fa-solid fa-user-doctor"></i> ' + p.medico + '</div>' : '') +
+                (p.telefono ? '<div><i class="fa-solid fa-phone"></i> ' + p.telefono + '</div>' : '') +
+                (p.motivo ? '<div><i class="fa-regular fa-note-sticky"></i> ' + p.motivo + '</div>' : '') +
+                '<div class="tt-estado">' + (p.estadoLabel || '') + '</div>';
+            document.body.appendChild(tooltipEl);
+            const rect = mouseEvent.target.closest('.fc-event').getBoundingClientRect();
+            tooltipEl.style.left = (rect.left + window.scrollX) + 'px';
+            tooltipEl.style.top = (rect.bottom + window.scrollY + 6) + 'px';
+        }
+        function ocultarTooltip(){
+            if (tooltipEl) { tooltipEl.remove(); tooltipEl = null; }
+        }
         function actualizarStats(cal){
             let hoy=0,sem=0,pend=0,mes=0;
             cal.getEvents().forEach(function(e){ if(!e.start) return; mes++; if(esHoy(e.start))hoy++; if(enSemana(e.start))sem++; if(e.extendedProps.estado==='pendiente')pend++; });
@@ -161,22 +204,46 @@
             fixedWeekCount: false,
             headerToolbar: { left:'prev,next today', center:'title', right:'dayGridMonth,timeGridWeek,timeGridDay' },
             buttonText: { today:'Hoy', month:'Mes', week:'Semana', day:'Día' },
-            editable: true,
-            events: '{{ route('agenda.eventos') }}',
+            editable: {{ auth()->user()->isMedico() ? 'false' : 'true' }},
+
+                                   events: function (info, successCallback, failureCallback) {
+                const medicoId = document.getElementById('filtroMedico')?.value || '';
+                fetch('{{ route('agenda.eventos') }}?start=' + info.startStr + '&end=' + info.endStr + '&medico_id=' + medicoId)
+                    .then(r => r.json())
+                    .then(successCallback)
+                    .catch(failureCallback);
+            },
+
+
             eventClassNames: function(arg){ return ['ev-'+(arg.event.extendedProps.estado||'pendiente')]; },
-            eventContent: function(arg){
+           
+                        eventContent: function(arg){
                 const p = arg.event.extendedProps;
                 const dot = '<span class="ev-dot" style="background:'+(arg.event.backgroundColor||'#7c3aed')+'"></span>';
                 const time = p.hora ? '<span class="ev-time">'+p.hora+'</span>' : '';
                 const title = '<span class="ev-title">'+arg.event.title+'</span>';
-                return { html: '<div class="ev">'+dot+time+title+'</div>' };
+                const medDot = p.medicoId ? '<span class="ev-med-dot" style="background:'+colorMedico(p.medicoId)+'" title="'+(p.medico||'')+'"></span>' : '';
+                return { html: '<div class="ev">'+dot+time+title+medDot+'</div>' };
             },
-            eventDidMount: function(arg){
-                const p = arg.event.extendedProps;
-                arg.el.setAttribute('title', (p.hora?p.hora+' · ':'')+arg.event.title+' · '+(p.especialidad||'')+(p.medico?' · Dr(a). '+p.medico:'')+' — '+(p.estadoLabel||''));
+
+                      eventDidMount: function(arg){
+                arg.el.addEventListener('mouseenter', function (ev) {
+                    mostrarTooltip(arg.event, ev);
+                });
+                arg.el.addEventListener('mouseleave', function () {
+                    ocultarTooltip();
+                });
             },
+
+
             eventsSet: function(){ actualizarStats(cal); },
             eventClick: function (info) { info.jsEvent.preventDefault(); if (info.event.url) window.location = info.event.url; },
+                        dateClick: function (info) {
+                @if(auth()->user()->isMedico())
+                return;
+                @endif
+                window.location = '{{ route('citas.create') }}?fecha=' + info.dateStr.substring(0, 10);
+            },
             eventDrop: function (info) {
                 const e = info.event;
                 const fecha = e.start.getFullYear()+'-'+String(e.start.getMonth()+1).padStart(2,'0')+'-'+String(e.start.getDate()).padStart(2,'0');
@@ -188,6 +255,8 @@
                 }).then(r => { if(!r.ok){ alert('No se pudo mover la cita'); info.revert(); } });
             }
         });
+                const filtro = document.getElementById('filtroMedico');
+        if (filtro) filtro.addEventListener('change', function () { cal.refetchEvents(); });
         cal.render();
     });
     </script>

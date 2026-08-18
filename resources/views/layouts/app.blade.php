@@ -69,7 +69,7 @@
                 <div class="alert ok"><i class="fa-solid fa-circle-check"></i> {{ session('ok') }}</div>
             @endif
             @if($errors->any() && !request()->is('login'))
-                <div class="alert error"><i class="fa-solid fa-triangle-exclamation"></i> Revisa los datos del formulario.</div>
+                                <div class="alert error"><i class="fa-solid fa-triangle-exclamation"></i> {{ $errors->first() }}</div>
             @endif
 
             @yield('content')
@@ -91,5 +91,8 @@ function syncTemaIcon(){
 }
 syncTemaIcon();
 </script>
+
+
+
 </body>
 </html>
