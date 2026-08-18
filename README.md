@@ -211,4 +211,4 @@ routes/web.php               Rutas y protección por rol/módulo
 
 Hecho con Laravel 11. El diseño no requiere compilación de assets (CSS estático en `public/css`).
 
-
+hola prueba
