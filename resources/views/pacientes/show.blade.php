@@ -58,6 +58,30 @@
                 <p class="muted"><b>Dirección:</b> {{ $paciente->direccion ?? '—' }}</p>
                 <p class="muted"><b>Grupo sanguíneo:</b> {{ $paciente->grupo_sanguineo ?? '—' }}</p>
             </div>
+                        @unless(auth()->user()->isMedico())
+            <div class="card mb">
+                <h3 class="mb"><i class="fa-solid fa-mobile-screen" style="color:var(--violet)"></i> Portal del paciente</h3>
+
+                @if($paciente->acceso_portal)
+                    <p class="muted" style="margin-bottom:12px"><span class="pill green"><i class="fa-solid fa-circle-check"></i> Acceso activo</span> — puede ingresar con <b>{{ $paciente->email }}</b></p>
+                    <form method="POST" action="{{ route('pacientes.portal', $paciente) }}" onsubmit="return confirm('¿Desactivar el acceso al portal de este paciente?')">
+                        @csrf @method('PUT')
+                        <input type="hidden" name="accion" value="desactivar">
+                        <button class="btn btn-light btn-sm"><i class="fa-solid fa-ban"></i> Desactivar acceso</button>
+                    </form>
+                @else
+                    <p class="muted" style="margin-bottom:12px"><span class="pill gray">Sin acceso al portal</span></p>
+                    <form method="POST" action="{{ route('pacientes.portal', $paciente) }}">
+                        @csrf @method('PUT')
+                        <input type="hidden" name="accion" value="activar">
+                        <div class="field"><label>Email de acceso</label><input type="email" name="email" value="{{ $paciente->email }}" required></div>
+                        <div class="field"><label>Contraseña</label><input type="password" name="password" minlength="6" required></div>
+                        <div class="field"><label>Confirmar contraseña</label><input type="password" name="password_confirmation" minlength="6" required></div>
+                        <button class="btn btn-primary btn-sm mt"><i class="fa-solid fa-key"></i> Activar acceso al portal</button>
+                    </form>
+                @endif
+            </div>
+            @endunless
             <div class="card pink mb">
                 <h3 class="mb">Alergias y antecedentes</h3>
                 <p class="muted"><b>Alergias:</b> {{ $paciente->alergias ?? 'Ninguna registrada' }}</p>

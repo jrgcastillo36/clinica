@@ -130,8 +130,12 @@ Route::middleware('role:admin,recepcion')->group(function () {
     Route::post('/pacientes', [PacienteController::class,'store'])->name('pacientes.store');
 });
 Route::get('/pacientes/{paciente}', [PacienteController::class,'show'])->name('pacientes.show');
+
+
 Route::middleware('role:admin,recepcion')->group(function () {
-    Route::get('/pacientes/{paciente}/edit', [PacienteController::class,'edit'])->name('pacientes.edit');
+        Route::get('/pacientes/{paciente}/edit', [PacienteController::class,'edit'])->name('pacientes.edit');
+        Route::put('/pacientes/{paciente}/portal', [PacienteController::class, 'portalAcceso'])->name('pacientes.portal');
+    
     Route::put('/pacientes/{paciente}', [PacienteController::class,'update'])->name('pacientes.update');
     Route::delete('/pacientes/{paciente}', [PacienteController::class,'destroy'])->name('pacientes.destroy');
 });

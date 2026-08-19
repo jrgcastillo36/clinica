@@ -75,6 +75,36 @@ class PacienteController extends Controller
         return redirect()->route('pacientes.index')->with('ok', 'Paciente actualizado.');
     }
 
+        public function portalAcceso(Request $request, Paciente $paciente)
+    {
+        $this->authorizeEmpresa($paciente);
+
+        $data = $request->validate([
+            'accion' => ['required', 'in:activar,desactivar'],
+            'email' => ['required_if:accion,activar', 'nullable', 'email', 'max:120'],
+            'password' => ['required_if:accion,activar', 'nullable', 'string', 'min:6', 'confirmed'],
+        ], [
+            'email.required_if' => 'El correo es obligatorio para activar el portal.',
+            'password.required_if' => 'La contraseña es obligatoria para activar el portal.',
+            'password.confirmed' => 'La confirmación de contraseña no coincide.',
+        ]);
+
+        if ($data['accion'] === 'desactivar') {
+            $paciente->update(['acceso_portal' => false]);
+            return back()->with('ok', 'Acceso al portal desactivado para '.$paciente->nombre_completo.'.');
+        }
+
+        $paciente->update([
+            'email' => $data['email'],
+            'password' => bcrypt($data['password']),
+            'acceso_portal' => true,
+        ]);
+
+        return back()->with('ok', 'Acceso al portal activado para '.$paciente->nombre_completo.'.');
+    }
+
+
+
     public function destroy(Paciente $paciente)
     {
         $this->authorizeEmpresa($paciente);

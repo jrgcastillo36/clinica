@@ -15,7 +15,7 @@ trait Auditable
 
     public function registrarAuditoria(string $accion): void
     {
-        $user = auth()->user();
+                $user = auth('web')->user();
         if (! $user) {
             return; // no auditar seeders / consola
         }
