@@ -53,12 +53,13 @@ class CitaController extends Controller
         return view('citas.index', compact('citas', 'estado'));
     }
 
-       public function create(Request $request)
+        public function create(Request $request)
     {
         return view('citas.form', [
             'cita' => new Cita([
                 'fecha' => $request->get('fecha', now()->toDateString()),
-                'hora' => '09:00',
+                'hora' => $request->get('hora', '09:00'),
+                'duracion' => $request->get('duracion', 30),
             ]),
         ] + $this->opciones());
     }

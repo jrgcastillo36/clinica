@@ -47,10 +47,12 @@ class AgendaController extends Controller
             ->where('empresa_id', $this->empresaId());
 
         // Filtro por médico
+              // Filtro por médico
         if (auth()->user()->isMedico()) {
             $query->where('medico_id', auth()->id());
-        } elseif ($request->filled('medico_id') && $request->medico_id != '') {
-            $query->where('medico_id', $request->medico_id);
+        } elseif ($request->filled('medico_ids')) {
+            $ids = array_filter(explode(',', $request->medico_ids));
+            if ($ids) $query->whereIn('medico_id', $ids);
         }
 
         // Filtro por fechas
@@ -81,16 +83,13 @@ class AgendaController extends Controller
                     'hora' => $hora,
                     'especialidad' => $c->especialidad->nombre ?? 'General',
                     'medico' => $c->medico->name ?? null,
-                    'medicoId' => $c->medico_id,
+                                                     'medicoId' => $c->medico_id,
                     'motivo' => $c->motivo,
                     'telefono' => $c->paciente->telefono ?? null,
+                    'pacienteId' => $c->paciente_id,
+                    'horaFin' => \Carbon\Carbon::parse($hora)->addMinutes($c->duracion ?: 30)->format('H:i'),
                 ],
             ];
-
-            // Solo agregar la URL si NO es médico (evita el bug del /null)
-            if (! auth()->user()->isMedico()) {
-                $evento['url'] = route('citas.edit', $c);
-            }
 
             return $evento;
         });

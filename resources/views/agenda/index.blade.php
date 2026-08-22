@@ -3,13 +3,16 @@
 
 @section('content')
     <div class="page-head">
-                @unless(auth()->user()->isMedico())
-        <select id="filtroMedico" style="max-width:220px">
-            <option value="">Todos los médicos</option>
+                      @unless(auth()->user()->isMedico())
+        <div id="filtroMedicos" class="filtro-medicos">
             @foreach($medicos as $m)
-                <option value="{{ $m->id }}">{{ $m->name }}</option>
+                <label>
+                    <input type="checkbox" class="chkMedico" value="{{ $m->id }}" checked>
+                    <span class="dot" data-medico="{{ $m->id }}"></span>
+                    {{ $m->name }}
+                </label>
             @endforeach
-        </select>
+        </div>
         @endunless
         <div><h1>Agenda</h1><p>Calendario de citas · arrastra una cita para reprogramarla.</p></div>
 @unless(auth()->user()->isMedico())
@@ -39,6 +42,16 @@
     </div>
 
     <div class="card ag-card"><div id="calendar"></div></div>
+
+        <div id="citaModalFondo" class="cita-modal-fondo" onclick="cerrarModalCita(event)">
+        <div class="cita-modal">
+            <button class="cita-modal-cerrar" onclick="cerrarModalCita()"><i class="fa-solid fa-xmark"></i></button>
+            <h3 id="cmTitulo"></h3>
+            <div id="cmEstado" class="cm-estado"></div>
+            <div class="cm-datos" id="cmDatos"></div>
+            <div class="cm-acciones" id="cmAcciones"></div>
+        </div>
+    </div>
 
     <style>
     .ag-stats{gap:14px}
@@ -106,7 +119,7 @@
     /* Eventos como chips suaves */
     .fc .fc-daygrid-event,.fc .fc-timegrid-event{background:transparent!important;border:none!important;box-shadow:none!important;margin:2px 4px!important}
     .fc .fc-daygrid-event-harness{margin-top:1px}
-    .ev{display:flex;align-items:center;gap:6px;padding:4px 8px;border-radius:8px;font-size:11.5px;font-weight:600;overflow:hidden;white-space:nowrap;transition:.12s}
+    .ev{display:flex;align-items:center;gap:6px;padding:4px 8px;border-radius:8px;font-size:11.5px;font-weight:600;overflow:hidden;white-space:nowrap;transition:.12s;background:#f1f5f9;color:#1f2937}
     .ev:hover{transform:translateX(2px)}
     .ev .ev-dot{width:7px;height:7px;border-radius:50%;flex:0 0 7px}
     .ev .ev-time{font-weight:700;opacity:.9}
@@ -116,7 +129,11 @@
     .ev-atendida{background:#dcfce7;color:#166534}
     .ev-cancelada{background:#fee2e2;color:#991b1b}
     .ev-no_asistio{background:#f1f5f9;color:#475569}
-    .fc .fc-timegrid-event .ev{white-space:normal}
+    .fc .fc-timegrid-event .ev{padding:3px 6px}
+    .ev-dia{flex-direction:column;align-items:flex-start;gap:3px;white-space:normal;padding:8px 10px}
+    .ev-dia-top{display:flex;align-items:center;gap:6px;font-size:12.5px}
+    .ev-linea{display:flex;align-items:center;gap:6px;font-size:11.5px;font-weight:500;opacity:.9}
+    .ev-linea i{width:12px;font-size:10px}
     .fc .fc-more-link{color:var(--violet);font-weight:600;font-size:11px}
 
         .ev-med-dot{width:7px;height:7px;border-radius:50%;flex:0 0 7px;margin-left:auto}
@@ -126,6 +143,26 @@
     .cita-tooltip b{font-size:13.5px;display:block;margin-bottom:4px}
     .cita-tooltip i{width:14px;opacity:.75;margin-right:4px}
     .cita-tooltip .tt-estado{margin-top:6px;font-weight:700;text-transform:uppercase;font-size:10.5px;letter-spacing:.4px;opacity:.85}
+    .filtro-medicos{display:flex;gap:12px;flex-wrap:wrap;background:#fff;border:1px solid var(--line);
+        border-radius:14px;padding:8px 14px;box-shadow:var(--shadow)}
+    .filtro-medicos label{display:flex;align-items:center;gap:6px;font-size:12.5px;font-weight:500;cursor:pointer;color:var(--ink)}
+    .filtro-medicos input[type=checkbox]{width:14px;height:14px;cursor:pointer}
+    .filtro-medicos .dot{width:9px;height:9px;border-radius:50%;flex:0 0 9px}
+
+        .cita-modal-fondo{display:none;position:fixed;inset:0;background:rgba(15,20,35,.5);z-index:200;
+        align-items:center;justify-content:center;padding:20px}
+    .cita-modal-fondo.abierto{display:flex}
+    .cita-modal{background:#fff;border-radius:20px;padding:26px;max-width:380px;width:100%;
+        box-shadow:0 24px 60px rgba(0,0,0,.3);position:relative}
+    .cita-modal-cerrar{position:absolute;top:16px;right:16px;background:var(--bg-pink);border:none;
+        width:32px;height:32px;border-radius:10px;cursor:pointer;color:var(--ink-soft)}
+    .cita-modal h3{margin:0 0 8px;font-size:18px;padding-right:30px}
+    .cm-estado{margin-bottom:14px}
+    .cm-datos{display:flex;flex-direction:column;gap:9px;font-size:13.5px;color:var(--ink);margin-bottom:20px}
+    .cm-datos div{display:flex;align-items:center;gap:10px}
+    .cm-datos i{width:16px;color:var(--violet-2)}
+    .cm-acciones{display:flex;gap:8px;flex-wrap:wrap}
+
 
     /* ---- Vistas Semana y Día (timeGrid) ---- */
     .fc .fc-timegrid-col.fc-day-sun{background:#fffbfb}
@@ -159,13 +196,20 @@
 
         function esHoy(d){ const t=new Date(); return d.getFullYear()===t.getFullYear() && d.getMonth()===t.getMonth() && d.getDate()===t.getDate(); }
         function enSemana(d){ const t=new Date(); const day=(t.getDay()+6)%7; const ini=new Date(t); ini.setHours(0,0,0,0); ini.setDate(t.getDate()-day); const fin=new Date(ini); fin.setDate(ini.getDate()+7); return d>=ini && d<fin; }
-                const paletaMedicos = ['#0d9488','#2563eb','#d97706','#db2777','#7c3aed','#16a34a','#dc2626','#0891b2'];
+        const paletaMedicos = ['#0d9488','#2563eb','#d97706','#db2777','#7c3aed','#16a34a','#dc2626','#0891b2'];
+        const paletaMedicosBg = ['#ccfbf1','#dbeafe','#fef3c7','#fce7f3','#ede9fe','#dcfce7','#fee2e2','#cffafe'];
+        function colorMedico(medicoId){
+            return paletaMedicos[medicoId % paletaMedicos.length];
+        }
+        function colorMedicoBg(medicoId){
+            return paletaMedicosBg[medicoId % paletaMedicosBg.length];
+        }
         function colorMedico(medicoId){
             return paletaMedicos[medicoId % paletaMedicos.length];
         }
 
         let tooltipEl = null;
-                function mostrarTooltip(event, mouseEvent){
+        function mostrarTooltip(event, mouseEvent){
             const p = event.extendedProps;
             ocultarTooltip();
             tooltipEl = document.createElement('div');
@@ -221,45 +265,72 @@
             fixedWeekCount: false,
             headerToolbar: { left:'prev,next today', center:'title', right:'dayGridMonth,timeGridWeek,timeGridDay' },
             buttonText: { today:'Hoy', month:'Mes', week:'Semana', day:'Día' },
-            editable: {{ auth()->user()->isMedico() ? 'false' : 'true' }},
 
-                                   events: function (info, successCallback, failureCallback) {
-                const medicoId = document.getElementById('filtroMedico')?.value || '';
-                fetch('{{ route('agenda.eventos') }}?start=' + info.startStr + '&end=' + info.endStr + '&medico_id=' + medicoId)
+            slotMinTime: '07:00:00',
+            slotMaxTime: '21:00:00',
+            slotDuration: '00:30:00',
+            slotLabelFormat: { hour: 'numeric', minute: '2-digit', hour12: true },
+
+          
+
+            editable: {{ auth()->user()->isMedico() ? 'false' : 'true' }},
+            selectable: {{ auth()->user()->isMedico() ? 'false' : 'true' }},
+            selectMirror: true,
+
+            events: function (info, successCallback, failureCallback) {
+                const seleccionados = Array.from(document.querySelectorAll('.chkMedico:checked')).map(c => c.value).join(',');
+                fetch('{{ route('agenda.eventos') }}?start=' + info.startStr + '&end=' + info.endStr + '&medico_ids=' + seleccionados)
                     .then(r => r.json())
                     .then(successCallback)
                     .catch(failureCallback);
             },
 
 
-            eventClassNames: function(arg){ return ['ev-'+(arg.event.extendedProps.estado||'pendiente')]; },
-           
-                        eventContent: function(arg){
+                                eventContent: function(arg){
                 const p = arg.event.extendedProps;
-                const dot = '<span class="ev-dot" style="background:'+(arg.event.backgroundColor||'#7c3aed')+'"></span>';
+                const esMedicoLogueado = @json(auth()->user()->isMedico());
+                const estadoDot = '<span class="ev-dot" style="background:'+(arg.event.backgroundColor||'#7c3aed')+'" title="'+(p.estadoLabel||'')+'"></span>';
+
+                if (arg.view.type === 'timeGridDay') {
+                    const rango = p.hora + (p.horaFin ? ' – ' + p.horaFin : '');
+                    const medicoLinea = (!esMedicoLogueado && p.medico) ? '<div class="ev-linea"><i class="fa-solid fa-user-doctor"></i> '+p.medico+'</div>' : '';
+                    return { html:
+                        '<div class="ev ev-dia">'+
+                            '<div class="ev-dia-top">'+estadoDot+'<b>'+rango+'</b></div>'+
+                            '<div class="ev-linea"><i class="fa-solid fa-user"></i> '+arg.event.title+'</div>'+
+                            medicoLinea+
+                        '</div>' };
+                }
+
                 const time = p.hora ? '<span class="ev-time">'+p.hora+'</span>' : '';
-                const title = '<span class="ev-title">'+arg.event.title+'</span>';
-                const medDot = p.medicoId ? '<span class="ev-med-dot" style="background:'+colorMedico(p.medicoId)+'" title="'+(p.medico||'')+'"></span>' : '';
-                return { html: '<div class="ev">'+dot+time+title+medDot+'</div>' };
+                const textoPrincipal = esMedicoLogueado ? arg.event.title : (p.medico || arg.event.title);
+                const title = '<span class="ev-title">'+textoPrincipal+'</span>';
+                return { html: '<div class="ev">'+estadoDot+time+title+'</div>' };
             },
 
                       eventDidMount: function(arg){
-                arg.el.addEventListener('mouseenter', function (ev) {
-                    mostrarTooltip(arg.event, ev);
-                });
-                arg.el.addEventListener('mouseleave', function () {
-                    ocultarTooltip();
-                });
+                const p = arg.event.extendedProps;
+                const evEl = arg.el.querySelector('.ev');
+                if (p.medicoId && evEl) {
+                    evEl.style.borderLeft = '4px solid ' + colorMedico(p.medicoId);
+                    evEl.style.background = colorMedicoBg(p.medicoId);
+                }
+                arg.el.addEventListener('mouseenter', function (ev) { mostrarTooltip(arg.event, ev); });
+                arg.el.addEventListener('mouseleave', function () { ocultarTooltip(); });
             },
 
-
             eventsSet: function(){ actualizarStats(cal); },
-            eventClick: function (info) { info.jsEvent.preventDefault(); if (info.event.url) window.location = info.event.url; },
-                        dateClick: function (info) {
-                @if(auth()->user()->isMedico())
-                return;
-                @endif
-                window.location = '{{ route('citas.create') }}?fecha=' + info.dateStr.substring(0, 10);
+            eventClick: function (info) { info.jsEvent.preventDefault(); abrirModalCita(info.event); },
+            select: function (info) {
+                const fecha = info.startStr.substring(0, 10);
+                let hora = '09:00', duracion = 30;
+                if (info.view.type !== 'dayGridMonth') {
+                    hora = info.startStr.substring(11, 16);
+                    duracion = Math.round((new Date(info.endStr) - new Date(info.startStr)) / 60000);
+                    if (!duracion || duracion < 5) duracion = 30;
+                }
+                cal.unselect();
+                window.location = '{{ route('citas.create') }}?fecha=' + fecha + '&hora=' + hora + '&duracion=' + duracion;
             },
             eventDrop: function (info) {
                 const e = info.event;
@@ -272,8 +343,49 @@
                 }).then(r => { if(!r.ok){ alert('No se pudo mover la cita'); info.revert(); } });
             }
         });
-                const filtro = document.getElementById('filtroMedico');
-        if (filtro) filtro.addEventListener('change', function () { cal.refetchEvents(); });
+
+        const esMedico = @json(auth()->user()->isMedico());
+        const citaEstadoUrl = '{{ url('citas') }}';
+
+        window.abrirModalCita = function (event) {
+            const p = event.extendedProps;
+            document.getElementById('cmTitulo').textContent = event.title;
+            document.getElementById('cmEstado').innerHTML = '<span class="ev-' + p.estado + '" style="padding:5px 12px;border-radius:20px;font-size:11.5px;font-weight:700">' + (p.estadoLabel || '') + '</span>';
+
+            let datos = '';
+            if (p.hora) datos += '<div><i class="fa-regular fa-clock"></i> ' + p.hora + '</div>';
+            if (p.especialidad) datos += '<div><i class="fa-solid fa-stethoscope"></i> ' + p.especialidad + '</div>';
+            if (p.medico) datos += '<div><i class="fa-solid fa-user-doctor"></i> ' + p.medico + '</div>';
+            if (p.telefono) datos += '<div><i class="fa-solid fa-phone"></i> ' + p.telefono + '</div>';
+            if (p.motivo) datos += '<div><i class="fa-regular fa-note-sticky"></i> ' + p.motivo + '</div>';
+            document.getElementById('cmDatos').innerHTML = datos;
+
+            let acciones = '';
+            if (esMedico) {
+                if (['pendiente','confirmada'].includes(p.estado)) {
+                    acciones += '<a href="{{ url('consultas/create') }}?paciente_id=' + p.pacienteId + '&cita_id=' + event.id + '" class="btn btn-primary btn-sm"><i class="fa-solid fa-stethoscope"></i> Atender</a>';
+                }
+            } else {
+                acciones += '<a href="' + citaEstadoUrl + '/' + event.id + '/edit" class="btn btn-light btn-sm"><i class="fa-solid fa-pen"></i> Editar</a>';
+                if (p.telefono) {
+                    acciones += '<a href="https://wa.me/' + p.telefono.replace(/\D/g,'') + '" target="_blank" class="btn btn-light btn-sm" style="color:#25d366"><i class="fa-brands fa-whatsapp"></i> WhatsApp</a>';
+                }
+            }
+            document.getElementById('cmAcciones').innerHTML = acciones;
+
+            document.getElementById('citaModalFondo').classList.add('abierto');
+        };
+
+        window.cerrarModalCita = function (e) {
+            if (e && e.target !== e.currentTarget) return;
+            document.getElementById('citaModalFondo').classList.remove('abierto');
+        };
+
+        document.querySelectorAll('.chkMedico').forEach(function (chk) {
+            const dot = document.querySelector('.dot[data-medico="'+chk.value+'"]');
+            if (dot) dot.style.background = colorMedico(parseInt(chk.value));
+            chk.addEventListener('change', function () { cal.refetchEvents(); });
+        });
         cal.render();
     });
     </script>
