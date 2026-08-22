@@ -9,19 +9,41 @@
             <a href="{{ route('pagos.create') }}" class="btn btn-light"><i class="fa-solid fa-money-bill"></i> Cobrar</a>
         </div>
     </div>
-
-    <div class="grid g-4 mb">
-        <div class="card"><div class="cap" style="font-size:12px;color:var(--ink-soft);text-transform:uppercase">Citas hoy</div><div style="font-size:28px;font-weight:700;margin-top:6px">{{ $citasHoy }}</div></div>
-        <div class="card"><div class="cap" style="font-size:12px;color:var(--ink-soft);text-transform:uppercase">Por confirmar</div><div style="font-size:28px;font-weight:700;margin-top:6px">{{ $pendientes }}</div></div>
-        <div class="card pink"><div class="cap" style="font-size:12px;color:var(--ink-soft);text-transform:uppercase">Cobrado hoy</div><div style="font-size:24px;font-weight:700;margin-top:6px;color:#15803d">@money($cobradoHoy, null, 2)</div></div>
-        <div class="card" style="{{ $bajoStock ? 'background:#fef2f2' : '' }}"><div class="cap" style="font-size:12px;color:var(--ink-soft);text-transform:uppercase">Bajo stock</div><div style="font-size:28px;font-weight:700;margin-top:6px;color:{{ $bajoStock ? '#dc2626':'inherit' }}">{{ $bajoStock }}</div></div>
+    @if($citasMananaSinConfirmar > 0)
+    <div class="alert" style="background:#fffbeb;color:#92400e;margin-bottom:18px">
+        <i class="fa-solid fa-triangle-exclamation"></i>
+        Tienes <b>{{ $citasMananaSinConfirmar }}</b> {{ $citasMananaSinConfirmar === 1 ? 'cita' : 'citas' }} de mañana sin confirmar todavía.
+        <a href="{{ route('citas.index', ['estado' => 'pendiente']) }}" style="margin-left:auto;color:#92400e;font-weight:600;text-decoration:underline">Ver</a>
+    </div>
+    @endif
+       <div class="grid g-4 mb">
+        <div class="kpi k1">
+            <div class="kpi-top"><span class="kpi-ic"><i class="fa-solid fa-calendar-day"></i></span></div>
+            <div class="kpi-val">{{ $citasHoy }}</div>
+            <div class="kpi-cap">Citas hoy</div>
+        </div>
+        <div class="kpi k2">
+            <div class="kpi-top"><span class="kpi-ic"><i class="fa-solid fa-hourglass-half"></i></span></div>
+            <div class="kpi-val">{{ $pendientes }}</div>
+            <div class="kpi-cap">Por confirmar</div>
+        </div>
+        <div class="kpi k3">
+            <div class="kpi-top"><span class="kpi-ic"><i class="fa-solid fa-sack-dollar"></i></span></div>
+            <div class="kpi-val">@money($cobradoHoy, null, 2)</div>
+            <div class="kpi-cap">Cobrado hoy</div>
+        </div>
+        <div class="kpi k4">
+            <div class="kpi-top"><span class="kpi-ic"><i class="fa-solid fa-triangle-exclamation"></i></span></div>
+            <div class="kpi-val">{{ $pagosPendientes }}</div>
+            <div class="kpi-cap">Pagos pendientes</div>
+        </div>
     </div>
 
     <div class="card" style="padding:0">
         <div style="padding:18px 22px 8px"><h3 style="margin:0">Agenda de hoy</h3></div>
         <div class="table-wrap" style="box-shadow:none;border-radius:0">
             <table>
-                <thead><tr><th>Hora</th><th>Paciente</th><th>Especialidad</th><th>Médico</th><th>Estado</th></tr></thead>
+                <thead><tr><th>Hora</th><th>Paciente</th><th>Especialidad</th><th>Médico</th><th>Estado</th><th></th></tr></thead>
                 <tbody>
                 @forelse($agendaHoy as $c)
                     <tr>
@@ -30,9 +52,29 @@
                         <td>{{ $c->especialidad->nombre ?? '—' }}</td>
                         <td>{{ $c->medico->name ?? '—' }}</td>
                         <td>@include('citas.estado', ['estado' => $c->estado])</td>
+                        <td style="text-align:right;white-space:nowrap">
+                            @if($c->estado === 'pendiente')
+                            <form method="POST" action="{{ route('citas.estado.cambiar', $c) }}" style="display:inline">
+                                @csrf @method('PUT')
+                                <input type="hidden" name="estado" value="confirmada">
+                                <button class="btn btn-light btn-sm"><i class="fa-solid fa-check"></i> Confirmar</button>
+                            </form>
+                            @endif
+                            @php
+                                $yaPaso = \Carbon\Carbon::parse($c->fecha->format('Y-m-d').' '.$c->hora)->isPast();
+                            @endphp
+                            @if($yaPaso && in_array($c->estado, ['pendiente', 'confirmada']))
+                            <form method="POST" action="{{ route('citas.estado.cambiar', $c) }}" style="display:inline" onsubmit="return confirm('¿Marcar como No asistió?')">
+                                @csrf @method('PUT')
+                                <input type="hidden" name="estado" value="no_asistio">
+                                <button class="btn btn-light btn-sm" style="color:#94a3b8"><i class="fa-solid fa-user-xmark"></i> No asistió</button>
+                            </form>
+                            @endif
+                            <a href="{{ route('pagos.create', ['paciente_id' => $c->paciente_id]) }}" class="btn btn-primary btn-sm"><i class="fa-solid fa-money-bill"></i> Cobrar</a>
+                        </td>
                     </tr>
                 @empty
-                    <tr><td colspan="5"><div class="empty"><i class="fa-regular fa-calendar"></i><p>No hay citas para hoy.</p></div></td></tr>
+                    <tr><td colspan="6"><div class="empty"><i class="fa-regular fa-calendar"></i><p>No hay citas para hoy.</p></div></td></tr>
                 @endforelse
                 </tbody>
             </table>

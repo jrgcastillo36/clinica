@@ -165,11 +165,12 @@
         }
 
         let tooltipEl = null;
-        function mostrarTooltip(event, mouseEvent){
+                function mostrarTooltip(event, mouseEvent){
             const p = event.extendedProps;
             ocultarTooltip();
             tooltipEl = document.createElement('div');
             tooltipEl.className = 'cita-tooltip';
+            tooltipEl.style.visibility = 'hidden';
             tooltipEl.innerHTML =
                 '<b>' + event.title + '</b>' +
                 (p.hora ? '<div><i class="fa-regular fa-clock"></i> ' + p.hora + '</div>' : '') +
@@ -179,9 +180,25 @@
                 (p.motivo ? '<div><i class="fa-regular fa-note-sticky"></i> ' + p.motivo + '</div>' : '') +
                 '<div class="tt-estado">' + (p.estadoLabel || '') + '</div>';
             document.body.appendChild(tooltipEl);
+
             const rect = mouseEvent.target.closest('.fc-event').getBoundingClientRect();
-            tooltipEl.style.left = (rect.left + window.scrollX) + 'px';
-            tooltipEl.style.top = (rect.bottom + window.scrollY + 6) + 'px';
+            const ttRect = tooltipEl.getBoundingClientRect();
+            const margen = 8;
+
+            let top = rect.bottom + window.scrollY + 6;
+            if (rect.bottom + ttRect.height + margen > window.innerHeight) {
+                top = rect.top + window.scrollY - ttRect.height - 6;
+            }
+
+            let left = rect.left + window.scrollX;
+            if (left + ttRect.width + margen > window.innerWidth) {
+                left = window.innerWidth - ttRect.width - margen + window.scrollX;
+            }
+            if (left < margen) left = margen;
+
+            tooltipEl.style.top = top + 'px';
+            tooltipEl.style.left = left + 'px';
+            tooltipEl.style.visibility = 'visible';
         }
         function ocultarTooltip(){
             if (tooltipEl) { tooltipEl.remove(); tooltipEl = null; }

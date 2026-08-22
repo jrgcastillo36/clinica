@@ -96,35 +96,64 @@
 
     @push('scripts')
     <script>
-    window.addEventListener('load', function () {
+       window.addEventListener('load', function () {
         if (!window.Chart) return;
         const soft = (getComputedStyle(document.documentElement).getPropertyValue('--ink-soft') || '#9ca3af').trim();
         Chart.defaults.font.family = 'Poppins, sans-serif';
         Chart.defaults.color = soft;
-        const grid = 'rgba(148,148,180,.15)';
+        const grid = 'rgba(148,148,180,.12)';
 
+        // ---- Citas por mes: línea moderna en teal, punto con borde blanco ----
         const c1 = document.getElementById('chCitas').getContext('2d');
-        const g1 = c1.createLinearGradient(0,0,0,260); g1.addColorStop(0,'rgba(168,85,247,.35)'); g1.addColorStop(1,'rgba(168,85,247,0)');
+        const g1 = c1.createLinearGradient(0,0,0,260);
+        g1.addColorStop(0,'rgba(13,148,136,.30)'); g1.addColorStop(1,'rgba(13,148,136,0)');
         new Chart(c1, { type:'line',
-            data:{ labels:@json($mesLabels), datasets:[{ label:'Citas', data:@json($citasMesSerie), borderColor:'#a855f7', backgroundColor:g1, fill:true, tension:.4, pointRadius:4, pointBackgroundColor:'#a855f7', borderWidth:3 }] },
+            data:{ labels:@json($mesLabels), datasets:[{
+                label:'Citas', data:@json($citasMesSerie),
+                borderColor:'#0d9488', backgroundColor:g1, fill:true, tension:.4,
+                pointRadius:5, pointHoverRadius:7, pointBackgroundColor:'#0d9488',
+                pointBorderColor:'#fff', pointBorderWidth:2, borderWidth:3,
+            }] },
             options:{ responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}},
                 scales:{ y:{beginAtZero:true, ticks:{precision:0}, grid:{color:grid}}, x:{grid:{display:false}} } } });
 
+        // ---- Ingresos por mes: barras degradado teal → lavanda ----
         const c2 = document.getElementById('chIngresos').getContext('2d');
-        const g2 = c2.createLinearGradient(0,0,0,260); g2.addColorStop(0,'#22d3ee'); g2.addColorStop(1,'#0891b2');
+        const g2 = c2.createLinearGradient(0,0,260,0);
+        g2.addColorStop(0,'#0d9488'); g2.addColorStop(1,'#8b7fd6');
         new Chart(c2, { type:'bar',
-            data:{ labels:@json($mesLabels), datasets:[{ data:@json($ingresosMesSerie), backgroundColor:g2, borderRadius:10, maxBarThickness:34 }] },
+            data:{ labels:@json($mesLabels), datasets:[{ data:@json($ingresosMesSerie), backgroundColor:g2, borderRadius:10, maxBarThickness:30 }] },
             options:{ responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}},
                 scales:{ y:{beginAtZero:true, grid:{color:grid}}, x:{grid:{display:false}} } } });
 
+        // ---- Citas por estado: dona con el total en el centro ----
+        const totalCitasEstado = {{ collect($porEstado)->sum() }};
+        const centroDona = {
+            id:'centroDona',
+            afterDraw(chart){
+                if (chart.canvas.id !== 'chEstado') return;
+                const {ctx, chartArea:{left,right,top,bottom}} = chart;
+                const x = (left+right)/2, y = (top+bottom)/2;
+                ctx.save();
+                ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+                ctx.font = '700 26px Poppins, sans-serif'; ctx.fillStyle = '#1f2937';
+                ctx.fillText(totalCitasEstado, x, y-8);
+                ctx.font = '600 11px Poppins, sans-serif'; ctx.fillStyle = soft;
+                ctx.fillText('CITAS', x, y+14);
+                ctx.restore();
+            }
+        };
         new Chart(document.getElementById('chEstado'), { type:'doughnut',
             data:{ labels:@json(array_keys($porEstado)), datasets:[{ data:@json(array_values($porEstado)),
                 backgroundColor:['#f59e0b','#3b82f6','#22c55e','#ef4444','#94a3b8'], borderWidth:0, hoverOffset:8 }] },
-            options:{ responsive:true, maintainAspectRatio:false, cutout:'62%', plugins:{legend:{position:'bottom', labels:{boxWidth:12, padding:14, font:{size:11}}}} } });
+            options:{ responsive:true, maintainAspectRatio:false, cutout:'70%',
+                plugins:{legend:{position:'bottom', labels:{boxWidth:12, padding:14, font:{size:11}}}} },
+            plugins:[centroDona] });
 
+        // ---- Pacientes por especialidad: barras con la paleta teal/lavanda ----
         new Chart(document.getElementById('chEsp'), { type:'bar',
             data:{ labels:@json($porEspecialidad->keys()), datasets:[{ data:@json($porEspecialidad->values()),
-                backgroundColor:['#a855f7','#ec4899','#06b6d4','#f59e0b','#22c55e','#7c3aed'], borderRadius:8, maxBarThickness:26 }] },
+                backgroundColor:['#0d9488','#8b7fd6','#0ea5e9','#f59e0b','#14b8a6','#6d5fc4'], borderRadius:8, maxBarThickness:24 }] },
             options:{ indexAxis:'y', responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}},
                 scales:{ x:{beginAtZero:true, ticks:{precision:0}, grid:{color:grid}}, y:{grid:{display:false}} } } });
     });

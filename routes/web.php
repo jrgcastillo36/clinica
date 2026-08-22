@@ -143,6 +143,9 @@ Route::middleware('role:admin,recepcion')->group(function () {
 
 Route::get('/citas', [CitaController::class,'index'])->name('citas.index');
 Route::middleware('role:admin,recepcion')->group(function () {
+    Route::put('/citas/{cita}/estado', [CitaController::class, 'cambiarEstado'])->name('citas.estado.cambiar');
+});
+Route::middleware('role:admin,recepcion')->group(function () {
     Route::get('/citas/create', [CitaController::class,'create'])->name('citas.create');
     Route::post('/citas', [CitaController::class,'store'])->name('citas.store');
     Route::get('/citas/{cita}/edit', [CitaController::class,'edit'])->name('citas.edit');

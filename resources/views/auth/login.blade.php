@@ -25,10 +25,10 @@
         ===================================================== */
 
         :root {
-            --primary: #5B3CC4;
-            --primary-dark: #432B9E;
+            --primary: #1f0670;
+            --primary-dark: #14054d;
             --primary-light: #7B5DD9;
-            --primary-gradient: linear-gradient(145deg, #5B3CC4 0%, #7B5DD9 100%);
+            --primary-gradient: linear-gradient(145deg, #140447 0%, #7B5DD9 100%);
             --primary-glow: rgba(91, 60, 196, 0.20);
 
             --secondary: #0D8ABF;
@@ -1591,11 +1591,14 @@
 
         <div class="box">
 
+<center>
 
             <div class="welcome-icon">
                 <i class="fa-solid fa-hand-holding-heart"></i>
             </div>
+</center>
 
+<center>
 
             <h1>
                 Bienvenido 👋
@@ -1607,6 +1610,7 @@
                 al sistema de Grupo Libérate.
             </p>
 
+</center>
 
             <!-- =================================================
                  MENSAJE OK

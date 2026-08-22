@@ -115,6 +115,16 @@ class CitaController extends Controller
 
         return redirect()->route('citas.index')->with('ok', 'Cita actualizada.');
     }
+    public function cambiarEstado(Request $request, Cita $cita)
+    {
+        $data = $request->validate([
+            'estado' => ['required', 'in:pendiente,confirmada,atendida,cancelada,no_asistio'],
+        ]);
+
+        $cita->update(['estado' => $data['estado']]);
+
+        return back()->with('ok', 'Estado de la cita actualizado.');
+    }
 
     public function destroy(Cita $cita)
     {

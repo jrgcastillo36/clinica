@@ -291,7 +291,8 @@
         .btn-primary {
             width: 100%;
             padding: 15px;
-            background: linear-gradient(135deg, #7c3aed, #4f46e5);
+            background: linear-gradient(135deg, #140447, #7B5DD9);
+
             color: #fff;
             border: none;
             border-radius: 14px;
@@ -532,19 +533,7 @@
                     </button>
                 </form>
 
-                <div class="demo">
-                    <div>
-                        <span class="demo-label">Demo</span>
-                        <b>Credenciales de prueba</b>
-                    </div>
-                    <div>
-                        Correo: <b>valentina@paciente.test</b> · Contraseña: <b>password</b>
-                    </div>
-                    <a href="{{ route('login') }}">
-                        <i class="fa-regular fa-user"></i> 
-                        ¿Eres personal de la clínica? Ingresa aquí
-                    </a>
-                </div>
+             
             </div>
         </div>
     </div>

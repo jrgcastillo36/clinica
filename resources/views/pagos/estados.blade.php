@@ -29,7 +29,9 @@
                     <td><b style="color:#b45309">@money($d->deuda, null, 2)</b></td>
                     <td style="text-align:right;white-space:nowrap">
                         <a href="{{ route('pacientes.show', $d->paciente_id) }}" class="btn btn-light btn-sm"><i class="fa-solid fa-eye"></i></a>
-                        @if($tel)<a href="https://wa.me/{{ $tel }}?text={{ $msg }}" target="_blank" class="btn btn-light btn-sm" style="color:#25d366"><i class="fa-brands fa-whatsapp"></i> Recordar</a>@endif
+                        @if($tel)<a href="https://wa.me/{{ $tel }}?text={{ $msg }}" target="_blank" class="btn btn-light btn-sm" style="color:#25d366"><i class="fa-brands fa-whatsapp"></i></a>@endif
+                        
+                            <a href="{{ route('pagos.create', ['paciente_id' => $d->paciente_id]) }}" class="btn btn-primary btn-sm"><i class="fa-solid fa-money-bill"></i> Cobrar</a>
                     </td>
                 </tr>
             @empty

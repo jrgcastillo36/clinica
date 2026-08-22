@@ -21,7 +21,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    <link rel="stylesheet" href="{{ asset('css/app.css') }}">
+       <link rel="stylesheet" href="{{ asset('css/app.css') }}?v={{ filemtime(public_path('css/app.css')) }}">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js" defer></script>
     @php $brand = optional(auth()->user()->empresa)->color_primario; @endphp
     @if($brand)
@@ -29,7 +29,7 @@
         :root{
             --violet: {{ $brand }};
             --violet-2: {{ $brand }};
-            --grad: linear-gradient(135deg, {{ $brand }} 0%, #ec4899 100%);
+            --grad: linear-gradient(135deg, {{ $brand }} 0%, #8b93e0 100%);
         }
     </style>
     @endif
