@@ -12,11 +12,16 @@
             var ls = localStorage.getItem('tema');
             var dark = ls ? (ls === 'dark') : (pref === 'oscuro');
             if (dark) document.documentElement.setAttribute('data-theme','dark');
-            var dens = @json($prefs['densidad'] ?? 'comodo');
+                       var dens = @json($prefs['densidad'] ?? 'comodo');
             if (dens === 'compacto') document.documentElement.setAttribute('data-densidad','compacto');
-        } catch(e){}
+
+            
+               } catch(e){}
     })();
     </script>
+    
+
+
     <title>@yield('title', 'Panel') · Grupo Liberate</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">

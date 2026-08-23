@@ -20,24 +20,33 @@ class CitaController extends Controller
     // ============================================================
     // NUEVO MÉTODO PARA VALIDAR CHOQUES DE HORARIO
     // ============================================================
-    private function hayChoque(?int $medicoId, string $fecha, string $hora, ?int $duracion, ?int $ignorarId = null): bool
+       private function hayChoque(?int $medicoId, ?int $consultorioId, string $fecha, string $hora, ?int $duracion, ?int $ignorarId = null): ?string
     {
-        if (! $medicoId) return false;
+        if (! $medicoId && ! $consultorioId) return null;
 
         $inicio = \Carbon\Carbon::parse($fecha.' '.$hora);
         $fin = $inicio->copy()->addMinutes($duracion ?: 30);
 
-        return Cita::where('empresa_id', $this->empresaId())
-            ->where('medico_id', $medicoId)
+        $citas = Cita::where('empresa_id', $this->empresaId())
+            ->where(function ($q) use ($medicoId, $consultorioId) {
+                if ($medicoId) $q->orWhere('medico_id', $medicoId);
+                if ($consultorioId) $q->orWhere('consultorio_id', $consultorioId);
+            })
             ->whereDate('fecha', $fecha)
             ->whereNotIn('estado', ['cancelada', 'no_asistio'])
             ->when($ignorarId, fn ($q) => $q->where('id', '!=', $ignorarId))
-            ->get()
-            ->contains(function ($c) use ($inicio, $fin) {
-                $cInicio = \Carbon\Carbon::parse($c->fecha->format('Y-m-d').' '.$c->hora);
-                $cFin = $cInicio->copy()->addMinutes($c->duracion ?: 30);
-                return $inicio < $cFin && $cInicio < $fin;
-            });
+            ->get();
+
+        foreach ($citas as $c) {
+            $cInicio = \Carbon\Carbon::parse($c->fecha->format('Y-m-d').' '.$c->hora);
+            $cFin = $cInicio->copy()->addMinutes($c->duracion ?: 30);
+            if ($inicio < $cFin && $cInicio < $fin) {
+                if ($medicoId && $c->medico_id == $medicoId) return 'El médico ya tiene otra cita en ese horario.';
+                if ($consultorioId && $c->consultorio_id == $consultorioId) return 'Ese consultorio ya está ocupado en ese horario.';
+            }
+        }
+
+        return null;
     }
 
     public function index(Request $request)
@@ -69,8 +78,9 @@ class CitaController extends Controller
         $data = $this->validated($request);
 
         // VALIDACIÓN DE CHOQUE DE HORARIO
-        if ($this->hayChoque($data['medico_id'] ?? null, $data['fecha'], $data['hora'], $data['duracion'] ?? 30)) {
-            return back()->withInput()->withErrors(['hora' => 'El médico ya tiene otra cita en ese horario.']);
+               // VALIDACIÓN DE CHOQUE DE HORARIO (médico y/o consultorio)
+        if ($choque = $this->hayChoque($data['medico_id'] ?? null, $data['consultorio_id'] ?? null, $data['fecha'], $data['hora'], $data['duracion'] ?? 30)) {
+            return back()->withInput()->withErrors(['hora' => $choque]);
         }
 
         $data['empresa_id'] = $this->empresaId();
@@ -108,8 +118,9 @@ class CitaController extends Controller
         $data = $this->validated($request);
 
         // VALIDACIÓN DE CHOQUE DE HORARIO (ignorando la cita actual)
-        if ($this->hayChoque($data['medico_id'] ?? null, $data['fecha'], $data['hora'], $data['duracion'] ?? 30, $cita->id)) {
-            return back()->withInput()->withErrors(['hora' => 'El médico ya tiene otra cita en ese horario.']);
+               // VALIDACIÓN DE CHOQUE DE HORARIO (ignorando la cita actual)
+        if ($choque = $this->hayChoque($data['medico_id'] ?? null, $data['consultorio_id'] ?? null, $data['fecha'], $data['hora'], $data['duracion'] ?? 30, $cita->id)) {
+            return back()->withInput()->withErrors(['hora' => $choque]);
         }
 
         $cita->update($data);
@@ -135,13 +146,14 @@ class CitaController extends Controller
         return redirect()->route('citas.index')->with('ok', 'Cita eliminada.');
     }
 
-    private function opciones(): array
+       private function opciones(): array
     {
         $empresa = auth()->user()->empresa;
         return [
             'pacientes' => Paciente::where('empresa_id', $this->empresaId())->orderBy('apellidos')->get(),
             'medicos' => User::where('empresa_id', $this->empresaId())->where('role', 'medico')->get(),
             'especialidades' => $empresa?->especialidadesActivas()->get() ?? collect(),
+            'consultorios' => \App\Models\Consultorio::where('empresa_id', $this->empresaId())->where('activo', true)->orderBy('nombre')->get(),
         ];
     }
 
@@ -150,7 +162,8 @@ class CitaController extends Controller
         return $request->validate([
             'paciente_id' => ['required', 'exists:pacientes,id'],
             'medico_id' => ['nullable', 'exists:users,id'],
-            'especialidad_id' => ['nullable', 'exists:especialidades,id'],
+                        'especialidad_id' => ['nullable', 'exists:especialidades,id'],
+            'consultorio_id' => ['nullable', 'exists:consultorios,id'],
             'fecha' => ['required', 'date'],
             'hora' => ['required'],
             'duracion' => ['nullable', 'integer', 'min:5', 'max:240'],

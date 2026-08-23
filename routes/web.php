@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Admin\AuditoriaController;
 use App\Http\Controllers\Admin\CamaController;
+use App\Http\Controllers\Admin\ConsultorioController;
 use App\Http\Controllers\Admin\EmpresaConfigController;
 use App\Http\Controllers\Admin\EmpresaController;
 use App\Http\Controllers\Admin\EspecialidadController;
@@ -241,7 +242,9 @@ Route::middleware('role:admin,recepcion')->group(function () {
         Route::get('/agenda', [AgendaController::class, 'index'])->name('agenda.index');
         Route::get('/agenda/eventos', [AgendaController::class, 'eventos'])->name('agenda.eventos');
         Route::put('/agenda/citas/{cita}/mover', [AgendaController::class, 'mover'])->name('agenda.mover');
-
+        Route::middleware('role:admin,recepcion')->group(function () {
+            Route::get('/agenda/disponibilidad', [AgendaController::class, 'disponibilidad'])->name('agenda.disponibilidad');
+        });
         // Facturacion / pagos — bloqueado para el rol médico
         Route::middleware('role:admin,recepcion')->group(function () {
             Route::resource('pagos', PagoController::class)->except(['show']);
@@ -369,8 +372,9 @@ Route::middleware('role:admin,recepcion')->group(function () {
         Route::post('/lab-examenes', [LabExamenController::class, 'store'])->name('lab-examenes.store');
         Route::put('/lab-examenes/{examen}', [LabExamenController::class, 'update'])->name('lab-examenes.update');
         Route::delete('/lab-examenes/{examen}', [LabExamenController::class, 'destroy'])->name('lab-examenes.destroy');
-
+        Route::resource('consultorios', ConsultorioController::class)->except(['show', 'create', 'edit']);
         Route::get('/camas', [CamaController::class, 'index'])->name('camas.index');
+
         Route::post('/camas', [CamaController::class, 'store'])->name('camas.store');
         Route::delete('/camas/{cama}', [CamaController::class, 'destroy'])->name('camas.destroy');
     });

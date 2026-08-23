@@ -31,7 +31,7 @@
                 </select></div>
             <div class="field"><label>Teléfono</label><input name="telefono" value="{{ old('telefono',$paciente->telefono) }}"></div>
             <div class="field"><label>Email</label><input type="email" name="email" value="{{ old('email',$paciente->email) }}"></div>
-            <div class="field"><label>Grupo sanguíneo</label><input name="grupo_sanguineo" value="{{ old('grupo_sanguineo',$paciente->grupo_sanguineo) }}" placeholder="O+"></div>
+            <div class="field"><label>Contacto de emergencia</label><input name="grupo_sanguineo" value="{{ old('grupo_sanguineo',$paciente->grupo_sanguineo) }}" placeholder="Nombre y teléfono"></div>
             <div class="field"><label>Especialidad principal</label>
                 <select name="especialidad_id">
                     <option value="">— Sin asignar —</option>
@@ -40,7 +40,7 @@
                     @endforeach
                 </select></div>
             <div class="field full"><label>Dirección</label><input name="direccion" value="{{ old('direccion',$paciente->direccion) }}"></div>
-            <div class="field full"><label>Alergias</label><textarea name="alergias">{{ old('alergias',$paciente->alergias) }}</textarea></div>
+            <div class="field full"><label>Motivo de consulta</label><textarea name="alergias" placeholder="Por qué acude a terapia, quién lo deriva...">{{ old('alergias',$paciente->alergias) }}</textarea></div>
             <div class="field full"><label>Antecedentes</label><textarea name="antecedentes">{{ old('antecedentes',$paciente->antecedentes) }}</textarea></div>
         </div>
         <div class="mt"><button class="btn btn-primary"><i class="fa-solid fa-floppy-disk"></i> Guardar paciente</button></div>

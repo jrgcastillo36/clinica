@@ -35,6 +35,14 @@
                         <option value="{{ $m->id }}" @selected(old('medico_id',$cita->medico_id)==$m->id)>{{ $m->name }}</option>
                     @endforeach
                 </select></div>
+                            <div class="field"><label>Consultorio</label>
+                <select name="consultorio_id">
+                    <option value="">— Sin asignar —</option>
+                    @foreach($consultorios as $c)
+                        <option value="{{ $c->id }}" @selected(old('consultorio_id',$cita->consultorio_id)==$c->id)>{{ $c->nombre }}</option>
+                    @endforeach
+                </select>@error('consultorio_id')<span class="err">{{ $message }}</span>@enderror</div>
+                
             <div class="field"><label>Estado</label>
                 <select name="estado" required>
                     @foreach(['pendiente'=>'Pendiente','confirmada'=>'Confirmada','atendida'=>'Atendida','cancelada'=>'Cancelada','no_asistio'=>'No asistió'] as $k=>$v)
@@ -42,8 +50,8 @@
                     @endforeach
                 </select></div>
             <div class="field"><label>Fecha *</label><input type="date" name="fecha" value="{{ old('fecha', optional($cita->fecha)->format('Y-m-d') ?? $cita->fecha) }}" required></div>
-            <div class="field"><label>Hora *</label><input type="time" name="hora" value="{{ old('hora', \Illuminate\Support\Str::of($cita->hora)->substr(0,5)) }}" required></div>
-            <div class="field"><label>Hora *</label><input type="time" name="hora" value="{{ old('hora', \Illuminate\Support\Str::of($cita->hora)->substr(0,5)) }}" required>@error('hora')<span class="err">{{ $message }}</span>@enderror</div>
+                        <div class="field"><label>Hora *</label><input type="time" name="hora" value="{{ old('hora', \Illuminate\Support\Str::of($cita->hora)->substr(0,5)) }}" required>@error('hora')<span class="err">{{ $message }}</span>@enderror</div>
+
             <div class="field"><label>Modalidad</label>
                 <label style="display:flex;align-items:center;gap:8px;font-weight:400;margin-top:6px">
                     <input type="checkbox" name="es_teleconsulta" value="1" @checked(old('es_teleconsulta',$cita->es_teleconsulta ?? false))>

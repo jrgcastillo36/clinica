@@ -14,14 +14,15 @@ class Cita extends Model
     protected $fillable = [
         'empresa_id', 'paciente_id', 'medico_id', 'especialidad_id',
         'fecha', 'hora', 'duracion', 'estado', 'motivo', 'notas',
-        'es_teleconsulta', 'sala_video', 'estado_sala', 'hora_llegada', 'hora_atencion',
-    ];
+        'es_teleconsulta', 'sala_video', 'estado_sala', 'hora_llegada', 'hora_atencion', 'consultorio_id',
+        ];
 
     protected $casts = ['fecha' => 'date', 'es_teleconsulta' => 'boolean', 'hora_llegada' => 'datetime', 'hora_atencion' => 'datetime'];
 
     public function empresa(): BelongsTo { return $this->belongsTo(Empresa::class); }
     public function paciente(): BelongsTo { return $this->belongsTo(Paciente::class); }
     public function medico(): BelongsTo { return $this->belongsTo(User::class, 'medico_id'); }
+        public function consultorio(): BelongsTo { return $this->belongsTo(\App\Models\Consultorio::class); }
     public function especialidad(): BelongsTo { return $this->belongsTo(Especialidad::class); }
     public function encuesta(): \Illuminate\Database\Eloquent\Relations\HasOne { return $this->hasOne(Encuesta::class); }
 

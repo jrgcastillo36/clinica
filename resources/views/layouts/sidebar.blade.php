@@ -6,6 +6,7 @@
         : ($empresa?->especialidadesActivas()->get() ?? collect());
 @endphp
 <aside class="sidebar">
+    
     <button class="menu-toggle" type="button" aria-label="Menú" onclick="this.closest('.sidebar').classList.toggle('open')"><i class="fa-solid fa-bars"></i></button>
     <div class="brand">
 <img src="{{ asset('images/logo-icono.png') }}" alt="Grupo Libérate" style="width:36px;height:auto"> <div><strong style="color:#fff;font-size:14px">Grupo Libérate</strong></div>         <div>
@@ -109,7 +110,9 @@
             <a href="{{ route('admin.horarios.index') }}" class="{{ request()->routeIs('admin.horarios.*') ? 'active' : '' }}">
                 <i class="fa-solid fa-business-time"></i> Horarios
             </a>
-
+            <a href="{{ route('admin.consultorios.index') }}" class="{{ request()->routeIs('admin.consultorios.*') ? 'active' : '' }}">
+                <i class="fa-solid fa-door-open"></i> Consultorios
+            </a>
             <a href="{{ route('admin.servicios.index') }}" class="{{ request()->routeIs('admin.servicios.*') ? 'active' : '' }}">
                 <i class="fa-solid fa-tags"></i> Servicios
             </a>

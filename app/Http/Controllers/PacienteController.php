@@ -193,7 +193,7 @@ class PacienteController extends Controller
             'telefono' => ['nullable', 'string', 'max:30'],
             'email' => ['nullable', 'email', 'max:120'],
             'direccion' => ['nullable', 'string', 'max:200'],
-            'grupo_sanguineo' => ['nullable', 'string', 'max:5'],
+            'grupo_sanguineo' => ['nullable', 'string', 'max:150'],
             'alergias' => ['nullable', 'string'],
             'antecedentes' => ['nullable', 'string'],
             'especialidad_id' => ['nullable', 'exists:especialidades,id'],
