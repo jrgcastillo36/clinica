@@ -44,6 +44,7 @@ a{text-decoration:none;color:inherit}
   display:flex;flex-direction:column;position:sticky;top:0;height:100vh;
   padding:26px 16px;
 }
+.pagina-agenda-full .content{padding-left:20px}
 
 .brand{display:flex;align-items:center;gap:10px;padding:0 8px 8px;margin-bottom:6px}
 .brand .logo{width:40px;height:40px;border-radius:12px;background:var(--grad);

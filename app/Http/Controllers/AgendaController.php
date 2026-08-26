@@ -13,17 +13,20 @@ class AgendaController extends Controller
         return (int) auth()->user()->empresa_id;
     }
 
-    public function index()
-    {
-        $medicos = auth()->user()->isMedico()
-            ? collect()
-            : User::where('empresa_id', $this->empresaId())
-                ->where('role', 'medico')
-                ->orderBy('name')
-                ->get();
+   public function index()
+{
+    $pacientes = \App\Models\Paciente::where('empresa_id', $this->empresaId())->orderBy('apellidos')->get();
+        $consultorios = \App\Models\Consultorio::where('empresa_id', $this->empresaId())->where('activo', true)->orderBy('nombre')->get();
+    $medicos = auth()->user()->isMedico()
+        ? collect()
+        : User::where('empresa_id', $this->empresaId())
+            ->where('role', 'medico')
+            ->orderBy('name')
+            ->get();
 
-        return view('agenda.index', compact('medicos'));
-    }
+        return view('agenda.index', compact('medicos', 'pacientes', 'consultorios'));
+            }
+
 
     public function eventos(Request $request)
     {

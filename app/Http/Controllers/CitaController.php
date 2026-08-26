@@ -17,10 +17,7 @@ class CitaController extends Controller
         return (int) auth()->user()->empresa_id;
     }
 
-    // ============================================================
-    // NUEVO MÉTODO PARA VALIDAR CHOQUES DE HORARIO
-    // ============================================================
-       private function hayChoque(?int $medicoId, ?int $consultorioId, string $fecha, string $hora, ?int $duracion, ?int $ignorarId = null): ?string
+    private function hayChoque(?int $medicoId, ?int $consultorioId, string $fecha, string $hora, ?int $duracion, ?int $ignorarId = null): ?string
     {
         if (! $medicoId && ! $consultorioId) return null;
 
@@ -53,7 +50,7 @@ class CitaController extends Controller
     {
         $estado = $request->get('estado');
         $citas = Cita::where('empresa_id', $this->empresaId())
-                    ->when(auth()->user()->isMedico(), fn ($q) => $q->where('medico_id', auth()->id()))
+            ->when(auth()->user()->isMedico(), fn ($q) => $q->where('medico_id', auth()->id()))
             ->when($estado, fn ($q) => $q->where('estado', $estado))
             ->with(['paciente', 'medico', 'especialidad'])
             ->orderBy('fecha', 'desc')->orderBy('hora')
@@ -62,7 +59,7 @@ class CitaController extends Controller
         return view('citas.index', compact('citas', 'estado'));
     }
 
-        public function create(Request $request)
+    public function create(Request $request)
     {
         return view('citas.form', [
             'cita' => new Cita([
@@ -77,16 +74,17 @@ class CitaController extends Controller
     {
         $data = $this->validated($request);
 
-        // VALIDACIÓN DE CHOQUE DE HORARIO
-               // VALIDACIÓN DE CHOQUE DE HORARIO (médico y/o consultorio)
+        // VALIDACIÓN DE CHOQUE DE HORARIO (médico y/o consultorio)
         if ($choque = $this->hayChoque($data['medico_id'] ?? null, $data['consultorio_id'] ?? null, $data['fecha'], $data['hora'], $data['duracion'] ?? 30)) {
+            if ($request->wantsJson()) {
+                return response()->json(['ok' => false, 'mensaje' => $choque], 422);
+            }
             return back()->withInput()->withErrors(['hora' => $choque]);
         }
 
         $data['empresa_id'] = $this->empresaId();
         $cita = Cita::create($data);
 
-        // Enviar confirmación por correo si el paciente tiene email
         $cita->load(['paciente', 'especialidad', 'medico', 'empresa']);
         if ($cita->paciente && $cita->paciente->email) {
             try {
@@ -102,6 +100,10 @@ class CitaController extends Controller
             'url' => route('citas.index'),
         ]);
 
+        if ($request->wantsJson()) {
+            return response()->json(['ok' => true, 'mensaje' => 'Cita agendada correctamente.']);
+        }
+
         return redirect()->route('citas.index')->with('ok', 'Cita agendada correctamente.');
     }
 
@@ -114,11 +116,10 @@ class CitaController extends Controller
     public function update(Request $request, Cita $cita)
     {
         abort_unless($cita->empresa_id === $this->empresaId(), 403);
-        
+
         $data = $this->validated($request);
 
         // VALIDACIÓN DE CHOQUE DE HORARIO (ignorando la cita actual)
-               // VALIDACIÓN DE CHOQUE DE HORARIO (ignorando la cita actual)
         if ($choque = $this->hayChoque($data['medico_id'] ?? null, $data['consultorio_id'] ?? null, $data['fecha'], $data['hora'], $data['duracion'] ?? 30, $cita->id)) {
             return back()->withInput()->withErrors(['hora' => $choque]);
         }
@@ -127,6 +128,7 @@ class CitaController extends Controller
 
         return redirect()->route('citas.index')->with('ok', 'Cita actualizada.');
     }
+
     public function cambiarEstado(Request $request, Cita $cita)
     {
         $data = $request->validate([
@@ -146,7 +148,7 @@ class CitaController extends Controller
         return redirect()->route('citas.index')->with('ok', 'Cita eliminada.');
     }
 
-       private function opciones(): array
+    private function opciones(): array
     {
         $empresa = auth()->user()->empresa;
         return [
@@ -162,7 +164,7 @@ class CitaController extends Controller
         return $request->validate([
             'paciente_id' => ['required', 'exists:pacientes,id'],
             'medico_id' => ['nullable', 'exists:users,id'],
-                        'especialidad_id' => ['nullable', 'exists:especialidades,id'],
+            'especialidad_id' => ['nullable', 'exists:especialidades,id'],
             'consultorio_id' => ['nullable', 'exists:consultorios,id'],
             'fecha' => ['required', 'date'],
             'hora' => ['required'],

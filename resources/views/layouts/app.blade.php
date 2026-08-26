@@ -40,8 +40,10 @@
     @endif
 </head>
 <body>
-<div class="app">
+    <div class="app{{ request()->routeIs('agenda.*') ? ' pagina-agenda-full' : '' }}">
+    @unless(request()->routeIs('agenda.*'))
     @include('layouts.sidebar')
+    @endunless
 
     <div class="main">
         <header class="topbar">
@@ -49,7 +51,10 @@
                 <i class="fa-solid fa-magnifying-glass"></i>
                 <input type="text" name="q" value="{{ request('q') }}" placeholder="Buscar paciente, cita o módulo...">
             </form>
-            <div class="icons">
+                      <div class="icons">
+                @if(request()->routeIs('agenda.*'))
+                <a href="{{ route('dashboard') }}" class="icon-btn" title="Volver al menú"><i class="fa-solid fa-house"></i></a>
+                @endif
                 <button class="icon-btn" onclick="toggleTema()" title="Cambiar tema" type="button"><i class="fa-solid fa-moon" id="temaIcon"></i></button>
                 @php
                     $noLeidas = auth()->user()->empresa_id
