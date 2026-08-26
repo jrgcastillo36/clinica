@@ -278,7 +278,7 @@
             expandRows: true,
             dayMaxEvents: 3,
             fixedWeekCount: false,
-            headerToolbar: { left:'prev,next today saltarFecha', center:'title', right:'dayGridMonth,timeGridWeek,timeGridDay' },
+            headerToolbar: { left:'prev,next today saltarFecha', center:'title', right:'dayGridMonth,timeGridWeek,timeGridDay,listWeek'},
                         customButtons: {
                 saltarFecha: {
                     text: '📅 Ir a fecha',
@@ -289,7 +289,7 @@
                     }
                 }
             },
-            buttonText: { today:'Hoy', month:'Mes', week:'Semana', day:'Día' },
+            buttonText: { today:'Hoy', month:'Mes', week:'Semana', day:'Día', list:'Agenda' },
 
             slotMinTime: '07:00:00',
             slotMaxTime: '21:00:00',
@@ -312,6 +312,11 @@
                 const p = arg.event.extendedProps;
                 const esMedicoLogueado = @json(auth()->user()->isMedico());
                 const estadoDot = '<span class="ev-dot" style="background:'+(arg.event.backgroundColor||'#7c3aed')+'" title="'+(p.estadoLabel||'')+'"></span>';
+
+                            if (arg.view.type === 'listWeek') {
+                    const medicoTxt = (!esMedicoLogueado && p.medico) ? ' · ' + p.medico : '';
+                    return { html: '<b>'+arg.event.title+'</b>'+medicoTxt+' <span style="color:var(--ink-soft)">('+ (p.estadoLabel||'') +')</span>' };
+                }
 
                 if (arg.view.type === 'timeGridDay') {
                     const rango = p.hora + (p.horaFin ? ' – ' + p.horaFin : '');
