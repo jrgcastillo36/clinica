@@ -199,7 +199,7 @@
     .ev:hover{transform:translateX(2px)}
     .ev .ev-dot{width:7px;height:7px;border-radius:50%;flex:0 0 7px}
     .ev .ev-time{font-weight:700;opacity:.9}
-    .ev .ev-title{overflow:hidden;text-overflow:ellipsis}
+    .ev .ev-title{overflow:hidden;text-overflow:ellipsis;min-width:0}
     .ev-pendiente{background:#fef3c7;color:#92400e}
     .ev-confirmada{background:#dbeafe;color:#1e40af}
     .ev-atendida{background:#dcfce7;color:#166534}
@@ -208,10 +208,15 @@
     .fc .fc-timegrid-event .ev{white-space:normal}
     .fc .fc-more-link{color:var(--violet);font-weight:600;font-size:11px}
     .ev-med-dot{width:7px;height:7px;border-radius:50%;flex:0 0 7px;margin-left:auto}
-    .ev-dia{flex-direction:column;align-items:flex-start;gap:3px;white-space:normal;padding:8px 10px}
+    .ev-dia{flex-direction:column;align-items:flex-start;gap:3px;white-space:normal;padding:8px 10px;height:100%;box-sizing:border-box}
     .ev-dia-top{display:flex;align-items:center;gap:6px;font-size:12.5px}
     .ev-linea{display:flex;align-items:center;gap:6px;font-size:11.5px;font-weight:500;opacity:.9}
     .ev-linea i{width:12px;font-size:10px}
+       
+
+        .fc-event-mirror .ev,.fc-event-dragging .ev{background:var(--med-solid,#3b82f6)!important;color:#fff!important;
+        box-shadow:0 4px 14px rgba(0,0,0,.25)}
+    .fc-event-mirror .ev-linea,.fc-event-dragging .ev-linea{color:#fff!important;opacity:.95}
     .cita-tooltip{position:absolute;z-index:9999;background:#1f2937;color:#fff;padding:10px 14px;
         border-radius:10px;font-size:12.5px;line-height:1.7;box-shadow:0 10px 30px rgba(0,0,0,.25);
         max-width:240px;pointer-events:none}
@@ -288,11 +293,13 @@
             tooltipEl = document.createElement('div');
             tooltipEl.className = 'cita-tooltip';
             tooltipEl.style.visibility = 'hidden';
+                       const rangoTooltip = p.hora + (p.horaFin ? ' – ' + p.horaFin : '');
             tooltipEl.innerHTML =
                 '<b>' + event.title + '</b>' +
-                (p.hora ? '<div><i class="fa-regular fa-clock"></i> ' + p.hora + '</div>' : '') +
+                (p.hora ? '<div><i class="fa-regular fa-clock"></i> ' + rangoTooltip + '</div>' : '') +
                 (p.especialidad ? '<div><i class="fa-solid fa-stethoscope"></i> ' + p.especialidad + '</div>' : '') +
                 (p.medico ? '<div><i class="fa-solid fa-user-doctor"></i> ' + p.medico + '</div>' : '') +
+                (p.consultorio ? '<div><i class="fa-solid fa-door-open"></i> ' + p.consultorio + '</div>' : '') +
                 (p.telefono ? '<div><i class="fa-solid fa-phone"></i> ' + p.telefono + '</div>' : '') +
                 (p.motivo ? '<div><i class="fa-regular fa-note-sticky"></i> ' + p.motivo + '</div>' : '') +
                 '<div class="tt-estado">' + (p.estadoLabel || '') + '</div>';
@@ -332,13 +339,16 @@
         let sincronizandoDesdeMini = false;
 
         const cal = new FullCalendar.Calendar(el, {
-            initialView: 'dayGridMonth',
+                        initialView: 'timeGridDay',
             locale: 'es',
             height: 760,
             expandRows: true,
             dayMaxEvents: 3,
             fixedWeekCount: false,
-            headerToolbar: { left:'prev,next today saltarFecha', center:'title', right:'dayGridMonth,timeGridWeek,timeGridDay,listWeek' },
+            headerToolbar: { left:'prev,next today saltarFecha', center:'title', right:'dayGridMonth,timeGridWeek,tresDias,timeGridDay,listWeek' },
+                        views: {
+                tresDias: { type: 'timeGrid', duration: { days: 3 }, buttonText: '3 días' }
+            },
             customButtons: {
                 saltarFecha: {
                     text: '📅 Ir a fecha',
@@ -377,31 +387,28 @@
                     const medicoTxt = (!esMedicoLogueado && p.medico) ? ' · ' + p.medico : '';
                     return { html: '<b>'+arg.event.title+'</b>'+medicoTxt+' <span style="color:var(--ink-soft)">('+ (p.estadoLabel||'') +')</span>' };
                 }
-
-                if (arg.view.type === 'timeGridDay') {
-                    const rango = p.hora + (p.horaFin ? ' – ' + p.horaFin : '');
+                             if (arg.view.type === 'timeGridDay' || arg.view.type === 'timeGridWeek' || arg.view.type === 'tresDias') {
+                    function fmtHora(d){ return d ? String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0') : ''; }
+                    const rango = fmtHora(arg.event.start) + (arg.event.end ? ' – ' + fmtHora(arg.event.end) : '');
                     const medicoLinea = (!esMedicoLogueado && p.medico) ? '<div class="ev-linea"><i class="fa-solid fa-user-doctor"></i> '+p.medico+'</div>' : '';
+                    const estiloColor = p.medicoId ? 'border-left:4px solid '+colorMedico(p.medicoId)+';background:'+colorMedicoBg(p.medicoId)+';--med-solid:'+colorMedico(p.medicoId)+';' : '';
                     return { html:
-                        '<div class="ev ev-dia">'+
+                        '<div class="ev ev-dia" style="'+estiloColor+'">'+
                             '<div class="ev-dia-top">'+estadoDot+'<b>'+rango+'</b></div>'+
                             '<div class="ev-linea"><i class="fa-solid fa-user"></i> '+arg.event.title+'</div>'+
                             medicoLinea+
                         '</div>' };
                 }
 
-                const time = p.hora ? '<span class="ev-time">'+p.hora+'</span>' : '';
+                                const time = p.hora ? '<span class="ev-time">'+p.hora+'</span>' : '';
                 const textoPrincipal = esMedicoLogueado ? arg.event.title : (p.medico || arg.event.title);
                 const title = '<span class="ev-title">'+textoPrincipal+'</span>';
-                return { html: '<div class="ev">'+estadoDot+time+title+'</div>' };
+                const estiloColor2 = p.medicoId ? 'border-left:4px solid '+colorMedico(p.medicoId)+';background:'+colorMedicoBg(p.medicoId)+';' : '';
+                return { html: '<div class="ev" style="'+estiloColor2+'">'+estadoDot+time+title+'</div>' };
             },
 
-            eventDidMount: function(arg){
-                const p = arg.event.extendedProps;
-                const evEl = arg.el.querySelector('.ev');
-                if (p.medicoId && evEl) {
-                    evEl.style.borderLeft = '4px solid ' + colorMedico(p.medicoId);
-                    evEl.style.background = colorMedicoBg(p.medicoId);
-                }
+                             eventDidMount: function(arg){
+                
                 arg.el.addEventListener('mouseenter', function (ev) { mostrarTooltip(arg.event, ev); });
                 arg.el.addEventListener('mouseleave', function () { ocultarTooltip(); });
             },
@@ -419,7 +426,7 @@
                 cal.unselect();
                 abrirNuevaCitaModal(fecha, hora, duracion);
             },
-            eventDrop: function (info) {
+                        eventDrop: function (info) {
                 const e = info.event;
                 const fecha = e.start.getFullYear()+'-'+String(e.start.getMonth()+1).padStart(2,'0')+'-'+String(e.start.getDate()).padStart(2,'0');
                 const hora = e.start.toTimeString().slice(0,5);
@@ -428,6 +435,23 @@
                     headers:{'Content-Type':'application/json','X-CSRF-TOKEN':token,'Accept':'application/json'},
                     body: JSON.stringify({ fecha: fecha, hora: hora })
                 }).then(r => { if(!r.ok){ alert('No se pudo mover la cita'); info.revert(); } });
+            },
+            eventResize: function (info) {
+                const e = info.event;
+                const fecha = e.start.getFullYear()+'-'+String(e.start.getMonth()+1).padStart(2,'0')+'-'+String(e.start.getDate()).padStart(2,'0');
+                const hora = e.start.toTimeString().slice(0,5);
+                const duracion = Math.round((e.end - e.start) / 60000);
+                fetch('{{ url('agenda/citas') }}/' + e.id + '/mover', {
+                    method:'PUT',
+                    headers:{'Content-Type':'application/json','X-CSRF-TOKEN':token,'Accept':'application/json'},
+                    body: JSON.stringify({ fecha: fecha, hora: hora, duracion: duracion })
+                }).then(async function (r) {
+                    if (!r.ok) {
+                        const data = await r.json().catch(function () { return {}; });
+                        alert(data.mensaje || 'No se pudo cambiar la duración');
+                        info.revert();
+                    }
+                });
             }
         });
 
@@ -476,12 +500,15 @@
                 if (['pendiente','confirmada'].includes(p.estado)) {
                     acciones += '<a href="{{ url('consultas/create') }}?paciente_id=' + p.pacienteId + '&cita_id=' + event.id + '" class="btn btn-primary btn-sm"><i class="fa-solid fa-stethoscope"></i> Atender</a>';
                 }
-            } else {
+                      } else {
                 acciones += '<a href="' + citaEstadoUrl + '/' + event.id + '/edit" class="btn btn-light btn-sm"><i class="fa-solid fa-pen"></i> Editar</a>';
                 if (p.telefono) {
                     acciones += '<a href="https://wa.me/' + p.telefono.replace(/\D/g,'') + '" target="_blank" class="btn btn-light btn-sm" style="color:#25d366"><i class="fa-brands fa-whatsapp"></i> WhatsApp</a>';
                 }
+                const fechaStr = event.start.getFullYear()+'-'+String(event.start.getMonth()+1).padStart(2,'0')+'-'+String(event.start.getDate()).padStart(2,'0');
+                acciones += '<button type="button" class="btn btn-primary btn-sm" onclick="cerrarModalCita(); abrirNuevaCitaModal(&quot;'+fechaStr+'&quot;,&quot;'+p.hora+'&quot;,30)"><i class="fa-solid fa-plus"></i> Agregar cita aquí</button>';
             }
+            
             document.getElementById('cmAcciones').innerHTML = acciones;
 
             document.getElementById('citaModalFondo').classList.add('abierto');

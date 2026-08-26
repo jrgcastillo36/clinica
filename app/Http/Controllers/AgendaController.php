@@ -46,8 +46,8 @@ class AgendaController extends Controller
             'no_asistio' => 'No asistió',
         ];
 
-        $query = Cita::with(['paciente', 'especialidad', 'medico'])
-            ->where('empresa_id', $this->empresaId());
+        $query = Cita::with(['paciente', 'especialidad', 'medico', 'consultorio'])
+        ->where('empresa_id', $this->empresaId());
 
         // Filtro por médico
         if (auth()->user()->isMedico()) {
@@ -72,11 +72,15 @@ class AgendaController extends Controller
             $inicio = $c->fecha->format('Y-m-d').'T'.$hora.':00';
             $color = $colores[$c->estado] ?? '#7c3aed';
 
+                       $fin = \Carbon\Carbon::parse($c->fecha->format('Y-m-d').' '.$hora)->addMinutes($c->duracion ?: 30)->format('Y-m-d\TH:i:s');
+
             $evento = [
                 'id' => $c->id,
                 'title' => $c->paciente->nombre_completo,
                 'start' => $inicio,
+                'end' => $fin,
                 'color' => $color,
+                'borderColor' => $color,
                 'borderColor' => $color,
                 'extendedProps' => [
                     'estado' => $c->estado,
@@ -87,8 +91,9 @@ class AgendaController extends Controller
                     'medicoId' => $c->medico_id,
                     'motivo' => $c->motivo,
                     'telefono' => $c->paciente->telefono ?? null,
-                    'pacienteId' => $c->paciente_id,
+                                        'pacienteId' => $c->paciente_id,
                     'horaFin' => \Carbon\Carbon::parse($hora)->addMinutes($c->duracion ?: 30)->format('H:i'),
+                    'consultorio' => $c->consultorio->nombre ?? null,
                 ],
             ];
 
@@ -194,14 +199,16 @@ class AgendaController extends Controller
             }
         }
 
-        $data = $request->validate([
+                $data = $request->validate([
             'fecha' => ['required', 'date'],
             'hora' => ['nullable'],
+            'duracion' => ['nullable', 'integer', 'min:5', 'max:240'],
         ]);
 
         $cita->update([
             'fecha' => $data['fecha'],
             'hora' => $data['hora'] ?? $cita->hora,
+            'duracion' => $data['duracion'] ?? $cita->duracion,
         ]);
 
         return response()->json(['ok' => true]);
