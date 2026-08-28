@@ -14,16 +14,38 @@ class HorarioController extends Controller
         return (int) auth()->user()->empresa_id;
     }
 
-    public function index()
+        public function index()
     {
         $medicos = User::where('empresa_id', $this->empresaId())
             ->where('role', 'medico')
             ->with(['horarios' => fn ($q) => $q->orderBy('dia_semana')->orderBy('hora_inicio')])
             ->orderBy('name')->get();
 
+        $bloqueos = \App\Models\Cita::where('empresa_id', $this->empresaId())
+            ->where('es_bloqueo', true)
+            ->where('fecha', '>=', now()->toDateString())
+            ->with('medico')
+            ->orderBy('fecha')
+            ->get()
+            ->groupBy('bloqueo_grupo')
+            ->map(function ($grupo) {
+                $primero = $grupo->first();
+                return [
+                    'grupo' => $primero->bloqueo_grupo,
+                    'medico' => $primero->medico->name ?? '—',
+                    'motivo' => $primero->motivo,
+                    'desde' => $grupo->min('fecha'),
+                    'hasta' => $grupo->max('fecha'),
+                    'hora_inicio' => substr((string) $primero->hora, 0, 5),
+                    'hora_fin' => \Carbon\Carbon::parse($primero->hora)->addMinutes($primero->duracion)->format('H:i'),
+                ];
+            })
+            ->values();
+
         return view('admin.horarios.index', [
             'medicos' => $medicos,
             'dias' => HorarioMedico::DIAS,
+            'bloqueos' => $bloqueos,
         ]);
     }
 

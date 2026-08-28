@@ -14,11 +14,13 @@ class Cita extends Model
     protected $fillable = [
         'empresa_id', 'paciente_id', 'medico_id', 'especialidad_id',
         'fecha', 'hora', 'duracion', 'estado', 'motivo', 'notas',
-        'es_teleconsulta', 'sala_video', 'estado_sala', 'hora_llegada', 'hora_atencion', 'consultorio_id',
+               'es_teleconsulta', 'sala_video', 'estado_sala', 'hora_llegada', 'hora_atencion', 'consultorio_id',
+        'es_bloqueo', 'bloqueo_grupo',
         ];
 
-    protected $casts = ['fecha' => 'date', 'es_teleconsulta' => 'boolean', 'hora_llegada' => 'datetime', 'hora_atencion' => 'datetime'];
 
+            protected $casts = ['fecha' => 'date', 'es_teleconsulta' => 'boolean', 'es_bloqueo' => 'boolean', 'hora_llegada' => 'datetime', 'hora_atencion' => 'datetime'];
+            
     public function empresa(): BelongsTo { return $this->belongsTo(Empresa::class); }
     public function paciente(): BelongsTo { return $this->belongsTo(Paciente::class); }
     public function medico(): BelongsTo { return $this->belongsTo(User::class, 'medico_id'); }

@@ -67,9 +67,32 @@ class AgendaController extends Controller
 
         $citas = $query->get();
 
-        $eventos = $citas->map(function ($c) use ($colores, $etiquetas) {
+                $eventos = $citas->map(function ($c) use ($colores, $etiquetas) {
             $hora = substr((string) $c->hora, 0, 5);
             $inicio = $c->fecha->format('Y-m-d').'T'.$hora.':00';
+            $fin = \Carbon\Carbon::parse($hora)->addMinutes($c->duracion ?: 30)->format('H:i');
+
+            if ($c->es_bloqueo) {
+                return [
+                    'id' => $c->id,
+                    'title' => $c->motivo ?: 'No disponible',
+                    'start' => $inicio,
+                    'end' => $c->fecha->format('Y-m-d').'T'.$fin.':00',
+                    'color' => '#94a3b8',
+                    'borderColor' => '#94a3b8',
+                    'extendedProps' => [
+                        'estado' => 'bloqueo',
+                        'estadoLabel' => 'No disponible',
+                        'hora' => $hora,
+                        'horaFin' => $fin,
+                        'medico' => $c->medico->name ?? null,
+                        'medicoId' => $c->medico_id,
+                        'motivo' => $c->motivo,
+                        'esBloqueo' => true,
+                    ],
+                ];
+            }
+
             $color = $colores[$c->estado] ?? '#7c3aed';
 
                        $fin = \Carbon\Carbon::parse($c->fecha->format('Y-m-d').' '.$hora)->addMinutes($c->duracion ?: 30)->format('Y-m-d\TH:i:s');

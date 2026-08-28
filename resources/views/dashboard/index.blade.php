@@ -76,7 +76,8 @@
                 <table>
                     <thead><tr><th>Paciente</th><th>Especialidad</th><th>Médico</th><th>Fecha</th><th>Hora</th><th>Estado</th></tr></thead>
                     <tbody>
-                    @forelse($proximasCitas as $cita)
+                                        @forelse($proximasCitas as $cita)
+                        @continue(!$cita->paciente)
                         <tr>
                             <td><span class="avatar-sm">{{ mb_substr($cita->paciente->nombres,0,1) }}{{ mb_substr($cita->paciente->apellidos,0,1) }}</span>{{ $cita->paciente->nombre_completo }}</td>
                             <td>{{ $cita->especialidad->nombre ?? '—' }}</td>

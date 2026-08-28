@@ -44,8 +44,8 @@ class DashboardController extends Controller
         $empresaId = $user->empresa_id;
         $hoy = Carbon::today();
 
-        $atendidas = Cita::where('empresa_id', $empresaId)->where('estado', 'atendida')->count();
-        $totalCitas = max(Cita::where('empresa_id', $empresaId)->count(), 1);
+        $atendidas = Cita::where('empresa_id', $empresaId)->where('es_bloqueo', false)->where('estado', 'atendida')->count();
+        $totalCitas = max(Cita::where('empresa_id', $empresaId)->where('es_bloqueo', false)->count(), 1);
 
         // 1) Citas por mes (6 meses) + 3) Ingresos por mes (6 meses)
         $mesLabels = [];
@@ -54,7 +54,7 @@ class DashboardController extends Controller
         for ($i = 5; $i >= 0; $i--) {
             $m = $hoy->copy()->subMonths($i);
             $mesLabels[] = $m->locale('es')->isoFormat('MMM');
-            $citasMesSerie[] = Cita::where('empresa_id', $empresaId)
+            $citasMesSerie[] = Cita::where('empresa_id', $empresaId)->where('es_bloqueo', false)
                 ->whereYear('fecha', $m->year)->whereMonth('fecha', $m->month)->count();
             $ingresosMesSerie[] = (float) Pago::where('empresa_id', $empresaId)->where('estado', 'pagado')
                 ->whereYear('fecha', $m->year)->whereMonth('fecha', $m->month)->sum('monto');
@@ -64,7 +64,7 @@ class DashboardController extends Controller
         $estados = ['pendiente' => 'Pendiente', 'confirmada' => 'Confirmada', 'atendida' => 'Atendida', 'cancelada' => 'Cancelada', 'no_asistio' => 'No asistio'];
         $porEstado = [];
         foreach ($estados as $k => $label) {
-            $porEstado[$label] = Cita::where('empresa_id', $empresaId)->where('estado', $k)->count();
+            $porEstado[$label] = Cita::where('empresa_id', $empresaId)->where('es_bloqueo', false)->where('estado', $k)->count();
         }
 
         // 4) Pacientes por especialidad
@@ -78,9 +78,9 @@ class DashboardController extends Controller
 
         return view('dashboard.index', [
             'empresa' => $user->empresa,
-            'citasHoy' => Cita::where('empresa_id', $empresaId)->whereDate('fecha', $hoy)->count(),
+            'citasHoy' => Cita::where('empresa_id', $empresaId)->where('es_bloqueo', false)->whereDate('fecha', $hoy)->count(),
             'totalPacientes' => Paciente::where('empresa_id', $empresaId)->count(),
-            'citasMes' => Cita::where('empresa_id', $empresaId)->whereMonth('fecha', $hoy->month)->whereYear('fecha', $hoy->year)->count(),
+            'citasMes' => Cita::where('empresa_id', $empresaId)->where('es_bloqueo', false)->whereMonth('fecha', $hoy->month)->whereYear('fecha', $hoy->year)->count(),
             'ingresosMes' => $ingresosMes,
             'porcentajeAtencion' => (int) round($atendidas / $totalCitas * 100),
             'mesLabels' => $mesLabels,
@@ -89,7 +89,7 @@ class DashboardController extends Controller
             'porEstado' => $porEstado,
             'porEspecialidad' => $porEspecialidad,
             'proximasCitas' => Cita::with(['paciente', 'especialidad', 'medico'])
-                ->where('empresa_id', $empresaId)->whereDate('fecha', '>=', $hoy)
+                ->where('empresa_id', $empresaId)->where('es_bloqueo', false)->whereDate('fecha', '>=', $hoy)
                 ->orderBy('fecha')->orderBy('hora')->take(6)->get(),
             'especialidades' => $user->empresa?->especialidadesActivas()->get() ?? collect(),
         ]);
@@ -98,7 +98,7 @@ class DashboardController extends Controller
     private function medico($user)
     {
         $hoy = Carbon::today();
-        $base = Cita::where('empresa_id', $user->empresa_id)->where('medico_id', $user->id);
+        $base = Cita::where('empresa_id', $user->empresa_id)->where('medico_id', $user->id)->where('es_bloqueo', false);
 
         return view('dashboard.medico', [
             'empresa' => $user->empresa,
@@ -119,13 +119,13 @@ class DashboardController extends Controller
 
         return view('dashboard.recepcion', [
             'empresa' => $user->empresa,
-            'citasHoy' => Cita::where('empresa_id', $empresaId)->whereDate('fecha', $hoy)->count(),
-            'pendientes' => Cita::where('empresa_id', $empresaId)->whereDate('fecha', $hoy)->whereIn('estado', ['pendiente', 'confirmada'])->count(),
+            'citasHoy' => Cita::where('empresa_id', $empresaId)->where('es_bloqueo', false)->whereDate('fecha', $hoy)->count(),
+            'pendientes' => Cita::where('empresa_id', $empresaId)->where('es_bloqueo', false)->whereDate('fecha', $hoy)->whereIn('estado', ['pendiente', 'confirmada'])->count(),
             'cobradoHoy' => Pago::where('empresa_id', $empresaId)->where('estado', 'pagado')->whereDate('fecha', $hoy)->sum('monto'),
             'pagosPendientes' => Pago::where('empresa_id', $empresaId)->where('estado', 'pendiente')->count(),
-                  'agendaHoy' => Cita::where('empresa_id', $empresaId)->with(['paciente', 'especialidad', 'medico'])
+            'agendaHoy' => Cita::where('empresa_id', $empresaId)->where('es_bloqueo', false)->with(['paciente', 'especialidad', 'medico'])
                 ->whereDate('fecha', $hoy)->orderBy('hora')->get(),
-            'citasMananaSinConfirmar' => Cita::where('empresa_id', $empresaId)
+            'citasMananaSinConfirmar' => Cita::where('empresa_id', $empresaId)->where('es_bloqueo', false)
                 ->whereDate('fecha', $hoy->copy()->addDay())->where('estado', 'pendiente')->count(),
         ]);
     }

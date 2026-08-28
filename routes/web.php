@@ -17,6 +17,7 @@ use App\Http\Controllers\Admin\ServicioController;
 use App\Http\Controllers\Admin\UsuarioController;
 use App\Http\Controllers\AdjuntoController;
 use App\Http\Controllers\AgendaController;
+use App\Http\Controllers\BloqueoController;
 use App\Http\Controllers\AjustesController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\PasswordResetController;
@@ -242,9 +243,13 @@ Route::middleware('role:admin,recepcion')->group(function () {
         Route::get('/agenda', [AgendaController::class, 'index'])->name('agenda.index');
         Route::get('/agenda/eventos', [AgendaController::class, 'eventos'])->name('agenda.eventos');
         Route::put('/agenda/citas/{cita}/mover', [AgendaController::class, 'mover'])->name('agenda.mover');
-        Route::middleware('role:admin,recepcion')->group(function () {
+               Route::middleware('role:admin,recepcion')->group(function () {
             Route::get('/agenda/disponibilidad', [AgendaController::class, 'disponibilidad'])->name('agenda.disponibilidad');
+            Route::get('/bloqueos', [BloqueoController::class, 'index'])->name('bloqueos.index');
+            Route::post('/bloqueos', [BloqueoController::class, 'store'])->name('bloqueos.store');
+            Route::delete('/bloqueos/{grupo}', [BloqueoController::class, 'destroy'])->name('bloqueos.destroy');
         });
+
         // Facturacion / pagos — bloqueado para el rol médico
         Route::middleware('role:admin,recepcion')->group(function () {
             Route::resource('pagos', PagoController::class)->except(['show']);

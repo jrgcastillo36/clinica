@@ -38,19 +38,38 @@ class CitaController extends Controller
             $cInicio = \Carbon\Carbon::parse($c->fecha->format('Y-m-d').' '.$c->hora);
             $cFin = $cInicio->copy()->addMinutes($c->duracion ?: 30);
             if ($inicio < $cFin && $cInicio < $fin) {
-                if ($medicoId && $c->medico_id == $medicoId) return 'El médico ya tiene otra cita en ese horario.';
-                if ($consultorioId && $c->consultorio_id == $consultorioId) return 'Ese consultorio ya está ocupado en ese horario.';
+                if ($medicoId && $c->medico_id == $medicoId) {
+                    if ($c->es_bloqueo) return 'El médico no está disponible en ese horario ('.($c->motivo ?: 'bloqueado').').';
+                    return 'El médico ya tiene otra cita en ese horario.';
+                }
+            if ($consultorioId && $c->consultorio_id == $consultorioId) return 'Ese consultorio ya está ocupado en ese horario.';
             }
         }
 
         return null;
     }
+    private function medicoDisponible(?int $medicoId, string $fecha, string $hora): bool
+    {
+        if (! $medicoId) return true;
+        $horarios = \App\Models\HorarioMedico::where('user_id', $medicoId)->where('activo', true)->get();
+        if ($horarios->isEmpty()) return true; // sin horarios definidos => sin restricción
+        $dow = (int) \Carbon\Carbon::parse($fecha)->dayOfWeek;
+        foreach ($horarios->where('dia_semana', $dow) as $h) {
+            $ini = substr($h->hora_inicio, 0, 5);
+            $fin = substr($h->hora_fin, 0, 5);
+            if ($hora >= $ini && $hora < $fin) return true;
+        }
+        return false;
+    }
 
-    public function index(Request $request)
+
+       public function index(Request $request)
     {
         $estado = $request->get('estado');
         $citas = Cita::where('empresa_id', $this->empresaId())
+            ->where('es_bloqueo', false)
             ->when(auth()->user()->isMedico(), fn ($q) => $q->where('medico_id', auth()->id()))
+
             ->when($estado, fn ($q) => $q->where('estado', $estado))
             ->with(['paciente', 'medico', 'especialidad'])
             ->orderBy('fecha', 'desc')->orderBy('hora')
@@ -75,11 +94,19 @@ class CitaController extends Controller
         $data = $this->validated($request);
 
         // VALIDACIÓN DE CHOQUE DE HORARIO (médico y/o consultorio)
-        if ($choque = $this->hayChoque($data['medico_id'] ?? null, $data['consultorio_id'] ?? null, $data['fecha'], $data['hora'], $data['duracion'] ?? 30)) {
+               if ($choque = $this->hayChoque($data['medico_id'] ?? null, $data['consultorio_id'] ?? null, $data['fecha'], $data['hora'], $data['duracion'] ?? 30)) {
             if ($request->wantsJson()) {
                 return response()->json(['ok' => false, 'mensaje' => $choque], 422);
             }
             return back()->withInput()->withErrors(['hora' => $choque]);
+        }
+
+        if (($data['medico_id'] ?? null) && ! $this->medicoDisponible($data['medico_id'], $data['fecha'], $data['hora'])) {
+            $mensajeHorario = 'El médico no atiende en ese horario. Elige otro.';
+            if ($request->wantsJson()) {
+                return response()->json(['ok' => false, 'mensaje' => $mensajeHorario], 422);
+            }
+            return back()->withInput()->withErrors(['hora' => $mensajeHorario]);
         }
 
         $data['empresa_id'] = $this->empresaId();
@@ -120,8 +147,12 @@ class CitaController extends Controller
         $data = $this->validated($request);
 
         // VALIDACIÓN DE CHOQUE DE HORARIO (ignorando la cita actual)
-        if ($choque = $this->hayChoque($data['medico_id'] ?? null, $data['consultorio_id'] ?? null, $data['fecha'], $data['hora'], $data['duracion'] ?? 30, $cita->id)) {
+             if ($choque = $this->hayChoque($data['medico_id'] ?? null, $data['consultorio_id'] ?? null, $data['fecha'], $data['hora'], $data['duracion'] ?? 30, $cita->id)) {
             return back()->withInput()->withErrors(['hora' => $choque]);
+        }
+
+        if (($data['medico_id'] ?? null) && ! $this->medicoDisponible($data['medico_id'], $data['fecha'], $data['hora'])) {
+            return back()->withInput()->withErrors(['hora' => 'El médico no atiende en ese horario. Elige otro.']);
         }
 
         $cita->update($data);

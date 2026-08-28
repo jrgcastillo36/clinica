@@ -212,6 +212,8 @@
     .ev-dia-top{display:flex;align-items:center;gap:6px;font-size:12.5px}
     .ev-linea{display:flex;align-items:center;gap:6px;font-size:11.5px;font-weight:500;opacity:.9}
     .ev-linea i{width:12px;font-size:10px}
+        .ev-bloqueo{background:repeating-linear-gradient(45deg,#94a3b8,#94a3b8 6px,#cbd5e1 6px,#cbd5e1 12px)!important;
+        color:#1f2937!important;font-weight:700;justify-content:center}
        
 
         .fc-event-mirror .ev,.fc-event-dragging .ev{background:var(--med-solid,#3b82f6)!important;color:#fff!important;
@@ -378,9 +380,14 @@
                     .catch(failureCallback);
             },
 
-            eventContent: function(arg){
+                        eventContent: function(arg){
                 const p = arg.event.extendedProps;
+                if (p.esBloqueo) {
+                    return { html: '<div class="ev ev-bloqueo"><i class="fa-solid fa-ban"></i> '+arg.event.title+'</div>' };
+                }
                 const esMedicoLogueado = @json(auth()->user()->isMedico());
+
+
                 const estadoDot = '<span class="ev-dot" style="background:'+(arg.event.backgroundColor||'#7c3aed')+'" title="'+(p.estadoLabel||'')+'"></span>';
 
                 if (arg.view.type === 'listWeek') {
@@ -482,9 +489,20 @@
         const esMedico = @json(auth()->user()->isMedico());
         const citaEstadoUrl = '{{ url('citas') }}';
 
-        window.abrirModalCita = function (event) {
+                window.abrirModalCita = function (event) {
             const p = event.extendedProps;
             document.getElementById('cmTitulo').textContent = event.title;
+
+            if (p.esBloqueo) {
+                document.getElementById('cmEstado').innerHTML = '<span class="pill gray">No disponible</span>';
+                let datosB = '';
+                if (p.hora) datosB += '<div><i class="fa-regular fa-clock"></i> ' + p.hora + (p.horaFin ? ' – ' + p.horaFin : '') + '</div>';
+                if (p.medico) datosB += '<div><i class="fa-solid fa-user-doctor"></i> ' + p.medico + '</div>';
+                document.getElementById('cmDatos').innerHTML = datosB;
+                document.getElementById('cmAcciones').innerHTML = '<a href="{{ route('bloqueos.index') }}" class="btn btn-light btn-sm"><i class="fa-solid fa-ban"></i> Administrar bloqueos</a>';
+                document.getElementById('citaModalFondo').classList.add('abierto');
+                return;
+            }
             document.getElementById('cmEstado').innerHTML = '<span class="ev-' + p.estado + '" style="padding:5px 12px;border-radius:20px;font-size:11.5px;font-weight:700">' + (p.estadoLabel || '') + '</span>';
 
             let datos = '';
@@ -508,7 +526,7 @@
                 const fechaStr = event.start.getFullYear()+'-'+String(event.start.getMonth()+1).padStart(2,'0')+'-'+String(event.start.getDate()).padStart(2,'0');
                 acciones += '<button type="button" class="btn btn-primary btn-sm" onclick="cerrarModalCita(); abrirNuevaCitaModal(&quot;'+fechaStr+'&quot;,&quot;'+p.hora+'&quot;,30)"><i class="fa-solid fa-plus"></i> Agregar cita aquí</button>';
             }
-            
+
             document.getElementById('cmAcciones').innerHTML = acciones;
 
             document.getElementById('citaModalFondo').classList.add('abierto');
@@ -531,22 +549,45 @@
             }
         }
 
-        window.marcarTodosMedicos = function (valor) {
+              window.marcarTodosMedicos = function (valor) {
             document.querySelectorAll('.chkMedico').forEach(function (chk) {
                 chk.checked = valor;
                 pintarChip(chk);
             });
             cal.refetchEvents();
+            guardarSeleccionMedicos();
         };
 
+               // Recordar qué médicos estaban marcados la última vez
+        let medicosGuardados = null;
+        try {
+            const guardado = localStorage.getItem('agenda_medicos_seleccionados');
+            if (guardado) medicosGuardados = JSON.parse(guardado);
+        } catch (e) {}
+
         document.querySelectorAll('.chkMedico').forEach(function (chk) {
+            if (medicosGuardados !== null) {
+                chk.checked = medicosGuardados.includes(chk.value);
+            }
             const color = colorMedico(parseInt(chk.value));
             const dot = document.querySelector('.chip-dot[data-medico="'+chk.value+'"]');
             if (dot) { dot.style.background = color; dot.style.borderColor = color; }
             pintarChip(chk);
-            chk.addEventListener('change', function () { pintarChip(chk); cal.refetchEvents(); });
+            chk.addEventListener('change', function () {
+                pintarChip(chk);
+                cal.refetchEvents();
+                guardarSeleccionMedicos();
+            });
         });
 
+        function guardarSeleccionMedicos(){
+            const seleccionados = Array.from(document.querySelectorAll('.chkMedico:checked')).map(c => c.value);
+            try { localStorage.setItem('agenda_medicos_seleccionados', JSON.stringify(seleccionados)); } catch (e) {}
+        }
+
+        if (medicosGuardados !== null) {
+            cal.refetchEvents();
+        }
         document.getElementById('saltarFecha').addEventListener('change', function () {
             if (this.value) cal.gotoDate(this.value);
         });
