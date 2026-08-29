@@ -24,7 +24,9 @@ class AgendaController extends Controller
             ->orderBy('name')
             ->get();
 
-        return view('agenda.index', compact('medicos', 'pacientes', 'consultorios'));
+        $medicosNoDisponiblesHoy = $this->medicosNoDisponiblesHoy(now()->toDateString());
+
+        return view('agenda.index', compact('medicos', 'pacientes', 'consultorios', 'medicosNoDisponiblesHoy'));
             }
 
 
@@ -125,6 +127,38 @@ class AgendaController extends Controller
 
         return response()->json($eventos);
     }
+
+
+        private function medicosNoDisponiblesHoy(string $fecha): array
+    {
+        $medicos = User::where('empresa_id', $this->empresaId())->where('role', 'medico')->get();
+        $dow = (int) \Carbon\Carbon::parse($fecha)->dayOfWeek;
+        $noDisponibles = [];
+
+        foreach ($medicos as $m) {
+            $horarios = \App\Models\HorarioMedico::where('user_id', $m->id)->where('activo', true)->get();
+
+            $trabajaEseDia = $horarios->isEmpty() || $horarios->where('dia_semana', $dow)->isNotEmpty();
+
+            $tieneBloqueo = Cita::where('empresa_id', $this->empresaId())
+                ->where('medico_id', $m->id)
+                ->where('es_bloqueo', true)
+                ->whereDate('fecha', $fecha)
+                ->exists();
+
+            if (! $trabajaEseDia || $tieneBloqueo) {
+                $noDisponibles[] = $m->id;
+            }
+        }
+
+        return $noDisponibles;
+    }
+    public function medicosDisponibilidadDia(Request $request)
+    {
+        $fecha = $request->get('fecha', now()->toDateString());
+        return response()->json($this->medicosNoDisponiblesHoy($fecha));
+    }
+
 
     public function disponibilidad(Request $request)
     {

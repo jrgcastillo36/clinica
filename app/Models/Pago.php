@@ -11,11 +11,12 @@ class Pago extends Model
 {
     use HasFactory, Auditable;
 
-    protected $fillable = [
+       protected $fillable = [
         'empresa_id', 'paciente_id', 'cita_id', 'consulta_id',
         'concepto', 'monto', 'metodo', 'estado', 'fecha', 'comprobante', 'notas',
+        'cuota_numero', 'cuota_total',
     ];
-
+    
     protected $casts = [
         'fecha' => 'date',
         'monto' => 'decimal:2',

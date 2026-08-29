@@ -234,6 +234,8 @@
     .chip-medico:has(.chkMedico:checked){color:#1f2937}
     .chip-medico input[type=checkbox]{display:none}
     .chip-dot{width:10px;height:10px;border-radius:50%;flex:0 0 10px;border:2px solid #e5e7eb}
+        .chip-no-disponible{opacity:.45}
+    .chip-aviso{margin-left:auto;font-size:9px;font-weight:700;text-transform:uppercase;color:#94a3b8;white-space:nowrap}
     .cita-modal-fondo{display:none;position:fixed;inset:0;background:rgba(15,20,35,.5);z-index:200;
         align-items:center;justify-content:center;padding:20px}
     .cita-modal-fondo.abierto{display:flex}
@@ -462,28 +464,32 @@
             }
         });
 
-        const miniCal = new FullCalendar.Calendar(document.getElementById('miniCalendar'), {
-            initialView: 'dayGridMonth',
-            locale: 'es',
-            headerToolbar: { left:'prev,next', center:'title', right:'' },
-            height: 230,
-            dayMaxEvents: 0,
-            fixedWeekCount: false,
-            dateClick: function (info) {
-                info.jsEvent.preventDefault();
-                sincronizandoDesdeMini = true;
-                cal.gotoDate(info.dateStr);
-                document.querySelectorAll('#miniCalendar .fc-daygrid-day.mini-seleccionado').forEach(function (elx) {
-                    elx.classList.remove('mini-seleccionado');
-                });
-                info.dayEl.classList.add('mini-seleccionado');
-            }
-        });
-        if (document.getElementById('miniCalendar')) miniCal.render();
+            const miniCalEl = document.getElementById('miniCalendar');
+        let miniCal = null;
+        if (miniCalEl) {
+            miniCal = new FullCalendar.Calendar(miniCalEl, {
+                initialView: 'dayGridMonth',
+                locale: 'es',
+                headerToolbar: { left:'prev,next', center:'title', right:'' },
+                height: 230,
+                dayMaxEvents: 0,
+                fixedWeekCount: false,
+                dateClick: function (info) {
+                    info.jsEvent.preventDefault();
+                    sincronizandoDesdeMini = true;
+                    cal.gotoDate(info.dateStr);
+                    document.querySelectorAll('#miniCalendar .fc-daygrid-day.mini-seleccionado').forEach(function (elx) {
+                        elx.classList.remove('mini-seleccionado');
+                    });
+                    info.dayEl.classList.add('mini-seleccionado');
+                }
+            });
+            miniCal.render();
+        }
 
-        cal.on('datesSet', function (info) {
+               cal.on('datesSet', function (info) {
             if (sincronizandoDesdeMini) { sincronizandoDesdeMini = false; return; }
-            if (document.getElementById('miniCalendar')) miniCal.gotoDate(info.view.currentStart);
+            if (miniCal) miniCal.gotoDate(info.view.currentStart);
         });
 
         const esMedico = @json(auth()->user()->isMedico());
@@ -564,7 +570,35 @@
             const guardado = localStorage.getItem('agenda_medicos_seleccionados');
             if (guardado) medicosGuardados = JSON.parse(guardado);
         } catch (e) {}
+        const noDisponiblesIniciales = {!! json_encode($medicosNoDisponiblesHoy) !!};
 
+        function marcarNoDisponibles(listaIds){
+            document.querySelectorAll('.chip-medico').forEach(function (chip) {
+                const chk = chip.querySelector('.chkMedico');
+                let aviso = chip.querySelector('.chip-aviso');
+                if (listaIds.includes(parseInt(chk.value))) {
+                    chip.classList.add('chip-no-disponible');
+                    if (!aviso) {
+                        aviso = document.createElement('span');
+                        aviso.className = 'chip-aviso';
+                        aviso.textContent = 'No disponible';
+                        chip.appendChild(aviso);
+                    }
+                } else {
+                    chip.classList.remove('chip-no-disponible');
+                    if (aviso) aviso.remove();
+                }
+            });
+        }
+        marcarNoDisponibles(noDisponiblesIniciales);
+
+        cal.on('datesSet', function (info) {
+            if (info.view.type !== 'timeGridDay') return;
+            const fecha = info.start.getFullYear()+'-'+String(info.start.getMonth()+1).padStart(2,'0')+'-'+String(info.start.getDate()).padStart(2,'0');
+            fetch('{{ route('agenda.medicos.disponibilidad') }}?fecha=' + fecha)
+                .then(r => r.json())
+                .then(marcarNoDisponibles);
+        });
         document.querySelectorAll('.chkMedico').forEach(function (chk) {
             if (medicosGuardados !== null) {
                 chk.checked = medicosGuardados.includes(chk.value);

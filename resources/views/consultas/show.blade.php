@@ -22,9 +22,11 @@
         <div class="flex between" style="flex-wrap:wrap;gap:10px">
             <h3 style="margin:0"><i class="fa-solid fa-share-nodes" style="color:var(--violet)"></i> Órdenes y acciones para este paciente</h3>
             <div class="flex gap" style="flex-wrap:wrap">
+                               @if(($consulta->especialidad->slug ?? '') !== 'psicologia')
                 <a href="{{ route('laboratorio.create', ['paciente_id' => $consulta->paciente_id]) }}" class="btn btn-light btn-sm"><i class="fa-solid fa-flask-vial"></i> Pedir laboratorio</a>
                 <a href="{{ route('imagenes.create', ['paciente_id' => $consulta->paciente_id]) }}" class="btn btn-light btn-sm"><i class="fa-solid fa-x-ray"></i> Pedir imágenes</a>
                 <a href="{{ route('farmacia.create', ['paciente_id' => $consulta->paciente_id]) }}" class="btn btn-light btn-sm"><i class="fa-solid fa-pills"></i> Dispensar</a>
+                @endif
                 @if(($consulta->especialidad->slug ?? '') === 'odontologia')
                     <a href="{{ route('odontograma.edit', $consulta->paciente_id) }}" class="btn btn-light btn-sm"><i class="fa-solid fa-tooth"></i> Odontograma</a>
                 @endif
@@ -42,6 +44,7 @@
             <p class="muted"><b>Observaciones:</b> {{ $consulta->observaciones ?? '—' }}</p>
         </div>
         <div>
+                        @if(($consulta->especialidad->slug ?? '') !== 'psicologia')
             <div class="card mb">
                 <h3 class="mb">Signos vitales</h3>
                 <div class="grid" style="grid-template-columns:1fr 1fr;gap:10px">
@@ -51,6 +54,7 @@
                     <div class="metric"><div class="big">{{ $consulta->presion_arterial ?? '—' }}</div><div class="cap">P. Arterial</div></div>
                 </div>
             </div>
+            @endif
             @if(!empty($d))
                 <div class="card pink">
                     <h3 class="mb">Ficha de especialidad</h3>

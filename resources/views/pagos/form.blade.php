@@ -17,9 +17,17 @@
                 <input type="text" id="pacienteBuscar" autocomplete="off"
                     placeholder="Busca por nombre o DNI..."
                     value="{{ old('paciente_nombre', $pacientePre ? $pacientePre->nombre_completo.' — '.$pacientePre->documento : '') }}">
-                <input type="hidden" name="paciente_id" id="pacienteId" value="{{ old('paciente_id', $pacienteSel) }}">
+                                <input type="hidden" name="paciente_id" id="pacienteId" value="{{ old('paciente_id', $pacienteSel) }}">
                 <div id="pacienteLista" class="paciente-lista"></div>
                 @error('paciente_id')<span class="err">{{ $message }}</span>@enderror
+            </div>
+            <div class="field full" id="pendientesWrap" style="display:none">
+                <label>📋 Consultas pendientes de cobro de este paciente</label>
+                <select id="pendienteSel" onchange="aplicarPendiente()">
+                    <option value="">— Ninguna / cobro manual —</option>
+                </select>
+            </div>
+            <input type="hidden" name="consulta_id" id="consultaId" value="{{ old('consulta_id',$pago->consulta_id) }}">
             </div>
             <div class="field"><label>Servicio (autocompleta)</label>
                 <select id="servicioSel" onchange="aplicarServicio()">
@@ -43,6 +51,8 @@
                     @endforeach
                 </select></div>
             <div class="field"><label>Fecha *</label><input type="date" name="fecha" value="{{ old('fecha', optional($pago->fecha)->format('Y-m-d') ?? now()->toDateString()) }}" required></div>
+                        <div class="field"><label>N° de cuota (opcional)</label><input type="number" min="1" name="cuota_numero" value="{{ old('cuota_numero',$pago->cuota_numero) }}" placeholder="Ej. 3"></div>
+            <div class="field"><label>Total de cuotas (opcional)</label><input type="number" min="1" name="cuota_total" value="{{ old('cuota_total',$pago->cuota_total) }}" placeholder="Ej. 10"></div>
             <div class="field full"><label>Notas</label><textarea name="notas">{{ old('notas',$pago->notas) }}</textarea></div>
         </div>
         <div class="mt"><button class="btn btn-primary"><i class="fa-solid fa-floppy-disk"></i> Guardar pago</button></div>
@@ -61,6 +71,47 @@
     <script>
     document.addEventListener('DOMContentLoaded', function () {
         // Preparar los datos de pacientes para JavaScript
+                      const consultasPendientes = {!! json_encode($consultasPendientes->map(function($c) {
+            $pagado = $c->pago->sum('monto');
+            $precio = (float) ($c->servicio->precio ?? 0);
+            $saldo = max($precio - $pagado, 0);
+            return [
+                'id' => $c->id,
+                'paciente_id' => $c->paciente_id,
+                'servicio' => $c->servicio->nombre ?? 'Servicio',
+                'saldo' => $saldo,
+                'pagado' => $pagado,
+                'total' => $precio,
+                'fecha' => optional($c->fecha)->format('d/m/Y'),
+            ];
+        })->values()->toArray()) !!};
+
+        function mostrarPendientesDe(pacienteId){
+            const wrap = document.getElementById('pendientesWrap');
+            const sel = document.getElementById('pendienteSel');
+            const encontradas = consultasPendientes.filter(c => c.paciente_id == pacienteId);
+            sel.innerHTML = '<option value="">— Ninguna / cobro manual —</option>';
+            if (!encontradas.length) { wrap.style.display = 'none'; return; }
+            encontradas.forEach(function (c) {
+                const opt = document.createElement('option');
+                               opt.value = c.id;
+                opt.dataset.servicio = c.servicio;
+                opt.dataset.precio = c.saldo;
+                const detalle = c.pagado > 0 ? ' (pagado S/' + Number(c.pagado).toFixed(2) + ' de S/' + Number(c.total).toFixed(2) + ')' : '';
+                opt.textContent = c.fecha + ' — ' + c.servicio + ' — Saldo: S/ ' + Number(c.saldo).toFixed(2) + detalle;
+                sel.appendChild(opt);
+            });
+            wrap.style.display = 'block';
+        }
+
+        window.aplicarPendiente = function(){
+            const sel = document.getElementById('pendienteSel');
+            const opt = sel.options[sel.selectedIndex];
+            document.getElementById('consultaId').value = sel.value || '';
+            if (!sel.value) return;
+            document.querySelector('[name=concepto]').value = opt.dataset.servicio;
+            document.querySelector('[name=monto]').value = opt.dataset.precio;
+        };
         const pacientes = {!! json_encode($pacientes->map(function($p) {
             return [
                 'id' => $p->id,
@@ -82,10 +133,11 @@
             items.slice(0, 30).forEach(function (p) {
                 const row = document.createElement('div');
                 row.innerHTML = p.nombre + ' <span class="doc">' + (p.documento || '') + '</span>';
-                row.addEventListener('click', function () {
+                                row.addEventListener('click', function () {
                     input.value = p.nombre + ' — ' + (p.documento || '');
                     hidden.value = p.id;
                     lista.style.display = 'none';
+                    mostrarPendientesDe(p.id);
                 });
                 lista.appendChild(row);
             });
@@ -103,7 +155,7 @@
                 return p.nombre.toLowerCase().includes(q) || (p.documento || '').toLowerCase().includes(q);
             }));
         });
-
+        if (hidden.value) mostrarPendientesDe(hidden.value);
         input.addEventListener('focus', function () {
             if (input.value.trim()) {
                 input.dispatchEvent(new Event('input'));

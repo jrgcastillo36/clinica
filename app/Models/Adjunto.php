@@ -11,8 +11,8 @@ class Adjunto extends Model
 
     protected $fillable = [
         'empresa_id', 'paciente_id', 'consulta_id', 'user_id',
-        'nombre', 'archivo', 'tipo', 'tamano', 'categoria',
-    ];
+        'nombre', 'archivo', 'tipo', 'tamano', 'categoria', 'visible_paciente',
+        ];
 
     public function paciente(): BelongsTo { return $this->belongsTo(Paciente::class); }
     public function consulta(): BelongsTo { return $this->belongsTo(Consulta::class); }

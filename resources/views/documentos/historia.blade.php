@@ -21,8 +21,8 @@
             {{ $paciente->tipo_documento }} {{ $paciente->documento ?? '—' }} ·
             {{ $paciente->edad !== null ? $paciente->edad.' años' : 'Edad N/D' }} ·
             {{ ['M'=>'Masculino','F'=>'Femenino','O'=>'Otro'][$paciente->sexo] ?? '—' }}<br>
-            Tel: {{ $paciente->telefono ?? '—' }} · Grupo: {{ $paciente->grupo_sanguineo ?? '—' }}<br>
-            <b>Alergias:</b> {{ $paciente->alergias ?? 'Ninguna' }} · <b>Antecedentes:</b> {{ $paciente->antecedentes ?? 'Ninguno' }}
+            Tel: {{ $paciente->telefono ?? '—' }} · Contacto de emergencia: {{ $paciente->grupo_sanguineo ?? '—' }}<br>
+           <b>Antecedentes:</b> {{ $paciente->antecedentes ?? 'Ninguno' }}
         </div>
 
         <h3 style="font-size:13px;border-bottom:2px solid #ec4899;padding-bottom:4px">Consultas ({{ $paciente->consultas->count() }})</h3>

@@ -18,6 +18,7 @@
             <a href="{{ route('portal.dashboard') }}" class="btn btn-sm {{ request()->routeIs('portal.dashboard') ? 'btn-primary' : '' }}" style="color:{{ request()->routeIs('portal.dashboard') ? '#fff' : '#cfc9ef' }}"><i class="fa-solid fa-house"></i> Inicio</a>
             <a href="{{ route('portal.historia') }}" class="btn btn-sm {{ request()->routeIs('portal.historia') ? 'btn-primary' : '' }}" style="color:{{ request()->routeIs('portal.historia') ? '#fff' : '#cfc9ef' }}"><i class="fa-solid fa-notes-medical"></i> Mi historia</a>
             <a href="{{ route('portal.pagos') }}" class="btn btn-sm {{ request()->routeIs('portal.pagos') ? 'btn-primary' : '' }}" style="color:{{ request()->routeIs('portal.pagos') ? '#fff' : '#cfc9ef' }}"><i class="fa-solid fa-receipt"></i> Mis pagos</a>
+            <a href="{{ route('portal.archivos') }}" class="btn btn-sm {{ request()->routeIs('portal.archivos') ? 'btn-primary' : '' }}" style="color:{{ request()->routeIs('portal.archivos') ? '#fff' : '#cfc9ef' }}"><i class="fa-solid fa-file"></i> Mis archivos</a>
         </nav>
         <div style="margin-left:auto;display:flex;align-items:center;gap:12px">
             <span style="font-size:13px">{{ $p->nombre_completo ?? '' }}</span>

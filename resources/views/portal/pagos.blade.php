@@ -2,7 +2,19 @@
 @section('title','Mis pagos')
 @section('content')
     @php $mon = $empresa->moneda ?? 'S/'; @endphp
-    <h1 style="margin:0 0 16px">Mis pagos</h1>
+        <h1 style="margin:0 0 16px">Mis pagos</h1>
+
+    <div class="grid g-2" style="grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px">
+        <div class="card" style="background:#dcfce7">
+            <div class="muted" style="font-size:12px;text-transform:uppercase;font-weight:600">Total pagado</div>
+            <div style="font-size:26px;font-weight:700;color:#166534">{{ $mon }} {{ number_format($totalPagado, 2) }}</div>
+        </div>
+        <div class="card" style="background:{{ $totalPendiente > 0 ? '#fef3c7' : '#f1f5f9' }}">
+            <div class="muted" style="font-size:12px;text-transform:uppercase;font-weight:600">Saldo pendiente</div>
+            <div style="font-size:26px;font-weight:700;color:{{ $totalPendiente > 0 ? '#92400e' : '#475569' }}">{{ $mon }} {{ number_format($totalPendiente, 2) }}</div>
+        </div>
+    </div>
+
     <div class="table-wrap">
         <table>
             <thead><tr><th>Fecha</th><th>Concepto</th><th>Método</th><th>Monto</th><th>Estado</th></tr></thead>

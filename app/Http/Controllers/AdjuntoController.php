@@ -28,7 +28,7 @@ class AdjuntoController extends Controller
         $file = $request->file('archivo');
         $path = $file->store('adjuntos/'.$this->empresaId(), 'public');
 
-        Adjunto::create([
+                Adjunto::create([
             'empresa_id' => $this->empresaId(),
             'paciente_id' => $paciente->id,
             'consulta_id' => $data['consulta_id'] ?? null,
@@ -38,6 +38,7 @@ class AdjuntoController extends Controller
             'tipo' => $file->getClientMimeType(),
             'tamano' => $file->getSize(),
             'categoria' => $data['categoria'] ?? 'otro',
+            'visible_paciente' => $request->boolean('visible_paciente'),
         ]);
 
         return back()->with('ok', 'Archivo adjuntado.');

@@ -56,7 +56,7 @@
                 <p class="muted"><b>Teléfono:</b> {{ $paciente->telefono ?? '—' }}</p>
                 <p class="muted"><b>Email:</b> {{ $paciente->email ?? '—' }}</p>
                 <p class="muted"><b>Dirección:</b> {{ $paciente->direccion ?? '—' }}</p>
-                <p class="muted"><b>Grupo sanguíneo:</b> {{ $paciente->grupo_sanguineo ?? '—' }}</p>
+                <p class="muted"><b>Contacto de emergencia:</b> {{ $paciente->grupo_sanguineo ?? '—' }}</p>
             </div>
                         @unless(auth()->user()->isMedico())
             <div class="card mb">
@@ -83,11 +83,12 @@
             </div>
             @endunless
             <div class="card pink mb">
-                <h3 class="mb">Alergias y antecedentes</h3>
-                <p class="muted"><b>Alergias:</b> {{ $paciente->alergias ?? 'Ninguna registrada' }}</p>
+                               <h3 class="mb">Motivo de consulta y antecedentes</h3>
+                <p class="muted"><b>Motivo de consulta:</b> {{ $paciente->alergias ?? 'Ninguno registrado' }}</p>
                 <p class="muted"><b>Antecedentes:</b> {{ $paciente->antecedentes ?? 'Ninguno registrado' }}</p>
             </div>
             <div class="card mb">
+                              @unless(auth()->user()->isMedico())
                 <div class="flex between mb"><h3 style="margin:0">Pagos</h3><a href="{{ route('pagos.create', ['paciente_id' => $paciente->id]) }}" class="btn btn-light btn-sm"><i class="fa-solid fa-plus"></i></a></div>
                 @forelse($paciente->pagos->sortByDesc('fecha')->take(5) as $pago)
                     <div class="flex between" style="padding:6px 0;border-bottom:1px solid var(--line)">
@@ -97,7 +98,7 @@
                 @empty
                     <p class="muted">Sin pagos registrados.</p>
                 @endforelse
-            </div>
+                @endunless
 
             <div class="card">
                 <h3 class="mb"><i class="fa-solid fa-paperclip" style="color:var(--violet)"></i> Archivos</h3>
@@ -105,15 +106,20 @@
                     @csrf
                     <input type="hidden" name="paciente_id" value="{{ $paciente->id }}">
                     <div class="flex gap" style="flex-wrap:wrap;align-items:center">
-                        <select name="categoria" style="flex:1;min-width:110px;border:1.5px solid var(--line);border-radius:12px;padding:9px">
+                                                <select name="categoria" style="flex:1;min-width:110px;border:1.5px solid var(--line);border-radius:12px;padding:9px">
                             <option value="examen">Examen</option>
                             <option value="imagen">Imagen</option>
                             <option value="receta">Receta</option>
+                            <option value="tarea">Tarea asignada</option>
                             <option value="otro">Otro</option>
                         </select>
                         <input type="file" name="archivo" required style="flex:2;min-width:150px">
                         <button class="btn btn-primary btn-sm"><i class="fa-solid fa-upload"></i> Subir</button>
                     </div>
+                    <label style="display:flex;align-items:center;gap:6px;font-size:12.5px;font-weight:500;margin-top:8px;cursor:pointer">
+                        <input type="checkbox" name="visible_paciente" value="1">
+                        Compartir con el paciente (aparecerá en su Portal)
+                    </label>
                     @error('archivo')<span class="err">{{ $message }}</span>@enderror
                 </form>
                 @forelse($paciente->adjuntos->sortByDesc('created_at') as $a)

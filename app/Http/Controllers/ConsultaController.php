@@ -29,11 +29,12 @@ class ConsultaController extends Controller
             abort(403, 'Esta cita no está asignada a ti.');
         }
 
-        return view('consultas.form', [
+                return view('consultas.form', [
             'consulta' => new Consulta(['fecha' => now()->toDateString()]),
             'paciente' => $paciente,
             'cita' => $cita,
             'especialidad' => $paciente->especialidad,
+            'servicios' => \App\Models\Servicio::where('empresa_id', $this->empresaId())->where('activo', true)->orderBy('nombre')->get(),
         ]);
     }
 
@@ -79,12 +80,12 @@ class ConsultaController extends Controller
         $this->authorize($consulta);
                 abort_unless(auth()->user()->isMedico() && (int) $consulta->medico_id === auth()->id(), 403, 'Solo puedes editar tus propias consultas.');
         $consulta->load('recetaItems');
-        return view('consultas.form', [
+                return view('consultas.form', [
             'consulta' => $consulta,
             'paciente' => $consulta->paciente,
             'cita' => null,
             'especialidad' => $consulta->especialidad,
-            
+            'servicios' => \App\Models\Servicio::where('empresa_id', $this->empresaId())->where('activo', true)->orderBy('nombre')->get(),
         ]);
     }
 
@@ -142,10 +143,10 @@ class ConsultaController extends Controller
             'presion_arterial' => ['nullable', 'string', 'max:20'],
             'frecuencia_cardiaca' => ['nullable', 'integer', 'min:0', 'max:400'],
             'temperatura' => ['nullable', 'numeric', 'min:25', 'max:45'],
-            'observaciones' => ['nullable', 'string'],
+                     'observaciones' => ['nullable', 'string'],
+            'servicio_id' => ['nullable', 'exists:servicios,id'],
         ]);
     }
-
     private function authorize(Consulta $consulta): void
     {
         abort_unless($consulta->empresa_id === $this->empresaId(), 403);

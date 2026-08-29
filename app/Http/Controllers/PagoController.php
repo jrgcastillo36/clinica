@@ -37,13 +37,14 @@ class PagoController extends Controller
         return view('pagos.index', compact('pagos', 'total', 'pendiente', 'desde', 'hasta'));
     }
 
-    public function create(Request $request)
+        public function create(Request $request)
     {
         return view('pagos.form', [
             'pago' => new Pago(['fecha' => now()->toDateString(), 'estado' => 'pagado']),
             'pacientes' => $this->pacientes(),
             'pacienteSel' => $request->get('paciente_id'),
             'servicios' => $this->servicios(),
+            'consultasPendientes' => $this->consultasPendientesCobro(),
         ]);
     }
 
@@ -75,7 +76,7 @@ class PagoController extends Controller
         return redirect()->route('pagos.index')->with('ok', $aviso);
     }
 
-    public function edit(Pago $pago)
+      public function edit(Pago $pago)
     {
         abort_unless($pago->empresa_id === $this->empresaId(), 403);
         return view('pagos.form', [
@@ -83,6 +84,7 @@ class PagoController extends Controller
             'pacientes' => $this->pacientes(),
             'pacienteSel' => $pago->paciente_id,
             'servicios' => $this->servicios(),
+            'consultasPendientes' => $this->consultasPendientesCobro(),
         ]);
     }
 
@@ -112,9 +114,24 @@ class PagoController extends Controller
         return $pdf->stream('recibo-'.$pago->id.'.pdf');
     }
 
-    private function servicios()
+       private function servicios()
     {
         return Servicio::where('empresa_id', $this->empresaId())->where('activo', true)->orderBy('nombre')->get();
+    }
+
+      private function consultasPendientesCobro()
+    {
+        return \App\Models\Consulta::where('empresa_id', $this->empresaId())
+            ->whereNotNull('servicio_id')
+            ->with(['paciente', 'servicio', 'pago' => fn ($q) => $q->where('estado', 'pagado')])
+            ->orderByDesc('fecha')
+            ->get()
+            ->filter(function ($c) {
+                $pagado = $c->pago->sum('monto');
+                $precio = $c->servicio->precio ?? 0;
+                return $pagado < $precio;
+            })
+            ->values();
     }
 
     private function pacientes()
@@ -132,6 +149,10 @@ class PagoController extends Controller
             'estado' => ['required', 'in:pendiente,pagado,anulado'],
             'fecha' => ['required', 'date'],
             'notas' => ['nullable', 'string'],
+                        'cuota_numero' => ['nullable', 'integer', 'min:1'],
+            'cuota_total' => ['nullable', 'integer', 'min:1'],
+            'consulta_id' => ['nullable', 'exists:consultas,id'],
         ]);
+            
     }
 }

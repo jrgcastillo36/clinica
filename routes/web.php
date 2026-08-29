@@ -90,6 +90,8 @@ Route::prefix('portal')->group(function () {
         Route::get('/', [PortalController::class, 'dashboard'])->name('portal.dashboard');
         Route::get('/historia', [PortalController::class, 'historia'])->name('portal.historia');
         Route::get('/pagos', [PortalController::class, 'pagos'])->name('portal.pagos');
+        Route::get('/archivos', [PortalController::class, 'archivos'])->name('portal.archivos');
+        Route::get('/archivos/{adjunto}/descargar', [PortalController::class, 'descargarArchivo'])->name('portal.archivos.download');
         Route::get('/reservar', [ReservaController::class, 'create'])->name('portal.reservar');
         Route::post('/reservar', [ReservaController::class, 'store'])->name('portal.reservar.store');
         Route::get('/citas/{cita}/editar', [ReservaController::class, 'editar'])->name('portal.cita.editar');
@@ -243,6 +245,7 @@ Route::middleware('role:admin,recepcion')->group(function () {
         Route::get('/agenda', [AgendaController::class, 'index'])->name('agenda.index');
         Route::get('/agenda/eventos', [AgendaController::class, 'eventos'])->name('agenda.eventos');
         Route::put('/agenda/citas/{cita}/mover', [AgendaController::class, 'mover'])->name('agenda.mover');
+                Route::get('/agenda/medicos-disponibilidad', [AgendaController::class, 'medicosDisponibilidadDia'])->name('agenda.medicos.disponibilidad');
                Route::middleware('role:admin,recepcion')->group(function () {
             Route::get('/agenda/disponibilidad', [AgendaController::class, 'disponibilidad'])->name('agenda.disponibilidad');
             Route::get('/bloqueos', [BloqueoController::class, 'index'])->name('bloqueos.index');

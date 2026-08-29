@@ -27,7 +27,11 @@
                 <tr>
                     <td>{{ $p->fecha->format('d/m/Y') }}</td>
                     <td>{{ $p->paciente->nombre_completo ?? '—' }}</td>
-                    <td>{{ $p->concepto }}</td>
+                    <td>{{ $p->concepto }}
+                        @if($p->cuota_numero && $p->cuota_total)
+                            <br><span class="pill blue" style="font-size:10.5px">Cuota {{ $p->cuota_numero }}/{{ $p->cuota_total }}</span>
+                        @endif
+                    </td>
                     <td>{{ $p->metodo_label }}</td>
                     <td><b>@money($p->monto, null, 2)</b></td>
                     <td>

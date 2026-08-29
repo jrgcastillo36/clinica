@@ -21,6 +21,7 @@
 
         <div class="grid g-2">
             <div>
+                               @unless($slug === 'psicologia')
                 {{-- Signos vitales --}}
                 <div class="card mb">
                     <h3 class="mb"><i class="fa-solid fa-heart-pulse" style="color:var(--pink)"></i> Signos vitales</h3>
@@ -34,11 +35,25 @@
                         <div class="field"><label>Temperatura (°C)</label><input type="number" step="0.1" name="temperatura" value="{{ old('temperatura',$consulta->temperatura) }}"></div>
                     </div>
                 </div>
+                @else
+                {{-- Psicología no usa signos vitales, pero sí necesita la fecha --}}
+                <input type="hidden" name="fecha" value="{{ old('fecha', optional($consulta->fecha)->format('Y-m-d') ?? now()->toDateString()) }}">
+                @endunless
 
                 {{-- Evaluación clínica --}}
                 <div class="card mb">
                     <h3 class="mb"><i class="fa-solid fa-notes-medical" style="color:var(--violet)"></i> Evaluación clínica</h3>
                     <div class="field mb"><label>Motivo de consulta</label><textarea name="motivo">{{ old('motivo',$consulta->motivo) }}</textarea></div>
+                                        <div class="field mb">
+                        <label>Servicio brindado</label>
+                        <select name="servicio_id">
+                            <option value="">— Selecciona —</option>
+                            @foreach($servicios as $s)
+                                <option value="{{ $s->id }}" @selected(old('servicio_id',$consulta->servicio_id)==$s->id)>{{ $s->nombre }}</option>
+                            @endforeach
+                        </select>
+                        <p class="muted" style="font-size:11.5px;margin-top:4px">Esto le indica a recepción qué cobrar por esta sesión.</p>
+                    </div>
                     <div class="field mb"><label>Diagnóstico</label><textarea name="diagnostico">{{ old('diagnostico',$consulta->diagnostico) }}</textarea></div>
                     <div class="field mb"><label>Tratamiento / Receta</label><textarea name="tratamiento" style="min-height:110px">{{ old('tratamiento',$consulta->tratamiento) }}</textarea></div>
                     <div class="field"><label>Observaciones</label><textarea name="observaciones">{{ old('observaciones',$consulta->observaciones) }}</textarea></div>
