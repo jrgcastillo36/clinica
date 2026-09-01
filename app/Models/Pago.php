@@ -23,6 +23,10 @@ class Pago extends Model
     ];
 
     public function empresa(): BelongsTo { return $this->belongsTo(Empresa::class); }
+        public function consulta()
+    {
+        return $this->belongsTo(\App\Models\Consulta::class);
+    }
     public function paciente(): BelongsTo { return $this->belongsTo(Paciente::class); }
     public function cita(): BelongsTo { return $this->belongsTo(Cita::class); }
 

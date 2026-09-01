@@ -94,7 +94,7 @@ class ReporteController extends Controller
         }, 200, $headers);
     }
 
-    public function financiero(\Illuminate\Http\Request $request)
+      public function financiero(\Illuminate\Http\Request $request)
     {
         $eid = $this->empresaId();
         $desde = \Illuminate\Support\Carbon::parse($request->get('desde', now()->startOfMonth()->toDateString()));
@@ -122,6 +122,51 @@ class ReporteController extends Controller
             ->selectRaw('paciente_id, SUM(monto) total')->groupBy('paciente_id')
             ->orderByDesc('total')->limit(8)->with('paciente')->get();
 
+        // --- Situación actual de cobros: pendiente, deudores, por servicio, tasa de cobro ---
+        $consultasConServicio = \App\Models\Consulta::where('empresa_id', $eid)
+            ->whereNotNull('servicio_id')
+            ->where('fecha', '<=', $hasta)
+            ->with(['paciente', 'servicio', 'pago' => fn ($q) => $q->where('estado', 'pagado')])
+            ->get();
+
+        $totalPendiente = 0;
+        $totalAsignado = 0;
+        $deudoresMap = [];
+
+        foreach ($consultasConServicio as $c) {
+            $precio = (float) ($c->servicio->precio ?? 0);
+            $pagadoConsulta = $c->pago->sum('monto');
+            $saldo = max($precio - $pagadoConsulta, 0);
+
+            $totalAsignado += $precio;
+            $totalPendiente += $saldo;
+
+            if ($saldo > 0 && $c->paciente) {
+                $pid = $c->paciente_id;
+                if (! isset($deudoresMap[$pid])) {
+                    $deudoresMap[$pid] = ['nombre' => $c->paciente->nombre_completo, 'monto' => 0];
+                }
+                $deudoresMap[$pid]['monto'] += $saldo;
+            }
+        }
+
+        $deudores = collect($deudoresMap)->sortByDesc('monto')->take(10)->values();
+        $tasaCobro = $totalAsignado > 0 ? round((($totalAsignado - $totalPendiente) / $totalAsignado) * 100, 1) : 0;
+
+        // Ingresos por servicio (dentro del rango de fechas del pago)
+        $pagosConServicio = \App\Models\Pago::where('empresa_id', $eid)->where('estado', 'pagado')
+            ->whereBetween('fecha', [$desde, $hasta])
+            ->whereNotNull('consulta_id')
+            ->with('consulta.servicio')
+            ->get();
+
+        $porServicioMap = [];
+        foreach ($pagosConServicio as $p) {
+            $nombre = $p->consulta->servicio->nombre ?? 'Sin servicio';
+            $porServicioMap[$nombre] = ($porServicioMap[$nombre] ?? 0) + (float) $p->monto;
+        }
+        $porServicio = collect($porServicioMap)->sortByDesc(fn ($v) => $v);
+
         return view('reportes.financiero', [
             'empresa' => auth()->user()->empresa,
             'desde' => $desde, 'hasta' => $hasta,
@@ -131,8 +176,86 @@ class ReporteController extends Controller
             'numPagos' => $numPagos,
             'labels' => $labels, 'serie' => $serie,
             'topPacientes' => $topPacientes,
+            'totalPendiente' => $totalPendiente,
+            'deudores' => $deudores,
+            'porServicio' => $porServicio,
+            'tasaCobro' => $tasaCobro,
         ]);
     }
+    public function financieroPdf(\Illuminate\Http\Request $request)
+    {
+        $eid = $this->empresaId();
+        $desde = \Illuminate\Support\Carbon::parse($request->get('desde', now()->startOfMonth()->toDateString()));
+        $hasta = \Illuminate\Support\Carbon::parse($request->get('hasta', now()->endOfMonth()->toDateString()));
+
+        $base = \App\Models\Pago::where('empresa_id', $eid)->where('estado', 'pagado');
+
+        $porMetodo = (clone $base)->whereBetween('fecha', [$desde, $hasta])
+            ->selectRaw('metodo, SUM(monto) total, COUNT(*) c')->groupBy('metodo')->get();
+
+        $total = (clone $base)->whereBetween('fecha', [$desde, $hasta])->sum('monto');
+        $numPagos = (clone $base)->whereBetween('fecha', [$desde, $hasta])->count();
+
+        $topPacientes = (clone $base)->whereBetween('fecha', [$desde, $hasta])
+            ->selectRaw('paciente_id, SUM(monto) total')->groupBy('paciente_id')
+            ->orderByDesc('total')->limit(8)->with('paciente')->get();
+
+        $consultasConServicio = \App\Models\Consulta::where('empresa_id', $eid)
+            ->whereNotNull('servicio_id')
+            ->where('fecha', '<=', $hasta)
+            ->with(['paciente', 'servicio', 'pago' => fn ($q) => $q->where('estado', 'pagado')])
+            ->get();
+
+        $totalPendiente = 0;
+        $totalAsignado = 0;
+        $deudoresMap = [];
+
+        foreach ($consultasConServicio as $c) {
+            $precio = (float) ($c->servicio->precio ?? 0);
+            $pagadoConsulta = $c->pago->sum('monto');
+            $saldo = max($precio - $pagadoConsulta, 0);
+
+            $totalAsignado += $precio;
+            $totalPendiente += $saldo;
+
+            if ($saldo > 0 && $c->paciente) {
+                $pid = $c->paciente_id;
+                if (! isset($deudoresMap[$pid])) {
+                    $deudoresMap[$pid] = ['nombre' => $c->paciente->nombre_completo, 'monto' => 0];
+                }
+                $deudoresMap[$pid]['monto'] += $saldo;
+            }
+        }
+
+        $deudores = collect($deudoresMap)->sortByDesc('monto')->take(10)->values();
+        $tasaCobro = $totalAsignado > 0 ? round((($totalAsignado - $totalPendiente) / $totalAsignado) * 100, 1) : 0;
+
+        $pagosConServicio = \App\Models\Pago::where('empresa_id', $eid)->where('estado', 'pagado')
+            ->whereBetween('fecha', [$desde, $hasta])
+            ->whereNotNull('consulta_id')
+            ->with('consulta.servicio')
+            ->get();
+
+        $porServicioMap = [];
+        foreach ($pagosConServicio as $p) {
+            $nombre = $p->consulta->servicio->nombre ?? 'Sin servicio';
+            $porServicioMap[$nombre] = ($porServicioMap[$nombre] ?? 0) + (float) $p->monto;
+        }
+        $porServicio = collect($porServicioMap)->sortByDesc(fn ($v) => $v);
+
+        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('reportes.financiero-pdf', [
+            'empresa' => auth()->user()->empresa,
+            'desde' => $desde, 'hasta' => $hasta,
+            'porMetodo' => $porMetodo, 'total' => $total,
+            'ticket' => $numPagos ? $total / $numPagos : 0,
+            'numPagos' => $numPagos, 'topPacientes' => $topPacientes,
+            'totalPendiente' => $totalPendiente, 'deudores' => $deudores,
+            'porServicio' => $porServicio, 'tasaCobro' => $tasaCobro,
+        ])->setPaper('a4');
+
+        return $pdf->stream('reporte-financiero-'.now()->format('Ymd').'.pdf');
+    }
+
 
 
     public function clinico()

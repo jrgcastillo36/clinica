@@ -48,12 +48,13 @@
             <a href="{{ route('pagos.index') }}" class="{{ request()->routeIs('pagos.*') ? 'active' : '' }}">
                 <i class="fa-solid fa-money-bill-wave"></i> Pagos
             </a>
-            <a href="{{ route('comprobantes.index') }}" class="{{ request()->routeIs('comprobantes.*') ? 'active' : '' }}">
+                     {{-- Temporalmente deshabilitado: facturación electrónica no está en uso --}}
+            {{-- <a href="{{ route('comprobantes.index') }}" class="{{ request()->routeIs('comprobantes.*') ? 'active' : '' }}">
                 <i class="fa-solid fa-file-invoice"></i> Comprobantes
             </a>
             <a href="{{ route('resumenes.index') }}" class="{{ request()->routeIs('resumenes.*') ? 'active' : '' }}">
                 <i class="fa-solid fa-layer-group"></i> Resumen diario
-            </a>
+            </a> --}}
             
             @endunless
             {{-- Temporalmente deshabilitado
@@ -116,21 +117,22 @@
             <a href="{{ route('admin.servicios.index') }}" class="{{ request()->routeIs('admin.servicios.*') ? 'active' : '' }}">
                 <i class="fa-solid fa-tags"></i> Servicios
             </a>
-            <a href="{{ route('admin.lab-examenes.index') }}" class="{{ request()->routeIs('admin.lab-examenes.*') ? 'active' : '' }}">
+                       {{-- Temporalmente deshabilitado: no aplica a psicología --}}
+            {{-- <a href="{{ route('admin.lab-examenes.index') }}" class="{{ request()->routeIs('admin.lab-examenes.*') ? 'active' : '' }}">
                 <i class="fa-solid fa-vials"></i> Catálogo Lab
-            </a>
-            <a href="{{ route('admin.camas.index') }}" class="{{ request()->routeIs('admin.camas.*') ? 'active' : '' }}">
+            </a> --}}
+            {{-- <a href="{{ route('admin.camas.index') }}" class="{{ request()->routeIs('admin.camas.*') ? 'active' : '' }}">
                 <i class="fa-solid fa-bed"></i> Camas
-            </a>
+            </a> --}}
             <a href="{{ route('admin.empresa.edit') }}" class="{{ request()->routeIs('admin.empresa.*') ? 'active' : '' }}">
                 <i class="fa-solid fa-gear"></i> Configuración
             </a>
             <a href="{{ route('admin.auditoria.index') }}" class="{{ request()->routeIs('admin.auditoria.*') ? 'active' : '' }}">
                 <i class="fa-solid fa-clock-rotate-left"></i> Bitácora
             </a>
-            <a href="{{ route('admin.facturacion.configuracion') }}" class="{{ request()->routeIs('admin.facturacion.*') ? 'active' : '' }}">
+                        {{-- <a href="{{ route('admin.facturacion.configuracion') }}" class="{{ request()->routeIs('admin.facturacion.*') ? 'active' : '' }}">
                 <i class="fa-solid fa-file-invoice"></i> Facturación electrónica
-            </a>
+            </a> --}}
             <a href="{{ route('admin.mantenimiento.index') }}" class="{{ request()->routeIs('admin.mantenimiento.*') ? 'active' : '' }}">
                 <i class="fa-solid fa-database"></i> Copia y mantenimiento
             </a>

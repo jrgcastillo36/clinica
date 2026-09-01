@@ -41,7 +41,9 @@
                     <td style="text-align:right;white-space:nowrap">
                         <a href="{{ route('pagos.recibo',$p) }}" target="_blank" class="btn btn-light btn-sm"><i class="fa-solid fa-receipt"></i></a>
                         <a href="{{ route('pagos.edit',$p) }}" class="btn btn-light btn-sm"><i class="fa-solid fa-pen"></i></a>
-                        <form method="POST" action="{{ route('pagos.destroy',$p) }}" style="display:inline" onsubmit="return confirm('¿Eliminar pago?')">@csrf @method('DELETE')<button class="btn btn-danger btn-sm"><i class="fa-solid fa-trash"></i></button></form>
+                        @if(auth()->user()->role === 'admin')
+                        <form method="POST" action="{{ route('pagos.destroy',$p) }}" style="display:inline" onsubmit="return confirm('¿Eliminar pago? Esta acción no se puede deshacer.')">@csrf @method('DELETE')<button class="btn btn-danger btn-sm"><i class="fa-solid fa-trash"></i></button></form>
+                        @endif
                     </td>
                 </tr>
             @empty

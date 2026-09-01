@@ -5,7 +5,10 @@
     @php $mon = $empresa->moneda ?? 'S/'; @endphp
     <div class="page-head">
         <div><h1>Reporte financiero</h1><p>Del {{ $desde->format('d/m/Y') }} al {{ $hasta->format('d/m/Y') }}</p></div>
-        <a href="{{ route('reportes.index') }}" class="btn btn-ghost"><i class="fa-solid fa-arrow-left"></i> Reportes</a>
+        <div class="flex gap">
+            <a href="{{ route('reportes.financiero.pdf', ['desde' => $desde->toDateString(), 'hasta' => $hasta->toDateString()]) }}" target="_blank" class="btn btn-primary"><i class="fa-solid fa-file-pdf"></i> Exportar PDF</a>
+            <a href="{{ route('reportes.index') }}" class="btn btn-ghost"><i class="fa-solid fa-arrow-left"></i> Reportes</a>
+        </div>
     </div>
 
     <form method="GET" class="card mb" style="padding:14px">
@@ -16,10 +19,19 @@
         </div>
     </form>
 
-    <div class="grid g-3 mb">
-        <div class="card pink"><div class="cap" style="font-size:12px;color:var(--ink-soft);text-transform:uppercase">Ingresos</div><div style="font-size:26px;font-weight:700;margin-top:6px;color:#15803d">@money($total, null, 2)</div></div>
+       <div class="grid g-3 mb">
+        <div class="card pink"><div class="cap" style="font-size:12px;color:var(--ink-soft);text-transform:uppercase">Ingresos (periodo)</div><div style="font-size:26px;font-weight:700;margin-top:6px;color:#15803d">@money($total, null, 2)</div></div>
         <div class="card"><div class="cap" style="font-size:12px;color:var(--ink-soft);text-transform:uppercase">N° de pagos</div><div style="font-size:26px;font-weight:700;margin-top:6px">{{ $numPagos }}</div></div>
         <div class="card"><div class="cap" style="font-size:12px;color:var(--ink-soft);text-transform:uppercase">Ticket promedio</div><div style="font-size:26px;font-weight:700;margin-top:6px">@money($ticket, null, 2)</div></div>
+    </div>
+
+    <div class="grid g-3 mb">
+        <div class="card" style="background:{{ $totalPendiente > 0 ? '#fef3c7' : '#f1f5f9' }}">
+            <div class="cap" style="font-size:12px;color:var(--ink-soft);text-transform:uppercase">Total pendiente de cobro (a la fecha)</div>
+            <div style="font-size:26px;font-weight:700;margin-top:6px;color:{{ $totalPendiente > 0 ? '#92400e' : '#475569' }}">@money($totalPendiente, null, 2)</div>
+        </div>
+        <div class="card"><div class="cap" style="font-size:12px;color:var(--ink-soft);text-transform:uppercase">Tasa de cobro</div><div style="font-size:26px;font-weight:700;margin-top:6px;color:{{ $tasaCobro >= 80 ? '#15803d' : '#b45309' }}">{{ $tasaCobro }}%</div></div>
+        <div class="card"><div class="cap" style="font-size:12px;color:var(--ink-soft);text-transform:uppercase">Pacientes con deuda</div><div style="font-size:26px;font-weight:700;margin-top:6px">{{ $deudores->count() }}</div></div>
     </div>
 
     <div class="grid g-2 mb">
@@ -42,7 +54,38 @@
             </table>
         </div>
     </div>
-
+    <div class="grid g-2 mb">
+        <div class="card" style="padding:0">
+            <div style="padding:18px 22px 8px"><h3 style="margin:0">Pacientes con saldo pendiente</h3></div>
+            <div class="table-wrap" style="box-shadow:none;border-radius:0">
+                <table>
+                    <thead><tr><th>Paciente</th><th>Debe</th></tr></thead>
+                    <tbody>
+                    @forelse($deudores as $d)
+                        <tr><td>{{ $d['nombre'] }}</td><td><b style="color:#b45309">@money($d['monto'], null, 2)</b></td></tr>
+                    @empty
+                        <tr><td colspan="2"><div class="empty"><i class="fa-solid fa-circle-check"></i><p>Nadie tiene saldo pendiente 🎉</p></div></td></tr>
+                    @endforelse
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div class="card" style="padding:0">
+            <div style="padding:18px 22px 8px"><h3 style="margin:0">Ingresos por servicio (periodo)</h3></div>
+            <div class="table-wrap" style="box-shadow:none;border-radius:0">
+                <table>
+                    <thead><tr><th>Servicio</th><th>Total cobrado</th></tr></thead>
+                    <tbody>
+                    @forelse($porServicio as $nombre => $monto)
+                        <tr><td>{{ $nombre }}</td><td><b>@money($monto, null, 2)</b></td></tr>
+                    @empty
+                        <tr><td colspan="2"><div class="empty"><i class="fa-solid fa-briefcase-medical"></i><p>Sin pagos con servicio asignado en el periodo.</p></div></td></tr>
+                    @endforelse
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
     @push('scripts')
     <script>
     window.addEventListener('load', function(){

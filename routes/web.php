@@ -135,14 +135,16 @@ Route::middleware('role:admin,recepcion')->group(function () {
 });
 Route::get('/pacientes/{paciente}', [PacienteController::class,'show'])->name('pacientes.show');
 
-
 Route::middleware('role:admin,recepcion')->group(function () {
-        Route::get('/pacientes/{paciente}/edit', [PacienteController::class,'edit'])->name('pacientes.edit');
-        Route::put('/pacientes/{paciente}/portal', [PacienteController::class, 'portalAcceso'])->name('pacientes.portal');
-    
+    Route::get('/pacientes/{paciente}/edit', [PacienteController::class,'edit'])->name('pacientes.edit');
+    Route::put('/pacientes/{paciente}/portal', [PacienteController::class, 'portalAcceso'])->name('pacientes.portal');
     Route::put('/pacientes/{paciente}', [PacienteController::class,'update'])->name('pacientes.update');
+});
+
+Route::middleware('role:admin')->group(function () {
     Route::delete('/pacientes/{paciente}', [PacienteController::class,'destroy'])->name('pacientes.destroy');
 });
+
 
 
 Route::get('/citas', [CitaController::class,'index'])->name('citas.index');
@@ -154,9 +156,10 @@ Route::middleware('role:admin,recepcion')->group(function () {
     Route::post('/citas', [CitaController::class,'store'])->name('citas.store');
     Route::get('/citas/{cita}/edit', [CitaController::class,'edit'])->name('citas.edit');
     Route::put('/citas/{cita}', [CitaController::class,'update'])->name('citas.update');
+});
+Route::middleware('role:admin')->group(function () {
     Route::delete('/citas/{cita}', [CitaController::class,'destroy'])->name('citas.destroy');
 });
-
 
 
         // Odontograma (proceso propio de odontologia)
@@ -255,8 +258,8 @@ Route::middleware('role:admin,recepcion')->group(function () {
 
         // Facturacion / pagos — bloqueado para el rol médico
         Route::middleware('role:admin,recepcion')->group(function () {
-            Route::resource('pagos', PagoController::class)->except(['show']);
-            Route::get('/pagos-estados', [EstadoCuentaController::class, 'index'])->name('pagos.estados');
+            Route::resource('pagos', PagoController::class)->except(['show', 'destroy']);
+        Route::get('/pagos-estados', [EstadoCuentaController::class, 'index'])->name('pagos.estados');
             Route::get('/pagos/{pago}/recibo', [PagoController::class, 'recibo'])->name('pagos.recibo');
 
             // Comprobantes electrónicos (SUNAT)
@@ -273,7 +276,11 @@ Route::middleware('role:admin,recepcion')->group(function () {
             Route::get('/resumenes', [ResumenController::class, 'index'])->name('resumenes.index');
             Route::post('/resumenes/generar', [ResumenController::class, 'generar'])->name('resumenes.generar');
             Route::post('/resumenes/{resumen}/consultar', [ResumenController::class, 'consultar'])->name('resumenes.consultar');
-            Route::post('/resumenes/{resumen}/reenviar', [ResumenController::class, 'reenviar'])->name('resumenes.reenviar');
+                        Route::post('/resumenes/{resumen}/reenviar', [ResumenController::class, 'reenviar'])->name('resumenes.reenviar');
+        });
+
+        Route::middleware('role:admin')->group(function () {
+            Route::delete('/pagos/{pago}', [PagoController::class, 'destroy'])->name('pagos.destroy');
         });
 
         // Inventario
@@ -340,6 +347,7 @@ Route::middleware('role:admin,recepcion')->group(function () {
             Route::get('/reportes', [ReporteController::class, 'index'])->name('reportes.index');
             Route::get('/reportes/clinico', [ReporteController::class, 'clinico'])->name('reportes.clinico');
             Route::get('/reportes/financiero', [ReporteController::class, 'financiero'])->name('reportes.financiero');
+                       Route::get('/reportes/financiero/pdf', [ReporteController::class, 'financieroPdf'])->name('reportes.financiero.pdf');
             Route::get('/reportes/pdf', [ReporteController::class, 'pdf'])->name('reportes.pdf');
             Route::get('/reportes/excel', [ReporteController::class, 'excel'])->name('reportes.excel');
         });

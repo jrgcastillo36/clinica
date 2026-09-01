@@ -34,13 +34,16 @@
                     <td>{{ $p->telefono ?? '—' }}</td>
                     <td style="text-align:right;white-space:nowrap">
                         <a href="{{ route('pacientes.show', $p) }}" class="btn btn-light btn-sm"><i class="fa-solid fa-eye"></i></a>
-                       @unless(auth()->user()->isMedico())
-<a href="{{ route('pacientes.edit', $p) }}" class="btn btn-light btn-sm"><i class="fa-solid fa-pen"></i></a>
-<form method="POST" action="{{ route('pacientes.destroy', $p) }}" style="display:inline" onsubmit="return confirm('¿Eliminar este paciente?')">
-    @csrf @method('DELETE')
-    <button class="btn btn-danger btn-sm"><i class="fa-solid fa-trash"></i></button>
-</form>
-@endunless
+                      
+                        @unless(auth()->user()->isMedico())
+                        <a href="{{ route('pacientes.edit', $p) }}" class="btn btn-light btn-sm"><i class="fa-solid fa-pen"></i></a>
+                        @endunless
+                        @if(auth()->user()->role === 'admin')
+                        <form method="POST" action="{{ route('pacientes.destroy', $p) }}" style="display:inline" onsubmit="return confirm('¿ELIMINAR PERMANENTEMENTE a este paciente?\n\nSe borrarán también todas sus citas, consultas, pagos y archivos. Esta acción NO se puede deshacer.')">
+                            @csrf @method('DELETE')
+                            <button class="btn btn-danger btn-sm"><i class="fa-solid fa-trash"></i></button>
+                        </form>
+                        @endif
                     </td>
                 </tr>
             @empty

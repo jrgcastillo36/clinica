@@ -39,15 +39,17 @@
                                              @if($c->whatsapp_url)
                             <a href="{{ $c->whatsapp_url }}" target="_blank" class="btn btn-light btn-sm" title="Recordar por WhatsApp" style="color:#25d366"><i class="fa-brands fa-whatsapp"></i></a>
                         @endif
-                        @unless(auth()->user()->isMedico())
+                                               @unless(auth()->user()->isMedico())
                         <a href="{{ route('citas.edit',$c) }}" class="btn btn-light btn-sm"><i class="fa-solid fa-pen"></i></a>
+                        @endunless
+                        @if(auth()->user()->role === 'admin')
                         <form method="POST" action="{{ route('citas.destroy',$c) }}" style="display:inline" onsubmit="return confirm('¿Eliminar cita?')">
                             @csrf @method('DELETE')
                             <button class="btn btn-danger btn-sm"><i class="fa-solid fa-trash"></i></button>
                         </form>
-                        @endunless
+                        @endif
                     </td>
-                </tr>
+                                </tr>
             @empty
                 <tr><td colspan="7"><div class="empty"><i class="fa-regular fa-calendar"></i><p>No hay citas registradas.</p></div></td></tr>
             @endforelse
