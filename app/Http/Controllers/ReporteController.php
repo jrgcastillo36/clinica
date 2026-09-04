@@ -256,7 +256,51 @@ class ReporteController extends Controller
         return $pdf->stream('reporte-financiero-'.now()->format('Ymd').'.pdf');
     }
 
+    public function clinicoPdf()
+    {
+        $eid = $this->empresaId();
 
+        $diagnosticos = \App\Models\Consulta::where('empresa_id', $eid)
+            ->whereNotNull('diagnostico')->where('diagnostico', '!=', '')
+            ->selectRaw('diagnostico, COUNT(*) c')->groupBy('diagnostico')
+            ->orderByDesc('c')->limit(8)->pluck('c', 'diagnostico');
+
+        $porEspecialidad = \App\Models\Paciente::where('pacientes.empresa_id', $eid)
+            ->leftJoin('especialidades', 'especialidades.id', '=', 'pacientes.especialidad_id')
+            ->selectRaw('COALESCE(especialidades.nombre, \'Sin asignar\') nombre, COUNT(*) c')
+            ->groupBy('nombre')->pluck('c', 'nombre');
+
+        $pacientes = \App\Models\Paciente::where('empresa_id', $eid)->get();
+        $sexo = ['Masculino' => 0, 'Femenino' => 0, 'Otro' => 0];
+        $edades = ['0-12' => 0, '13-18' => 0, '19-40' => 0, '41-65' => 0, '65+' => 0];
+        foreach ($pacientes as $p) {
+            $sexo[['M' => 'Masculino', 'F' => 'Femenino', 'O' => 'Otro'][$p->sexo] ?? 'Otro']++;
+            $e = $p->edad;
+            if ($e === null) continue;
+            if ($e <= 12) $edades['0-12']++;
+            elseif ($e <= 18) $edades['13-18']++;
+            elseif ($e <= 40) $edades['19-40']++;
+            elseif ($e <= 65) $edades['41-65']++;
+            else $edades['65+']++;
+        }
+
+        $satisfaccion = \App\Models\Encuesta::where('empresa_id', $eid)->avg('puntuacion');
+        $totalEncuestas = \App\Models\Encuesta::where('empresa_id', $eid)->count();
+
+        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('reportes.clinico-pdf', [
+            'empresa' => auth()->user()->empresa,
+            'diagnosticos' => $diagnosticos,
+            'porEspecialidad' => $porEspecialidad,
+            'sexo' => $sexo,
+            'edades' => $edades,
+            'totalConsultas' => \App\Models\Consulta::where('empresa_id', $eid)->count(),
+            'totalPacientes' => $pacientes->count(),
+            'satisfaccion' => round($satisfaccion ?? 0, 1),
+            'totalEncuestas' => $totalEncuestas,
+        ])->setPaper('a4');
+
+        return $pdf->stream('reporte-clinico-'.now()->format('Ymd').'.pdf');
+    }
 
     public function clinico()
     {

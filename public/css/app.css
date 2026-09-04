@@ -157,7 +157,7 @@ tr:hover td{background:#f0fbfa}
 /* ---------- Forms ---------- */
 .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px}
 @media(max-width:680px){.form-grid{grid-template-columns:1fr}}
-.field{display:flex;flex-direction:column;gap:6px}
+.field{display:flex;flex-direction:column;gap:6px;min-width:0}
 .field.full{grid-column:1/-1}
 .field label{font-size:12.5px;font-weight:600;color:#4b5563}
 .field input,.field select,.field textarea{

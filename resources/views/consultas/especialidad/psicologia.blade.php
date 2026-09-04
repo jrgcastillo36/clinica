@@ -8,13 +8,19 @@
                     <option @selected(($d['tecnica'] ?? '')==$o)>{{ $o }}</option>
                 @endforeach
             </select></div>
-        <div class="field"><label>Estado de ánimo</label>
-            <select name="datos[animo]">
-                @foreach(['Estable','Ansioso','Deprimido','Irritable','Eufórico'] as $o)
-                    <option @selected(($d['animo'] ?? '')==$o)>{{ $o }}</option>
-                @endforeach
-            </select></div>
+               <div class="field">
+            <label title="1 = muy bajo, 10 = muy bien">Estado de ánimo (1-10)</label>
+            <input type="number" min="1" max="10" name="datos[animo]" value="{{ $d['animo'] ?? '' }}" placeholder="Ej. 7">
+        </div>
+        <div class="field">
+            <label>Progreso terapéutico (%)</label>
+            <input type="number" min="0" max="100" name="datos[progreso]" value="{{ $d['progreso'] ?? '' }}" placeholder="Ej. 60">
+        </div>
         <div class="field"><label>Próxima sesión</label><input type="date" name="datos[siguiente_sesion]" value="{{ $d['siguiente_sesion'] ?? '' }}"></div>
+    </div>
+    <div class="field mt">
+        <label>Notas de la sesión (qué se trabajó, observaciones clínicas)</label>
+        <textarea name="datos[desarrollo]" rows="4">{{ $d['desarrollo'] ?? '' }}</textarea>
     </div>
     <div class="field mt"><label>Tareas / objetivos</label><textarea name="datos[tareas]">{{ $d['tareas'] ?? '' }}</textarea></div>
 </div>

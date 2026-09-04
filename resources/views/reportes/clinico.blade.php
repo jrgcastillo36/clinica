@@ -4,8 +4,10 @@
 @section('content')
     <div class="page-head">
         <div><h1>Indicadores clínicos</h1><p>Panorama de la actividad clínica de la clínica.</p></div>
-        <a href="{{ route('reportes.index') }}" class="btn btn-ghost"><i class="fa-solid fa-arrow-left"></i> Reportes</a>
-    </div>
+              <div class="flex gap">
+            <a href="{{ route('reportes.clinico.pdf') }}" target="_blank" class="btn btn-primary"><i class="fa-solid fa-file-pdf"></i> Exportar PDF</a>
+            <a href="{{ route('reportes.index') }}" class="btn btn-ghost"><i class="fa-solid fa-arrow-left"></i> Reportes</a>
+        </div>
 
     <div class="grid g-4 mb">
         <div class="card"><div class="cap" style="font-size:12px;color:var(--ink-soft);text-transform:uppercase">Consultas</div><div style="font-size:26px;font-weight:700;margin-top:6px">{{ $totalConsultas }}</div></div>

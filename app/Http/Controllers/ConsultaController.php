@@ -29,11 +29,15 @@ class ConsultaController extends Controller
             abort(403, 'Esta cita no está asignada a ti.');
         }
 
-                return view('consultas.form', [
+                   $especialidad = $paciente->especialidad
+            ?? $cita?->especialidad
+            ?? \App\Models\Especialidad::where('slug', 'psicologia')->first();
+
+        return view('consultas.form', [
             'consulta' => new Consulta(['fecha' => now()->toDateString()]),
             'paciente' => $paciente,
             'cita' => $cita,
-            'especialidad' => $paciente->especialidad,
+            'especialidad' => $especialidad,
             'servicios' => \App\Models\Servicio::where('empresa_id', $this->empresaId())->where('activo', true)->orderBy('nombre')->get(),
         ]);
     }

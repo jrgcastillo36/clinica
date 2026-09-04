@@ -109,7 +109,12 @@ class CitaController extends Controller
             return back()->withInput()->withErrors(['hora' => $mensajeHorario]);
         }
 
-        $data['empresa_id'] = $this->empresaId();
+                $data['empresa_id'] = $this->empresaId();
+
+               if (empty($data['especialidad_id'])) {
+            $data['especialidad_id'] = \App\Models\Especialidad::where('slug', 'psicologia')->value('id');
+        }
+
         $cita = Cita::create($data);
 
         $cita->load(['paciente', 'especialidad', 'medico', 'empresa']);

@@ -48,6 +48,9 @@
             <a href="{{ route('pagos.index') }}" class="{{ request()->routeIs('pagos.*') ? 'active' : '' }}">
                 <i class="fa-solid fa-money-bill-wave"></i> Pagos
             </a>
+                        <a href="{{ route('cierres.index') }}" class="{{ request()->routeIs('cierres.*') ? 'active' : '' }}">
+                <i class="fa-solid fa-cash-register"></i> Cierre de caja
+            </a>
                      {{-- Temporalmente deshabilitado: facturación electrónica no está en uso --}}
             {{-- <a href="{{ route('comprobantes.index') }}" class="{{ request()->routeIs('comprobantes.*') ? 'active' : '' }}">
                 <i class="fa-solid fa-file-invoice"></i> Comprobantes
@@ -85,9 +88,10 @@
             </a>
             --}}
 
-            @if($modulos->isNotEmpty())
+                        @php $modulosVisibles = $modulos->where('slug', '!=', 'psicologia'); @endphp
+            @if($modulosVisibles->isNotEmpty())
                 <div class="label">Especialidades</div>
-                @foreach($modulos as $m)
+                @foreach($modulosVisibles as $m)
                     <a href="{{ route('modulo.show', $m->slug) }}"
                        class="{{ request()->is('modulo/'.$m->slug) ? 'active' : '' }}">
                         <i class="fa-solid {{ $m->icono }}"></i> {{ $m->nombre }}

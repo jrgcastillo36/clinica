@@ -331,13 +331,15 @@
         function ocultarTooltip(){
             if (tooltipEl) { tooltipEl.remove(); tooltipEl = null; }
         }
-        function actualizarStats(cal){
-            let hoy=0,sem=0,pend=0,mes=0;
-            cal.getEvents().forEach(function(e){ if(!e.start) return; mes++; if(esHoy(e.start))hoy++; if(enSemana(e.start))sem++; if(e.extendedProps.estado==='pendiente')pend++; });
-            document.getElementById('stHoy').textContent=hoy;
-            document.getElementById('stSemana').textContent=sem;
-            document.getElementById('stPend').textContent=pend;
-            document.getElementById('stMes').textContent=mes;
+            function actualizarStats(){
+            fetch('{{ route('agenda.estadisticas') }}')
+                .then(r => r.json())
+                .then(function (data) {
+                    document.getElementById('stHoy').textContent = data.hoy;
+                    document.getElementById('stSemana').textContent = data.semana;
+                    document.getElementById('stPend').textContent = data.pendientes;
+                    document.getElementById('stMes').textContent = data.mes;
+                });
         }
 
         let sincronizandoDesdeMini = false;
@@ -422,7 +424,7 @@
                 arg.el.addEventListener('mouseleave', function () { ocultarTooltip(); });
             },
 
-            eventsSet: function(){ actualizarStats(cal); },
+            eventsSet: function(){},
             eventClick: function (info) { info.jsEvent.preventDefault(); abrirModalCita(info.event); },
             select: function (info) {
                 const fecha = info.startStr.substring(0, 10);
@@ -466,7 +468,7 @@
 
             const miniCalEl = document.getElementById('miniCalendar');
         let miniCal = null;
-        if (miniCalEl) {
+               if (miniCalEl) {
             miniCal = new FullCalendar.Calendar(miniCalEl, {
                 initialView: 'dayGridMonth',
                 locale: 'es',
@@ -486,6 +488,9 @@
             });
             miniCal.render();
         }
+
+        actualizarStats();
+        cal.render();
 
                cal.on('datesSet', function (info) {
             if (sincronizandoDesdeMini) { sincronizandoDesdeMini = false; return; }

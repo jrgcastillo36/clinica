@@ -29,6 +29,24 @@ class AgendaController extends Controller
         return view('agenda.index', compact('medicos', 'pacientes', 'consultorios', 'medicosNoDisponiblesHoy'));
             }
 
+    public function estadisticas()
+    {
+        $empresaId = $this->empresaId();
+        $hoy = now()->toDateString();
+
+        $query = Cita::where('empresa_id', $empresaId)->where('es_bloqueo', false);
+        if (auth()->user()->isMedico()) {
+            $query->where('medico_id', auth()->id());
+        }
+
+        return response()->json([
+            'hoy' => (clone $query)->whereDate('fecha', $hoy)->count(),
+            'semana' => (clone $query)->whereBetween('fecha', [now()->startOfWeek(), now()->endOfWeek()])->count(),
+            'pendientes' => (clone $query)->whereDate('fecha', $hoy)->where('estado', 'pendiente')->count(),
+            'mes' => (clone $query)->whereBetween('fecha', [now()->startOfMonth(), now()->endOfMonth()])->count(),
+        ]);
+    }
+
 
     public function eventos(Request $request)
     {

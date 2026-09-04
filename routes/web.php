@@ -18,6 +18,7 @@ use App\Http\Controllers\Admin\UsuarioController;
 use App\Http\Controllers\AdjuntoController;
 use App\Http\Controllers\AgendaController;
 use App\Http\Controllers\BloqueoController;
+use App\Http\Controllers\CierreCajaController;
 use App\Http\Controllers\AjustesController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\PasswordResetController;
@@ -247,6 +248,7 @@ Route::middleware('role:admin')->group(function () {
         // Agenda / calendario
         Route::get('/agenda', [AgendaController::class, 'index'])->name('agenda.index');
         Route::get('/agenda/eventos', [AgendaController::class, 'eventos'])->name('agenda.eventos');
+                Route::get('/agenda/estadisticas', [AgendaController::class, 'estadisticas'])->name('agenda.estadisticas');
         Route::put('/agenda/citas/{cita}/mover', [AgendaController::class, 'mover'])->name('agenda.mover');
                 Route::get('/agenda/medicos-disponibilidad', [AgendaController::class, 'medicosDisponibilidadDia'])->name('agenda.medicos.disponibilidad');
                Route::middleware('role:admin,recepcion')->group(function () {
@@ -260,6 +262,11 @@ Route::middleware('role:admin')->group(function () {
         Route::middleware('role:admin,recepcion')->group(function () {
             Route::resource('pagos', PagoController::class)->except(['show', 'destroy']);
         Route::get('/pagos-estados', [EstadoCuentaController::class, 'index'])->name('pagos.estados');
+                               Route::get('/cierres', [CierreCajaController::class, 'index'])->name('cierres.index');
+            Route::post('/cierres/abrir', [CierreCajaController::class, 'abrir'])->name('cierres.abrir');
+            Route::post('/cierres/cerrar', [CierreCajaController::class, 'cerrar'])->name('cierres.cerrar');
+            Route::get('/cierres/{cierre}/pdf', [CierreCajaController::class, 'pdf'])->name('cierres.pdf');
+
             Route::get('/pagos/{pago}/recibo', [PagoController::class, 'recibo'])->name('pagos.recibo');
 
             // Comprobantes electrónicos (SUNAT)
@@ -346,6 +353,7 @@ Route::middleware('role:admin')->group(function () {
         Route::middleware('role:admin,recepcion')->group(function () {
             Route::get('/reportes', [ReporteController::class, 'index'])->name('reportes.index');
             Route::get('/reportes/clinico', [ReporteController::class, 'clinico'])->name('reportes.clinico');
+                        Route::get('/reportes/clinico/pdf', [ReporteController::class, 'clinicoPdf'])->name('reportes.clinico.pdf');
             Route::get('/reportes/financiero', [ReporteController::class, 'financiero'])->name('reportes.financiero');
                        Route::get('/reportes/financiero/pdf', [ReporteController::class, 'financieroPdf'])->name('reportes.financiero.pdf');
             Route::get('/reportes/pdf', [ReporteController::class, 'pdf'])->name('reportes.pdf');

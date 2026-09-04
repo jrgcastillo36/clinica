@@ -8,15 +8,15 @@
     </div>
 
     <div class="grid g-3 mb">
-        <div class="stat"><div class="ring" style="background:conic-gradient(#ec4899 0% {{ min(100,$citasHoy*15) }}%, #f3d9f0 0)"><b>{{ $citasHoy }}</b></div>
-            <div class="info"><h4><span class="icn"><i class="fa-solid fa-calendar-day"></i></span> Citas hoy</h4><small>Pacientes agendados contigo hoy.</small></div></div>
-        <div class="stat"><div class="ring" style="background:conic-gradient(#a855f7 0% {{ min(100,$pendientesHoy*20) }}%, #f3d9f0 0)"><b>{{ $pendientesHoy }}</b></div>
-            <div class="info"><h4><span class="icn"><i class="fa-solid fa-clock"></i></span> Por atender</h4><small>Citas pendientes de hoy.</small></div></div>
-        <div class="stat"><div class="ring" style="background:conic-gradient(#22c55e 0% {{ min(100,$atendidasMes*5) }}%, #f3d9f0 0)"><b>{{ $atendidasMes }}</b></div>
-            <div class="info"><h4><span class="icn"><i class="fa-solid fa-user-check"></i></span> Atendidas (mes)</h4><small>Total de consultas este mes.</small></div></div>
+        <div class="stat"><div class="ring" style="background:conic-gradient(#1088ba 0% {{ min(100,$citasHoy*15) }}%, #d9eef5 0)"><b>{{ $citasHoy }}</b></div>
+            <div class="info"><h4><span class="icn" style="background:linear-gradient(135deg,#1b1464,#1088ba)"><i class="fa-solid fa-calendar-day"></i></span> Citas hoy</h4><small>Pacientes agendados contigo hoy.</small></div></div>
+        <div class="stat"><div class="ring" style="background:conic-gradient(#f59e0b 0% {{ min(100,$pendientesHoy*20) }}%, #fef3c7 0)"><b>{{ $pendientesHoy }}</b></div>
+            <div class="info"><h4><span class="icn" style="background:linear-gradient(135deg,#d97706,#f59e0b)"><i class="fa-solid fa-clock"></i></span> Por atender</h4><small>Citas pendientes de hoy.</small></div></div>
+        <div class="stat"><div class="ring" style="background:conic-gradient(#22c55e 0% {{ min(100,$atendidasMes*5) }}%, #dcfce7 0)"><b>{{ $atendidasMes }}</b></div>
+            <div class="info"><h4><span class="icn" style="background:linear-gradient(135deg,#15803d,#22c55e)"><i class="fa-solid fa-user-check"></i></span> Atendidas (mes)</h4><small>Total de consultas este mes.</small></div></div>
     </div>
 
-    <div class="card" style="padding:0">
+    <div class="card mb" style="padding:0">
         <div style="padding:18px 22px 8px"><h3 style="margin:0">Agenda de hoy</h3></div>
         <div class="table-wrap" style="box-shadow:none;border-radius:0">
             <table>
@@ -32,6 +32,28 @@
                     </tr>
                 @empty
                     <tr><td colspan="5"><div class="empty"><i class="fa-regular fa-calendar-check"></i><p>No tienes citas hoy.</p></div></td></tr>
+                @endforelse
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="card" style="padding:0">
+        <div style="padding:18px 22px 8px"><h3 style="margin:0">Próximas citas</h3></div>
+        <div class="table-wrap" style="box-shadow:none;border-radius:0">
+            <table>
+                <thead><tr><th>Fecha</th><th>Hora</th><th>Paciente</th><th>Especialidad</th><th>Estado</th></tr></thead>
+                <tbody>
+                @forelse($proximas as $c)
+                    <tr>
+                        <td>{{ $c->fecha->locale('es')->isoFormat('D MMM') }}</td>
+                        <td><b>{{ \Illuminate\Support\Str::of($c->hora)->substr(0,5) }}</b></td>
+                        <td>{{ $c->paciente->nombre_completo }}</td>
+                        <td>{{ $c->especialidad->nombre ?? '—' }}</td>
+                        <td>@include('citas.estado', ['estado' => $c->estado])</td>
+                    </tr>
+                @empty
+                    <tr><td colspan="5"><div class="empty"><i class="fa-regular fa-calendar"></i><p>No tienes más citas próximas.</p></div></td></tr>
                 @endforelse
                 </tbody>
             </table>

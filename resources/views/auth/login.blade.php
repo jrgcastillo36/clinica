@@ -1536,7 +1536,7 @@
                  LOGO
             ================================================== -->
 
-            <img src="{{ asset('images/logo-completo.png') }}" alt="Grupo Libérate" style="width:150px;margin-bottom:20px">
+            <img src="{{ asset('images/logosistema.png') }}" alt="Grupo Libérate" style="width:150px;margin-bottom:20px">
 
 
             <!-- =================================================
