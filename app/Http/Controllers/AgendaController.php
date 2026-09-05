@@ -13,21 +13,21 @@ class AgendaController extends Controller
         return (int) auth()->user()->empresa_id;
     }
 
-   public function index()
-{
-    $pacientes = \App\Models\Paciente::where('empresa_id', $this->empresaId())->orderBy('apellidos')->get();
+    public function index()
+    {
+        $pacientes = \App\Models\Paciente::where('empresa_id', $this->empresaId())->orderBy('apellidos')->get();
         $consultorios = \App\Models\Consultorio::where('empresa_id', $this->empresaId())->where('activo', true)->orderBy('nombre')->get();
-    $medicos = auth()->user()->isMedico()
-        ? collect()
-        : User::where('empresa_id', $this->empresaId())
-            ->where('role', 'medico')
-            ->orderBy('name')
-            ->get();
+        $medicos = auth()->user()->isMedico()
+            ? collect()
+            : User::where('empresa_id', $this->empresaId())
+                ->where('role', 'medico')
+                ->orderBy('name')
+                ->get();
 
         $medicosNoDisponiblesHoy = $this->medicosNoDisponiblesHoy(now()->toDateString());
 
         return view('agenda.index', compact('medicos', 'pacientes', 'consultorios', 'medicosNoDisponiblesHoy'));
-            }
+    }
 
     public function estadisticas()
     {
@@ -46,7 +46,6 @@ class AgendaController extends Controller
             'mes' => (clone $query)->whereBetween('fecha', [now()->startOfMonth(), now()->endOfMonth()])->count(),
         ]);
     }
-
 
     public function eventos(Request $request)
     {
@@ -67,7 +66,7 @@ class AgendaController extends Controller
         ];
 
         $query = Cita::with(['paciente', 'especialidad', 'medico', 'consultorio'])
-        ->where('empresa_id', $this->empresaId());
+            ->where('empresa_id', $this->empresaId());
 
         // Filtro por médico
         if (auth()->user()->isMedico()) {
@@ -87,24 +86,24 @@ class AgendaController extends Controller
 
         $citas = $query->get();
 
-                $eventos = $citas->map(function ($c) use ($colores, $etiquetas) {
+        $eventos = $citas->map(function ($c) use ($colores, $etiquetas) {
             $hora = substr((string) $c->hora, 0, 5);
             $inicio = $c->fecha->format('Y-m-d').'T'.$hora.':00';
-            $fin = \Carbon\Carbon::parse($hora)->addMinutes($c->duracion ?: 30)->format('H:i');
+            $fin = \Carbon\Carbon::parse($c->fecha->format('Y-m-d').' '.$hora)->addMinutes($c->duracion ?: 30)->format('Y-m-d\TH:i:s');
 
             if ($c->es_bloqueo) {
                 return [
                     'id' => $c->id,
                     'title' => $c->motivo ?: 'No disponible',
                     'start' => $inicio,
-                    'end' => $c->fecha->format('Y-m-d').'T'.$fin.':00',
+                    'end' => $fin,
                     'color' => '#94a3b8',
                     'borderColor' => '#94a3b8',
                     'extendedProps' => [
                         'estado' => 'bloqueo',
                         'estadoLabel' => 'No disponible',
                         'hora' => $hora,
-                        'horaFin' => $fin,
+                        'horaFin' => \Carbon\Carbon::parse($hora)->addMinutes($c->duracion ?: 30)->format('H:i'),
                         'medico' => $c->medico->name ?? null,
                         'medicoId' => $c->medico_id,
                         'motivo' => $c->motivo,
@@ -115,15 +114,12 @@ class AgendaController extends Controller
 
             $color = $colores[$c->estado] ?? '#7c3aed';
 
-                       $fin = \Carbon\Carbon::parse($c->fecha->format('Y-m-d').' '.$hora)->addMinutes($c->duracion ?: 30)->format('Y-m-d\TH:i:s');
-
             $evento = [
                 'id' => $c->id,
                 'title' => $c->paciente->nombre_completo,
                 'start' => $inicio,
                 'end' => $fin,
                 'color' => $color,
-                'borderColor' => $color,
                 'borderColor' => $color,
                 'extendedProps' => [
                     'estado' => $c->estado,
@@ -134,7 +130,7 @@ class AgendaController extends Controller
                     'medicoId' => $c->medico_id,
                     'motivo' => $c->motivo,
                     'telefono' => $c->paciente->telefono ?? null,
-                                        'pacienteId' => $c->paciente_id,
+                    'pacienteId' => $c->paciente_id,
                     'horaFin' => \Carbon\Carbon::parse($hora)->addMinutes($c->duracion ?: 30)->format('H:i'),
                     'consultorio' => $c->consultorio->nombre ?? null,
                 ],
@@ -146,8 +142,7 @@ class AgendaController extends Controller
         return response()->json($eventos);
     }
 
-
-        private function medicosNoDisponiblesHoy(string $fecha): array
+    private function medicosNoDisponiblesHoy(string $fecha): array
     {
         $medicos = User::where('empresa_id', $this->empresaId())->where('role', 'medico')->get();
         $dow = (int) \Carbon\Carbon::parse($fecha)->dayOfWeek;
@@ -171,12 +166,40 @@ class AgendaController extends Controller
 
         return $noDisponibles;
     }
+
     public function medicosDisponibilidadDia(Request $request)
     {
         $fecha = $request->get('fecha', now()->toDateString());
         return response()->json($this->medicosNoDisponiblesHoy($fecha));
     }
 
+    public function horariosSemanales()
+    {
+        $medicos = User::where('empresa_id', $this->empresaId())
+            ->where('role', 'medico')
+            ->with(['horarios' => fn ($q) => $q->where('activo', true)->orderBy('dia_semana')->orderBy('hora_inicio')])
+            ->orderBy('name')->get();
+
+        $hoy = now()->toDateString();
+        $bloqueosPorMedico = Cita::where('empresa_id', $this->empresaId())
+            ->where('es_bloqueo', true)
+            ->where('fecha', '>=', $hoy)
+            ->orderBy('fecha')
+            ->get()
+            ->groupBy('medico_id')
+            ->map(function ($grupo) {
+                $primero = $grupo->first();
+                return [
+                    'desde' => $grupo->min('fecha'),
+                    'hasta' => $grupo->max('fecha'),
+                    'motivo' => $primero->motivo,
+                ];
+            });
+
+        $medicosConBloqueo = $bloqueosPorMedico->count();
+
+        return view('agenda.horarios-semanales', compact('medicos', 'bloqueosPorMedico', 'medicosConBloqueo'));
+    }
 
     public function disponibilidad(Request $request)
     {
@@ -193,12 +216,12 @@ class AgendaController extends Controller
             ->whereNotIn('estado', ['cancelada', 'no_asistio'])
             ->get();
 
-        $slots = [];
+                $slots = [];
         $cursor = \Carbon\Carbon::parse('07:00');
         $fin = \Carbon\Carbon::parse('21:00');
         while ($cursor < $fin) {
             $slots[] = $cursor->format('H:i');
-            $cursor->addMinutes(30);
+            $cursor->addMinutes(60);
         }
 
         $ocupado = [];
@@ -274,7 +297,7 @@ class AgendaController extends Controller
             }
         }
 
-                $data = $request->validate([
+        $data = $request->validate([
             'fecha' => ['required', 'date'],
             'hora' => ['nullable'],
             'duracion' => ['nullable', 'integer', 'min:5', 'max:240'],

@@ -251,6 +251,7 @@ Route::middleware('role:admin')->group(function () {
                 Route::get('/agenda/estadisticas', [AgendaController::class, 'estadisticas'])->name('agenda.estadisticas');
         Route::put('/agenda/citas/{cita}/mover', [AgendaController::class, 'mover'])->name('agenda.mover');
                 Route::get('/agenda/medicos-disponibilidad', [AgendaController::class, 'medicosDisponibilidadDia'])->name('agenda.medicos.disponibilidad');
+                            Route::get('/agenda/horarios-semanales', [AgendaController::class, 'horariosSemanales'])->name('agenda.horarios');
                Route::middleware('role:admin,recepcion')->group(function () {
             Route::get('/agenda/disponibilidad', [AgendaController::class, 'disponibilidad'])->name('agenda.disponibilidad');
             Route::get('/bloqueos', [BloqueoController::class, 'index'])->name('bloqueos.index');

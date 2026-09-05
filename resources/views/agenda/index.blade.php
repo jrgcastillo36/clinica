@@ -29,7 +29,8 @@
             <div class="page-head">
                 <div><h1>Agenda</h1><p>Calendario de citas · arrastra una cita para reprogramarla.</p></div>
                 @unless(auth()->user()->isMedico())
-                <a href="{{ route('agenda.disponibilidad') }}" class="btn btn-light"><i class="fa-solid fa-table-cells"></i> Disponibilidad</a>
+<a href="{{ route('agenda.disponibilidad') }}" class="btn btn-light"><i class="fa-solid fa-table-cells"></i> Disponibilidad</a>
+<a href="{{ route('agenda.horarios') }}" class="btn btn-light"><i class="fa-solid fa-calendar-week"></i> Horarios</a>
                 <a href="{{ route('citas.create') }}" class="btn btn-primary"><i class="fa-solid fa-calendar-plus"></i> Nueva cita</a>
                 @endunless
             </div>
