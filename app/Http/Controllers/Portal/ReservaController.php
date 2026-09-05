@@ -60,14 +60,23 @@ class ReservaController extends Controller
             return back()->withErrors(['hora' => 'El medico no atiende en ese horario. Elige otro.'])->withInput();
         }
 
-        // Verificar disponibilidad si se eligió médico
-        if (! empty($data['medico_id'])) {
-            $ocupado = Cita::where('empresa_id', $empresa->id)
+    // Verificar disponibilidad si se eligió médico (por rango de horario, cubre bloqueos de día completo)
+       
+               if (! empty($data['medico_id'])) {
+            $inicio = \Carbon\Carbon::parse($data['fecha'].' '.$data['hora']);
+            $fin = $inicio->copy()->addMinutes(30);
+
+            $candidatas = Cita::where('empresa_id', $empresa->id)
                 ->where('medico_id', $data['medico_id'])
                 ->whereDate('fecha', $data['fecha'])
-                ->where('hora', $data['hora'].':00')
                 ->whereNotIn('estado', ['cancelada', 'no_asistio'])
-                ->exists();
+                ->get();
+
+            $ocupado = $candidatas->contains(function ($c) use ($inicio, $fin) {
+                $cInicio = \Carbon\Carbon::parse($c->fecha->format('Y-m-d').' '.$c->hora);
+                $cFin = $cInicio->copy()->addMinutes($c->duracion ?: 30);
+                return $inicio < $cFin && $cInicio < $fin;
+            });
 
             if ($ocupado) {
                 return back()->withErrors(['hora' => 'Ese horario ya está ocupado. Elige otro.'])->withInput();
@@ -116,11 +125,22 @@ class ReservaController extends Controller
             'hora' => ['required', 'string'],
         ]);
 
-        if ($cita->medico_id) {
-            $ocupado = \App\Models\Cita::where('empresa_id', $cita->empresa_id)
+             if ($cita->medico_id) {
+            $inicio = \Carbon\Carbon::parse($data['fecha'].' '.$data['hora']);
+            $fin = $inicio->copy()->addMinutes($cita->duracion ?: 30);
+
+            $candidatas = \App\Models\Cita::where('empresa_id', $cita->empresa_id)
                 ->where('medico_id', $cita->medico_id)->whereKeyNot($cita->id)
-                ->whereDate('fecha', $data['fecha'])->where('hora', $data['hora'].':00')
-                ->whereNotIn('estado', ['cancelada', 'no_asistio'])->exists();
+                ->whereDate('fecha', $data['fecha'])
+                ->whereNotIn('estado', ['cancelada', 'no_asistio'])
+                ->get();
+
+            $ocupado = $candidatas->contains(function ($c) use ($inicio, $fin) {
+                $cInicio = \Carbon\Carbon::parse($c->fecha->format('Y-m-d').' '.$c->hora);
+                $cFin = $cInicio->copy()->addMinutes($c->duracion ?: 30);
+                return $inicio < $cFin && $cInicio < $fin;
+            });
+
             if ($ocupado) {
                 return back()->withErrors(['hora' => 'Ese horario ya esta ocupado.'])->withInput();
             }

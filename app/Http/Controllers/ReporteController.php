@@ -22,14 +22,14 @@ class ReporteController extends Controller
         $hasta = Carbon::parse($request->get('hasta', now()->endOfMonth()->toDateString()));
         $eid = $this->empresaId();
 
-        $citas = Cita::where('empresa_id', $eid)->whereBetween('fecha', [$desde, $hasta]);
+        $citas = Cita::where('empresa_id', $eid)->where('es_bloqueo', false)->whereBetween('fecha', [$desde, $hasta]);
         $porEstado = (clone $citas)->selectRaw('estado, count(*) c')->groupBy('estado')->pluck('c', 'estado');
 
         $ingresos = Pago::where('empresa_id', $eid)->where('estado', 'pagado')
             ->whereBetween('fecha', [$desde, $hasta])->sum('monto');
 
         // Ingresos por especialidad (vía citas de pagos)
-        $porEspecialidad = Cita::where('citas.empresa_id', $eid)
+                $porEspecialidad = Cita::where('citas.empresa_id', $eid)->where('citas.es_bloqueo', false)
             ->whereBetween('citas.fecha', [$desde, $hasta])
             ->join('especialidades', 'especialidades.id', '=', 'citas.especialidad_id')
             ->selectRaw('especialidades.nombre, count(*) c')
@@ -64,8 +64,8 @@ class ReporteController extends Controller
         $desde = $request->get('desde', now()->startOfMonth()->toDateString());
         $hasta = $request->get('hasta', now()->endOfMonth()->toDateString());
 
-        $citas = Cita::with(['paciente', 'medico', 'especialidad'])
-            ->where('empresa_id', $eid)->whereBetween('fecha', [$desde, $hasta])
+                $citas = Cita::with(['paciente', 'medico', 'especialidad'])
+            ->where('empresa_id', $eid)->where('es_bloqueo', false)->whereBetween('fecha', [$desde, $hasta])
             ->orderBy('fecha')->get();
 
         $filename = 'citas-'.$desde.'-a-'.$hasta.'.csv';
@@ -77,7 +77,7 @@ class ReporteController extends Controller
         return response()->stream(function () use ($citas) {
             $out = fopen('php://output', 'w');
             fprintf($out, chr(0xEF).chr(0xBB).chr(0xBF)); // BOM UTF-8 para Excel
-            fputcsv($out, ['Fecha', 'Hora', 'Paciente', 'Documento', 'Especialidad', 'Medico', 'Estado', 'Motivo']);
+                        fputcsv($out, ['Fecha', 'Hora', 'Paciente', 'Documento', 'Especialidad', 'Medico', 'Estado', 'Motivo'], ';');
             foreach ($citas as $c) {
                 fputcsv($out, [
                     $c->fecha->format('d/m/Y'),
@@ -86,9 +86,9 @@ class ReporteController extends Controller
                     $c->paciente->documento ?? '',
                     $c->especialidad->nombre ?? '',
                     $c->medico->name ?? '',
-                    $c->estado,
+                                     $c->estado,
                     $c->motivo ?? '',
-                ]);
+                ], ';');
             }
             fclose($out);
         }, 200, $headers);

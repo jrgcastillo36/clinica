@@ -84,11 +84,15 @@ class ConsultaController extends Controller
         $this->authorize($consulta);
                 abort_unless(auth()->user()->isMedico() && (int) $consulta->medico_id === auth()->id(), 403, 'Solo puedes editar tus propias consultas.');
         $consulta->load('recetaItems');
-                return view('consultas.form', [
+                       $especialidad = $consulta->especialidad
+            ?? $consulta->paciente?->especialidad
+            ?? \App\Models\Especialidad::where('slug', 'psicologia')->first();
+
+        return view('consultas.form', [
             'consulta' => $consulta,
             'paciente' => $consulta->paciente,
             'cita' => null,
-            'especialidad' => $consulta->especialidad,
+            'especialidad' => $especialidad,
             'servicios' => \App\Models\Servicio::where('empresa_id', $this->empresaId())->where('activo', true)->orderBy('nombre')->get(),
         ]);
     }
