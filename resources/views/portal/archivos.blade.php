@@ -2,7 +2,7 @@
 @section('title','Mis archivos')
 @section('content')
     <h1 style="margin:0 0 6px">Mis archivos</h1>
-    <p class="muted" style="margin:0 0 20px">Documentos y tareas compartidos por tu médico.</p>
+    <p class="muted" style="margin:0 0 20px">Documentos y tareas compartidos por tu Psicólogo(a).</p>
 
     <div class="table-wrap">
         <table>

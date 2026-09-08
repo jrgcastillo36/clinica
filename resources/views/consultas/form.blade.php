@@ -43,17 +43,18 @@
                 {{-- Evaluación clínica --}}
                 <div class="card mb">
                     <h3 class="mb"><i class="fa-solid fa-notes-medical" style="color:var(--violet)"></i> Evaluación clínica</h3>
-                    <div class="field mb"><label>Motivo de consulta</label><textarea name="motivo">{{ old('motivo',$consulta->motivo) }}</textarea></div>
-                                        <div class="field mb">
-                        <label>Servicio brindado</label>
-                        <select name="servicio_id">
-                            <option value="">— Selecciona —</option>
-                            @foreach($servicios as $s)
-                                <option value="{{ $s->id }}" @selected(old('servicio_id',$consulta->servicio_id)==$s->id)>{{ $s->nombre }}</option>
-                            @endforeach
-                        </select>
-                        <p class="muted" style="font-size:11.5px;margin-top:4px">Esto le indica a recepción qué cobrar por esta sesión.</p>
-                    </div>
+                                        <div class="field mb"><label>Motivo de consulta</label><textarea name="motivo">{{ old('motivo',$consulta->motivo) }}</textarea></div>
+                   <div class="field mb" style="position:relative">
+    <label>Categoría de servicio</label>
+    <input type="text" id="categoriaBuscar" autocomplete="off" placeholder="Busca una categoría..."
+        value="{{ old('categoria_servicio', $consulta->categoria_servicio) }}">
+    <input type="hidden" name="categoria_servicio" id="categoriaValor" value="{{ old('categoria_servicio', $consulta->categoria_servicio) }}">
+    <div id="categoriaLista" class="paciente-lista"></div>
+    <p class="muted" style="font-size:11.5px;margin-top:4px">
+        Elige solo la categoría general — recepción definirá el código y precio exacto al momento de cobrar.
+        <span id="categoriaSeleccionadaInfo" style="display:none;"> — <a href="#" id="quitarCategoria">quitar selección</a></span>
+    </p>
+</div>
                     <div class="field mb"><label>Diagnóstico</label><textarea name="diagnostico">{{ old('diagnostico',$consulta->diagnostico) }}</textarea></div>
                     <div class="field mb"><label>Tratamiento / Receta</label><textarea name="tratamiento" style="min-height:110px">{{ old('tratamiento',$consulta->tratamiento) }}</textarea></div>
                     <div class="field"><label>Observaciones</label><textarea name="observaciones">{{ old('observaciones',$consulta->observaciones) }}</textarea></div>
@@ -124,10 +125,83 @@
         return '<div class="field"><label>'+label+'</label><input name="receta['+i+']['+name+']" value="'+(val?String(val).replace(/"/g,'&quot;'):'')+'"></div>';
     }
     function addMed(){ medRow(); }
-    document.addEventListener('DOMContentLoaded', function(){
+       document.addEventListener('DOMContentLoaded', function(){
         if (MEDS.length) MEDS.forEach(m=>medRow(m)); else medRow();
     });
     </script>
     @endpush
+
+    @push('scripts')
+<script>
+const categorias = {!! json_encode($servicios->pluck('categoria')->filter()->unique()->values()->toArray()) !!};
+
+document.addEventListener('DOMContentLoaded', function () {
+    const input = document.getElementById('categoriaBuscar');
+    const hidden = document.getElementById('categoriaValor');
+    const lista = document.getElementById('categoriaLista');
+    const info = document.getElementById('categoriaSeleccionadaInfo');
+    if (!input) return;
+
+    function actualizarInfoSeleccion(){
+        info.style.display = hidden.value ? 'inline' : 'none';
+    }
+
+    function mostrarCategorias(mostrarTodas){
+        const q = mostrarTodas ? '' : input.value.trim().toLowerCase();
+        lista.innerHTML = '';
+        const encontradas = q
+            ? categorias.filter(c => c.toLowerCase().includes(q))
+            : categorias;
+        if (!encontradas.length) { lista.style.display = 'none'; return; }
+        encontradas.forEach(function (c) {
+            const row = document.createElement('div');
+            row.textContent = c;
+            row.addEventListener('click', function () {
+                input.value = c;
+                hidden.value = c;
+                lista.style.display = 'none';
+                actualizarInfoSeleccion();
+            });
+            lista.appendChild(row);
+        });
+        lista.style.display = 'block';
+    }
+
+    input.addEventListener('input', function () {
+        hidden.value = '';
+        actualizarInfoSeleccion();
+        mostrarCategorias(false);
+    });
+
+    // Al hacer foco o clic, siempre muestra TODAS las categorías (sin filtrar
+    // por lo ya elegido) y selecciona el texto actual para poder reemplazarlo
+    // escribiendo directo, sin tener que borrarlo a mano primero.
+    input.addEventListener('focus', function () {
+        input.select();
+        mostrarCategorias(true);
+    });
+    input.addEventListener('click', function () {
+        mostrarCategorias(true);
+    });
+
+    document.getElementById('quitarCategoria')?.addEventListener('click', function (e) {
+        e.preventDefault();
+        input.value = '';
+        hidden.value = '';
+        actualizarInfoSeleccion();
+        input.focus();
+        mostrarCategorias(true);
+    });
+
+    document.addEventListener('click', function (e) {
+        if (!lista.contains(e.target) && e.target !== input) {
+            lista.style.display = 'none';
+        }
+    });
+
+    actualizarInfoSeleccion();
+});
+</script>
+@endpush
 
 @endsection

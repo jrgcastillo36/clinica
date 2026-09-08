@@ -113,20 +113,25 @@ class DashboardController extends Controller
     }
 
     private function recepcion($user)
-    {
-        $empresaId = $user->empresa_id;
-        $hoy = Carbon::today();
+{
+    $empresaId = $user->empresa_id;
+    $hoy = Carbon::today();
 
-        return view('dashboard.recepcion', [
-            'empresa' => $user->empresa,
-            'citasHoy' => Cita::where('empresa_id', $empresaId)->where('es_bloqueo', false)->whereDate('fecha', $hoy)->count(),
-            'pendientes' => Cita::where('empresa_id', $empresaId)->where('es_bloqueo', false)->whereDate('fecha', $hoy)->whereIn('estado', ['pendiente', 'confirmada'])->count(),
-            'cobradoHoy' => Pago::where('empresa_id', $empresaId)->where('estado', 'pagado')->whereDate('fecha', $hoy)->sum('monto'),
-            'pagosPendientes' => Pago::where('empresa_id', $empresaId)->where('estado', 'pendiente')->count(),
-            'agendaHoy' => Cita::where('empresa_id', $empresaId)->where('es_bloqueo', false)->with(['paciente', 'especialidad', 'medico'])
-                ->whereDate('fecha', $hoy)->orderBy('hora')->get(),
-            'citasMananaSinConfirmar' => Cita::where('empresa_id', $empresaId)->where('es_bloqueo', false)
-                ->whereDate('fecha', $hoy->copy()->addDay())->where('estado', 'pendiente')->count(),
-        ]);
-    }
+    return view('dashboard.recepcion', [
+        'empresa' => $user->empresa,
+        'citasHoy' => Cita::where('empresa_id', $empresaId)->where('es_bloqueo', false)->whereDate('fecha', $hoy)->count(),
+        'pendientes' => Cita::where('empresa_id', $empresaId)->where('es_bloqueo', false)->whereDate('fecha', $hoy)->whereIn('estado', ['pendiente', 'confirmada'])->count(),
+        'cobradoHoy' => Pago::where('empresa_id', $empresaId)->where('estado', 'pagado')->whereDate('fecha', $hoy)->sum('monto'),
+        'pagosPendientes' => Pago::where('empresa_id', $empresaId)->where('estado', 'pendiente')->count(),
+        'agendaHoy' => Cita::where('empresa_id', $empresaId)->where('es_bloqueo', false)
+            ->with([
+                'paciente', 'especialidad', 'medico',
+                'consulta.servicio', 'consulta.pago' => fn ($q) => $q->where('estado', 'pagado'),
+                'pagos' => fn ($q) => $q->where('estado', 'pagado'),
+            ])
+            ->whereDate('fecha', $hoy)->orderBy('hora')->get(),
+        'citasMananaSinConfirmar' => Cita::where('empresa_id', $empresaId)->where('es_bloqueo', false)
+            ->whereDate('fecha', $hoy->copy()->addDay())->where('estado', 'pendiente')->count(),
+    ]);
+}
 }

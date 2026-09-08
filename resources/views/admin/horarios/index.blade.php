@@ -49,8 +49,8 @@
                     <form method="POST" action="{{ route('bloqueos.store') }}">
                         @csrf
                         <div class="field mb">
-                            <label>Médico *</label>
-                            <select name="medico_id" required>
+<label>Psicólogo(a) *</label>
+                        <select name="medico_id" required>
                                 <option value="">— Selecciona —</option>
                                 @foreach($medicos as $m)
                                     <option value="{{ $m->id }}">{{ $m->name }}</option>
@@ -92,7 +92,7 @@
 
                 <div class="table-wrap">
                     <table>
-                        <thead><tr><th>Médico</th><th>Fechas</th><th>Horario</th><th>Motivo</th><th></th></tr></thead>
+                        <thead><tr><th>Psicólogo(a)</th><th>Fechas</th><th>Horario</th><th>Motivo</th><th></th></tr></thead>
                         <tbody>
                         @forelse($bloqueos as $b)
                             <tr>

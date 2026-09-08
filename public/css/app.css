@@ -135,7 +135,7 @@ canvas{max-width:100%!important}
 .btn-sm{padding:7px 12px;font-size:12px;border-radius:10px}
 
 /* ---------- Tables ---------- */
-.table-wrap{background:#fff;border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden}
+.table-wrap{background:#fff;border-radius:var(--radius);box-shadow:var(--shadow);overflow-x:auto;overflow-y:hidden}
 table{width:100%;border-collapse:collapse}
 th{text-align:left;font-size:11px;text-transform:uppercase;letter-spacing:.6px;color:var(--ink-soft);
   padding:15px 18px;background:var(--bg-pink);font-weight:600}

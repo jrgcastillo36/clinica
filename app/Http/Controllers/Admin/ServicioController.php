@@ -13,19 +13,22 @@ class ServicioController extends Controller
         return (int) auth()->user()->empresa_id;
     }
 
-    public function index()
+       public function index()
     {
         $servicios = Servicio::with('especialidad')
-            ->where('empresa_id', $this->empresaId())->orderBy('nombre')->get();
+            ->where('empresa_id', $this->empresaId())
+            ->orderBy('categoria')->orderBy('codigo')->orderBy('nombre')
+            ->get()
+            ->groupBy(fn ($s) => $s->categoria ?: 'Sin categoría');
 
         $especialidades = auth()->user()->empresa?->especialidadesActivas()->get() ?? collect();
 
         return view('admin.servicios.index', compact('servicios', 'especialidades'));
     }
 
-    public function store(Request $request)
+            public function store(Request $request)
     {
-        $data = $this->validated($request);
+                 $data = $this->validated($request);
         $data['empresa_id'] = $this->empresaId();
         Servicio::create($data);
 
@@ -48,9 +51,11 @@ class ServicioController extends Controller
         return back()->with('ok', 'Servicio eliminado.');
     }
 
-    private function validated(Request $request): array
+       private function validated(Request $request): array
     {
         return $request->validate([
+            'categoria' => ['nullable', 'string', 'max:150'],
+            'codigo' => ['nullable', 'string', 'max:20'],
             'nombre' => ['required', 'string', 'max:120'],
             'precio' => ['required', 'numeric', 'min:0'],
             'especialidad_id' => ['nullable', 'exists:especialidades,id'],

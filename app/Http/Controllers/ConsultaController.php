@@ -43,34 +43,37 @@ class ConsultaController extends Controller
     }
 
     public function store(Request $request)
-    {
-        $data = $this->validated($request);
-        $paciente = Paciente::where('empresa_id', $this->empresaId())->findOrFail($data['paciente_id']);
+{
+    $data = $this->validated($request);
+    $paciente = Paciente::where('empresa_id', $this->empresaId())->findOrFail($data['paciente_id']);
 
-        if (auth()->user()->isMedico() && $request->filled('cita_id')) {
-            $citaOriginal = Cita::where('empresa_id', $this->empresaId())->find($request->cita_id);
-            if ($citaOriginal && (int) $citaOriginal->medico_id !== auth()->id()) {
-                abort(403, 'Esta cita no está asignada a ti.');
-            }
-        }
+    $citaOriginal = $request->filled('cita_id')
+        ? Cita::where('empresa_id', $this->empresaId())->find($request->cita_id)
+        : null;
 
-        $data['empresa_id'] = $this->empresaId();
-        $data['medico_id'] = auth()->id();
-        $data['especialidad_id'] = $paciente->especialidad_id;
-        $data['datos_especialidad'] = $request->input('datos', []);
-
-        $consulta = Consulta::create($data);
-        $this->guardarReceta($consulta, $request);
-
-        if ($request->filled('cita_id')) {
-            Cita::where('empresa_id', $this->empresaId())
-                ->where('id', $request->cita_id)
-                ->update(['estado' => 'atendida']);
-        }
-
-        return redirect()->route('pacientes.show', $consulta->paciente_id)
-            ->with('ok', 'Consulta registrada en la historia clínica.');
+    if (auth()->user()->isMedico() && $citaOriginal && (int) $citaOriginal->medico_id !== auth()->id()) {
+        abort(403, 'Esta cita no está asignada a ti.');
     }
+
+    $data['empresa_id'] = $this->empresaId();
+    $data['medico_id'] = auth()->id();
+    $data['especialidad_id'] = $paciente->especialidad_id
+        ?? $citaOriginal?->especialidad_id
+        ?? \App\Models\Especialidad::where('slug', 'psicologia')->first()?->id;
+    $data['datos_especialidad'] = $request->input('datos', []);
+
+    $consulta = Consulta::create($data);
+    $this->guardarReceta($consulta, $request);
+
+    if ($request->filled('cita_id')) {
+        Cita::where('empresa_id', $this->empresaId())
+            ->where('id', $request->cita_id)
+            ->update(['estado' => 'atendida']);
+    }
+
+    return redirect()->route('pacientes.show', $consulta->paciente_id)
+        ->with('ok', 'Consulta registrada en la historia clínica.');
+}
 
     public function show(Consulta $consulta)
     {
@@ -137,24 +140,26 @@ class ConsultaController extends Controller
             }
         }
     }
+private function validated(Request $request): array
+{
+    return $request->validate([
+        'paciente_id' => ['required', 'exists:pacientes,id'],
+        'fecha' => ['required', 'date'],
+        'motivo' => ['nullable', 'string'],
+        'diagnostico' => ['nullable', 'string'],
+        'tratamiento' => ['nullable', 'string'],
+        'peso' => ['nullable', 'numeric', 'min:0', 'max:500'],
+        'talla' => ['nullable', 'numeric', 'min:0', 'max:300'],
+        'presion_arterial' => ['nullable', 'string', 'max:20'],
+        'frecuencia_cardiaca' => ['nullable', 'integer', 'min:0', 'max:400'],
+        'temperatura' => ['nullable', 'numeric', 'min:25', 'max:45'],
+        'observaciones' => ['nullable', 'string'],
+        'servicio_id' => ['nullable', 'exists:servicios,id'],
+        'categoria_servicio' => ['nullable', 'string', 'max:150'],   // ← nueva línea
+                'cita_id' => ['nullable', 'exists:citas,id'],   // ← AGREGAR ESTA LÍNEA
 
-    private function validated(Request $request): array
-    {
-        return $request->validate([
-            'paciente_id' => ['required', 'exists:pacientes,id'],
-            'fecha' => ['required', 'date'],
-            'motivo' => ['nullable', 'string'],
-            'diagnostico' => ['nullable', 'string'],
-            'tratamiento' => ['nullable', 'string'],
-            'peso' => ['nullable', 'numeric', 'min:0', 'max:500'],
-            'talla' => ['nullable', 'numeric', 'min:0', 'max:300'],
-            'presion_arterial' => ['nullable', 'string', 'max:20'],
-            'frecuencia_cardiaca' => ['nullable', 'integer', 'min:0', 'max:400'],
-            'temperatura' => ['nullable', 'numeric', 'min:25', 'max:45'],
-                     'observaciones' => ['nullable', 'string'],
-            'servicio_id' => ['nullable', 'exists:servicios,id'],
-        ]);
-    }
+    ]);
+}
     private function authorize(Consulta $consulta): void
     {
         abort_unless($consulta->empresa_id === $this->empresaId(), 403);

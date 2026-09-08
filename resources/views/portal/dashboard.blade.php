@@ -31,7 +31,7 @@
         <div style="padding:18px 20px 8px"><h3 style="margin:0">Mis próximas citas</h3></div>
         <div class="table-wrap" style="box-shadow:none;border-radius:0">
             <table>
-                <thead><tr><th>Fecha</th><th>Hora</th><th>Especialidad</th><th>Médico</th><th>Estado</th><th></th></tr></thead>
+                <thead><tr><th>Fecha</th><th>Hora</th><th>Especialidad</th><th>Psicólogo(a)</th><th>Estado</th><th></th></tr></thead>
                 <tbody>
                 @forelse($proximas as $c)
                     <tr>

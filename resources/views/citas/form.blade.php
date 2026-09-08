@@ -28,7 +28,7 @@
                         <option value="{{ $e->id }}" @selected(old('especialidad_id',$cita->especialidad_id)==$e->id)>{{ $e->nombre }}</option>
                     @endforeach
                 </select></div>
-            <div class="field"><label>Médico</label>
+            <div class="field"><label>Psicólogo(a)</label>
                 <select name="medico_id">
                     <option value="">— Sin asignar —</option>
                     @foreach($medicos as $m)

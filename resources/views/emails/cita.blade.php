@@ -23,7 +23,7 @@
                 <tr><td class="lbl">Fecha</td><td style="text-align:right"><b>{{ $cita->fecha->locale('es')->isoFormat('dddd D [de] MMMM') }}</b></td></tr>
                 <tr><td class="lbl">Hora</td><td style="text-align:right">{{ \Illuminate\Support\Str::of($cita->hora)->substr(0,5) }}</td></tr>
                 <tr><td class="lbl">Especialidad</td><td style="text-align:right">{{ $cita->especialidad->nombre ?? 'Consulta general' }}</td></tr>
-                <tr><td class="lbl">Médico</td><td style="text-align:right">{{ $cita->medico->name ?? 'Por asignar' }}</td></tr>
+                <tr><td class="lbl">Psicólogo(a)</td><td style="text-align:right">{{ $cita->medico->name ?? 'Por asignar' }}</td></tr>
             </table>
             <p style="margin-top:18px;font-size:13px;color:#6b7280">Si no puedes asistir, comunícate con nosotros @if($empresa->telefono) al {{ $empresa->telefono }} @endif.</p>
         </div>

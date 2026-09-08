@@ -13,7 +13,7 @@
                     <option value="">— Indiferente —</option>
                     @foreach($especialidades as $e)<option value="{{ $e->id }}" @selected(old('especialidad_id')==$e->id)>{{ $e->nombre }}</option>@endforeach
                 </select></div>
-            <div class="field"><label>Médico</label>
+            <div class="field"><label>Psicólogo(a)</label>
                 <select name="medico_id">
                     <option value="">— Cualquiera disponible —</option>
                     @foreach($medicos as $m)<option value="{{ $m->id }}" @selected(old('medico_id')==$m->id)>{{ $m->titulo_profesional ? $m->titulo_profesional.' ' : '' }}{{ $m->name }}</option>@endforeach

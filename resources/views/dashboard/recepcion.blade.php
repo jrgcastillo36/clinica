@@ -70,7 +70,41 @@
                                 <button class="btn btn-light btn-sm" style="color:#94a3b8"><i class="fa-solid fa-user-xmark"></i> No asistió</button>
                             </form>
                             @endif
-                            <a href="{{ route('pagos.create', ['paciente_id' => $c->paciente_id]) }}" class="btn btn-primary btn-sm"><i class="fa-solid fa-money-bill"></i> Cobrar</a>
+@php
+    $consulta = $c->consulta;
+    $estadoCobro = 'pendiente';
+    $saldoRestante = 0;
+    $montoAbonado = 0;
+
+    if ($consulta && $consulta->servicio_id) {
+        $pagado = $consulta->pago->sum('monto');
+        $precio = $consulta->servicio->precio ?? 0;
+        $saldoRestante = max($precio - $pagado, 0);
+        if ($saldoRestante <= 0) {
+            $estadoCobro = 'cobrado';
+        } elseif ($pagado > 0) {
+            $estadoCobro = 'abono';
+            $montoAbonado = $pagado;
+        }
+    } else {
+        $pagadoDirecto = $c->pagos->sum('monto');
+        if ($pagadoDirecto > 0) {
+            $estadoCobro = 'registrado';
+            $montoAbonado = $pagadoDirecto;
+        }
+    }
+@endphp
+@if($estadoCobro === 'cobrado')
+    <span class="pill" style="background:#dcfce7;color:#166534"><i class="fa-solid fa-check"></i> Cobrado</span>
+@else
+    @if($estadoCobro === 'abono')
+        <span class="pill" style="background:#fef3c7;color:#92400e;margin-right:6px">Abono {{ $mon }}{{ number_format($montoAbonado,2) }} (falta {{ $mon }}{{ number_format($saldoRestante,2) }})</span>
+    @elseif($estadoCobro === 'registrado')
+        <span class="pill" style="background:#fef3c7;color:#92400e;margin-right:6px">Pago registrado: {{ $mon }}{{ number_format($montoAbonado,2) }}</span>
+    @endif
+    <a href="{{ route('pagos.create', ['paciente_id' => $c->paciente_id, 'cita_id' => $c->id]) }}" class="btn btn-primary btn-sm"><i class="fa-solid fa-money-bill"></i> Cobrar</a>
+@endif
+
                         </td>
                     </tr>
                 @empty

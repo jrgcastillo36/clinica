@@ -10,8 +10,8 @@ class CierreCaja extends Model
     protected $table = 'cierres_caja';
 
     protected $fillable = [
-        'empresa_id', 'user_id', 'fecha',
-        'efectivo_inicial', 'abierto_por_id',
+        'empresa_id', 'user_id', 'fecha', 'turno_nombre',
+        'efectivo_inicial', 'motivo_ajuste_fondo', 'abierto_por_id',
         'efectivo_sistema', 'efectivo_contado', 'total_sistema',
         'observaciones', 'cerrado_at',
     ];

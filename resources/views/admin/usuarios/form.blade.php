@@ -16,11 +16,11 @@
             <div class="field"><label>Contraseña {{ $usuario->exists ? '(dejar en blanco para no cambiar)' : '*' }}</label><input type="password" name="password">@error('password')<span class="err">{{ $message }}</span>@enderror</div>
             <div class="field"><label>Rol *</label>
                 <select name="role" required>
-                    @foreach(['admin'=>'Administrador','medico'=>'Médico','recepcion'=>'Recepción'] as $k=>$v)
+                    @foreach(['admin'=>'Administrador','medico'=>'Psicólogo(a)','recepcion'=>'Recepción'] as $k=>$v)
                         <option value="{{ $k }}" @selected(old('role',$usuario->role)==$k)>{{ $v }}</option>
                     @endforeach
                 </select></div>
-            <div class="field"><label>Especialidad (para médicos)</label>
+            <div class="field"><label>Especialidad</label>
                 <select name="especialidad_id">
                     <option value="">— Ninguna —</option>
                     @foreach($especialidades as $e)

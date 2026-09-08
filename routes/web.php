@@ -267,6 +267,7 @@ Route::middleware('role:admin')->group(function () {
             Route::post('/cierres/abrir', [CierreCajaController::class, 'abrir'])->name('cierres.abrir');
             Route::post('/cierres/cerrar', [CierreCajaController::class, 'cerrar'])->name('cierres.cerrar');
             Route::get('/cierres/{cierre}/pdf', [CierreCajaController::class, 'pdf'])->name('cierres.pdf');
+            Route::post('/cierres/{cierre}/reabrir', [CierreCajaController::class, 'reabrir'])->name('cierres.reabrir');
 
             Route::get('/pagos/{pago}/recibo', [PagoController::class, 'recibo'])->name('pagos.recibo');
 

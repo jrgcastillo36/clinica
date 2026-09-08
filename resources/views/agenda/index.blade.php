@@ -8,8 +8,8 @@
             <div id="miniCalendar"></div>
             <div class="agenda-sidebar-medicos">
                 <div class="agenda-sidebar-titulo">
-                    <i class="fa-solid fa-user-doctor"></i> Médicos
-                    <div class="filtro-medicos-acciones">
+<i class="fa-solid fa-user-doctor"></i> Psicólogos(as)
+                <div class="filtro-medicos-acciones">
                         <button type="button" onclick="marcarTodosMedicos(true)">Todos</button>
                         <button type="button" onclick="marcarTodosMedicos(false)">Ninguno</button>
                     </div>
@@ -84,8 +84,8 @@
                 </div>
                                <div style="display:flex;gap:10px;margin-bottom:12px">
                     <div class="field" style="flex:1">
-                        <label>Médico</label>
-                        <select id="ncMedico">
+<label>Psicólogo(a)</label>
+                    <select id="ncMedico">
                             <option value="">— Sin asignar —</option>
                             @foreach($medicos as $m)
                                 <option value="{{ $m->id }}">{{ $m->name }}</option>

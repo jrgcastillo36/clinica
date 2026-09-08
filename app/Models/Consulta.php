@@ -11,7 +11,7 @@ class Consulta extends Model
     use HasFactory;
 
     protected $fillable = [
-        'empresa_id', 'paciente_id', 'medico_id', 'especialidad_id', 'servicio_id', 'cita_id',
+        'empresa_id', 'paciente_id', 'medico_id', 'especialidad_id', 'servicio_id', 'categoria_servicio', 'cita_id',
     'fecha', 'motivo', 'diagnostico', 'tratamiento', 'peso', 'talla',
         'presion_arterial', 'frecuencia_cardiaca', 'temperatura',
         'datos_especialidad', 'observaciones',

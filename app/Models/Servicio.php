@@ -9,8 +9,8 @@ class Servicio extends Model
 {
     protected $table = 'servicios';
 
-    protected $fillable = [
-        'empresa_id', 'especialidad_id', 'nombre', 'precio', 'activo',
+            protected $fillable = [
+        'empresa_id', 'especialidad_id', 'categoria', 'codigo', 'nombre', 'precio', 'activo',
     ];
 
     protected $casts = ['precio' => 'decimal:2', 'activo' => 'boolean'];

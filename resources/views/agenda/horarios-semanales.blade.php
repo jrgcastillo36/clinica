@@ -34,8 +34,8 @@
         <table id="tablaHorarios" class="tabla-horarios">
             <thead>
                 <tr>
-                    <th class="col-medico">Médico</th>
-                    @foreach($dias as $i => $d)
+<th class="col-medico">Psicólogo(a)</th>
+                @foreach($dias as $i => $d)
                         <th style="background:{{ $fondosDia[$i] }};border-top:3px solid {{ $coloresDia[$i] }};color:{{ $coloresDia[$i] }}">{{ $d }}</th>
                     @endforeach
                 </tr>

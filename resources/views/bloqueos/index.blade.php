@@ -56,7 +56,7 @@
 
         <div class="table-wrap">
             <table>
-                <thead><tr><th>Médico</th><th>Fechas</th><th>Horario</th><th>Motivo</th><th></th></tr></thead>
+                <thead><tr><th>Psicólogo(a)</th><th>Fechas</th><th>Horario</th><th>Motivo</th><th></th></tr></thead>
                 <tbody>
                 @forelse($bloqueos as $b)
                     <tr>

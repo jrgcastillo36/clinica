@@ -10,13 +10,13 @@
         </form>
     </div>
 
-    <h3 class="mb">Médicos</h3>
+<h3 class="mb">Psicólogos(as)</h3>
     <div class="card mb" style="overflow-x:auto;padding:0">
         <table class="disp-table">
             <thead>
                 <tr>
-                    <th class="disp-medico-col">Médico</th>
-                    @foreach($slots as $s)
+<th class="disp-medico-col">Psicólogo(a)</th>
+                @foreach($slots as $s)
                         <th class="disp-hora {{ substr($s,3,2) === '00' ? 'disp-hora-en-punto' : '' }}">
                             {{ substr($s,3,2) === '00' ? \Carbon\Carbon::parse($s)->format('g A') : '' }}
                         </th>

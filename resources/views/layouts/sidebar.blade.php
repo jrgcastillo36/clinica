@@ -17,7 +17,7 @@
     <div class="profile">
         <div class="avatar">{{ $u->initials() }}</div>
         <div class="name">{{ $u->name }}</div>
-        <div class="role">{{ $u->role === 'medico' && $u->especialidad ? 'Médico · '.$u->especialidad->nombre : $u->role }}</div>
+        <div class="role">{{ $u->role === 'medico' && $u->especialidad ? 'Psicólogo(a) · '.$u->especialidad->nombre : $u->role }}</div>
     </div>
 
     <nav class="nav">

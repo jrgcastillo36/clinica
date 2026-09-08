@@ -43,6 +43,7 @@ class PagoController extends Controller
             'pago' => new Pago(['fecha' => now()->toDateString(), 'estado' => 'pagado']),
             'pacientes' => $this->pacientes(),
             'pacienteSel' => $request->get('paciente_id'),
+            'citaSel' => $request->get('cita_id'),
             'servicios' => $this->servicios(),
             'consultasPendientes' => $this->consultasPendientesCobro(),
         ]);
@@ -53,6 +54,16 @@ class PagoController extends Controller
         $data = $this->validated($request);
         $data['empresa_id'] = $this->empresaId();
         $pago = Pago::create($data);
+
+        // Si esta consulta era tipo "categoría" (sin precio fijo) y recepción eligió
+        // un código específico al cobrar, se "fija" ese servicio/precio en la consulta
+        // para que los próximos cobros calculen el saldo restante correctamente.
+        if ($request->filled('consulta_id') && $request->filled('servicio_elegido_id')) {
+            \App\Models\Consulta::where('id', $request->consulta_id)
+                ->where('empresa_id', $this->empresaId())
+                ->whereNull('servicio_id')
+                ->update(['servicio_id' => $request->servicio_elegido_id]);
+        }
 
         Notificacion::crear($pago->empresa_id, 'Pago registrado', [
             'tipo' => 'pago', 'icono' => 'fa-money-bill-wave',
@@ -83,6 +94,7 @@ class PagoController extends Controller
             'pago' => $pago,
             'pacientes' => $this->pacientes(),
             'pacienteSel' => $pago->paciente_id,
+            'citaSel' => $pago->cita_id,
             'servicios' => $this->servicios(),
             'consultasPendientes' => $this->consultasPendientesCobro(),
         ]);
@@ -92,6 +104,15 @@ class PagoController extends Controller
     {
         abort_unless($pago->empresa_id === $this->empresaId(), 403);
         $pago->update($this->validated($request));
+
+        // Mismo ajuste que en store(): fija el servicio/precio elegido en la
+        // consulta la primera vez que se cobra un pendiente tipo "categoría".
+        if ($request->filled('consulta_id') && $request->filled('servicio_elegido_id')) {
+            \App\Models\Consulta::where('id', $request->consulta_id)
+                ->where('empresa_id', $this->empresaId())
+                ->whereNull('servicio_id')
+                ->update(['servicio_id' => $request->servicio_elegido_id]);
+        }
 
         return redirect()->route('pagos.index')->with('ok', 'Pago actualizado.');
     }
@@ -121,17 +142,33 @@ class PagoController extends Controller
 
       private function consultasPendientesCobro()
     {
-        return \App\Models\Consulta::where('empresa_id', $this->empresaId())
+        // Sistema viejo: consulta con un servicio de precio fijo (calcula saldo real)
+        $conServicioFijo = \App\Models\Consulta::where('empresa_id', $this->empresaId())
             ->whereNotNull('servicio_id')
             ->with(['paciente', 'servicio', 'pago' => fn ($q) => $q->where('estado', 'pagado')])
-            ->orderByDesc('fecha')
             ->get()
             ->filter(function ($c) {
                 $pagado = $c->pago->sum('monto');
                 $precio = $c->servicio->precio ?? 0;
                 return $pagado < $precio;
             })
-            ->values();
+            ->map(function ($c) {
+                $c->tipoPendiente = 'servicio_fijo';
+                return $c;
+            });
+
+        // Sistema nuevo: médico solo asignó una categoría, recepción define el código exacto
+        $conCategoria = \App\Models\Consulta::where('empresa_id', $this->empresaId())
+            ->whereNotNull('categoria_servicio')
+            ->whereDoesntHave('pago')
+            ->with(['paciente'])
+            ->get()
+            ->map(function ($c) {
+                $c->tipoPendiente = 'categoria';
+                return $c;
+            });
+
+        return $conServicioFijo->concat($conCategoria)->sortByDesc('fecha')->values();
     }
 
     private function pacientes()
@@ -152,6 +189,7 @@ class PagoController extends Controller
                         'cuota_numero' => ['nullable', 'integer', 'min:1'],
             'cuota_total' => ['nullable', 'integer', 'min:1'],
             'consulta_id' => ['nullable', 'exists:consultas,id'],
+            'cita_id' => ['nullable', 'exists:citas,id'],
         ]);
             
     }

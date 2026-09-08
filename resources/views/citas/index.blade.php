@@ -19,7 +19,7 @@
 
     <div class="table-wrap">
         <table>
-            <thead><tr><th>Paciente</th><th>Especialidad</th><th>Médico</th><th>Fecha</th><th>Hora</th><th>Estado</th><th></th></tr></thead>
+            <thead><tr><th>Paciente</th><th>Especialidad</th><th>Psicólogo(a)</th><th>Fecha</th><th>Hora</th><th>Estado</th><th></th></tr></thead>
             <tbody>
             @forelse($citas as $c)
                 <tr>
