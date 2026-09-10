@@ -127,8 +127,8 @@ class DashboardController extends Controller
             ->with([
                 'paciente', 'especialidad', 'medico',
                 'consulta.servicio', 'consulta.pago' => fn ($q) => $q->where('estado', 'pagado'),
-                'pagos' => fn ($q) => $q->where('estado', 'pagado'),
-            ])
+'pagos' => fn ($q) => $q->where('estado', 'pagado')->with('servicio'),
+                ])
             ->whereDate('fecha', $hoy)->orderBy('hora')->get(),
         'citasMananaSinConfirmar' => Cita::where('empresa_id', $empresaId)->where('es_bloqueo', false)
             ->whereDate('fecha', $hoy->copy()->addDay())->where('estado', 'pendiente')->count(),

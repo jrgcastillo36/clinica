@@ -270,7 +270,7 @@ Route::middleware('role:admin')->group(function () {
             Route::post('/cierres/{cierre}/reabrir', [CierreCajaController::class, 'reabrir'])->name('cierres.reabrir');
 
             Route::get('/pagos/{pago}/recibo', [PagoController::class, 'recibo'])->name('pagos.recibo');
-
+Route::get('/pacientes/{paciente}/estado-cuenta/pdf', [PagoController::class, 'estadoCuentaPdf'])->name('pagos.estado-cuenta-paciente');
             // Comprobantes electrónicos (SUNAT)
             Route::get('/comprobantes', [ComprobanteController::class, 'index'])->name('comprobantes.index');
             Route::get('/comprobantes/{comprobante}/pdf', [ComprobanteController::class, 'pdf'])->name('comprobantes.pdf');
@@ -288,9 +288,9 @@ Route::middleware('role:admin')->group(function () {
                         Route::post('/resumenes/{resumen}/reenviar', [ResumenController::class, 'reenviar'])->name('resumenes.reenviar');
         });
 
-        Route::middleware('role:admin')->group(function () {
-            Route::delete('/pagos/{pago}', [PagoController::class, 'destroy'])->name('pagos.destroy');
-        });
+      Route::middleware('role:admin')->group(function () {
+    Route::post('/pagos/{pago}/anular', [PagoController::class, 'anular'])->name('pagos.anular');
+});
 
         // Inventario
         Route::resource('insumos', InsumoController::class)->except(['show']);
@@ -358,7 +358,9 @@ Route::middleware('role:admin')->group(function () {
                         Route::get('/reportes/clinico/pdf', [ReporteController::class, 'clinicoPdf'])->name('reportes.clinico.pdf');
             Route::get('/reportes/financiero', [ReporteController::class, 'financiero'])->name('reportes.financiero');
                        Route::get('/reportes/financiero/pdf', [ReporteController::class, 'financieroPdf'])->name('reportes.financiero.pdf');
-            Route::get('/reportes/pdf', [ReporteController::class, 'pdf'])->name('reportes.pdf');
+           Route::get('/reportes/resumen-diario', [ReporteController::class, 'resumenDiario'])->name('reportes.resumen-diario');
+Route::get('/reportes/resumen-diario/pdf', [ReporteController::class, 'resumenDiarioPdf'])->name('reportes.resumen-diario.pdf');
+                       Route::get('/reportes/pdf', [ReporteController::class, 'pdf'])->name('reportes.pdf');
             Route::get('/reportes/excel', [ReporteController::class, 'excel'])->name('reportes.excel');
         });
     });

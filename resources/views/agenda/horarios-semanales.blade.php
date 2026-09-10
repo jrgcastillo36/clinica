@@ -1,6 +1,5 @@
 @extends('layouts.app')
-@section('title', 'Horarios de médicos')
-
+@section('title', 'Horarios de psicólogos(as)')
 @section('content')
     @php
         $dias = ['Lunes','Martes','Miércoles','Jueves','Viernes','Sábado','Domingo'];
@@ -10,8 +9,8 @@
         $paletaMedicos = ['#0d9488','#1e3a8a','#ca8a04','#db2777','#9333ea','#65a30d','#dc2626','#0891b2'];
     @endphp
     <div class="page-head no-print">
-        <div><h1>Horarios de médicos</h1><p>Patrón semanal de atención de cada médico, con avisos de bloqueo.</p></div>
-        <div class="flex gap">
+<div><h1>Horarios de psicólogos(as)</h1><p>Patrón semanal de atención de cada psicólogo(a), con avisos de bloqueo.</p></div>
+    <div class="flex gap">
             <a href="{{ route('agenda.index') }}" class="btn btn-ghost"><i class="fa-solid fa-arrow-left"></i> Agenda</a>
             <a href="{{ route('agenda.disponibilidad') }}" class="btn btn-light"><i class="fa-solid fa-table-cells"></i> Disponibilidad</a>
             <button onclick="window.print()" class="btn btn-light"><i class="fa-solid fa-print"></i> Imprimir</button>
@@ -26,8 +25,8 @@
     @endif
 
     <div class="field mb no-print" style="max-width:280px">
-        <label>Filtrar por médico</label>
-        <input type="text" id="filtroMedicoTexto" placeholder="Escribe un nombre..." onkeyup="filtrarTabla()">
+<label>Filtrar por psicólogo(a)</label>
+    <input type="text" id="filtroMedicoTexto" placeholder="Escribe un nombre..." onkeyup="filtrarTabla()">
     </div>
 
     <div class="card" style="padding:0;overflow:hidden">
@@ -71,7 +70,7 @@
                     @endforeach
                 </tr>
             @empty
-                <tr><td colspan="8"><div class="empty"><i class="fa-solid fa-user-doctor"></i><p>No hay médicos registrados.</p></div></td></tr>
+<tr><td colspan="8"><div class="empty"><i class="fa-solid fa-user-doctor"></i><p>No hay psicólogos(as) registrados.</p></div></td></tr>
             @endforelse
             </tbody>
         </table>

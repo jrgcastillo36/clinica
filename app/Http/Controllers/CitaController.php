@@ -63,20 +63,24 @@ class CitaController extends Controller
     }
 
 
-       public function index(Request $request)
-    {
-        $estado = $request->get('estado');
-        $citas = Cita::where('empresa_id', $this->empresaId())
-            ->where('es_bloqueo', false)
-            ->when(auth()->user()->isMedico(), fn ($q) => $q->where('medico_id', auth()->id()))
+    public function index(Request $request)
+{
+    $estado = $request->get('estado');
+    $desde = $request->get('desde');
+    $hasta = $request->get('hasta');
 
-            ->when($estado, fn ($q) => $q->where('estado', $estado))
-            ->with(['paciente', 'medico', 'especialidad'])
-            ->orderBy('fecha', 'desc')->orderBy('hora')
-            ->paginate(12)->withQueryString();
+    $citas = Cita::where('empresa_id', $this->empresaId())
+        ->where('es_bloqueo', false)
+        ->when(auth()->user()->isMedico(), fn ($q) => $q->where('medico_id', auth()->id()))
+        ->when($estado, fn ($q) => $q->where('estado', $estado))
+        ->when($desde, fn ($q) => $q->whereDate('fecha', '>=', $desde))
+        ->when($hasta, fn ($q) => $q->whereDate('fecha', '<=', $hasta))
+        ->with(['paciente', 'medico', 'especialidad'])
+        ->orderBy('fecha', 'desc')->orderBy('hora')
+        ->paginate(12)->withQueryString();
 
-        return view('citas.index', compact('citas', 'estado'));
-    }
+    return view('citas.index', compact('citas', 'estado', 'desde', 'hasta'));
+}
 
     public function create(Request $request)
     {

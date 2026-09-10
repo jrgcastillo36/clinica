@@ -15,8 +15,14 @@
     </div>
 
     <div class="profile">
-        <div class="avatar">{{ $u->initials() }}</div>
-        <div class="name">{{ $u->name }}</div>
+<div class="avatar" style="overflow:hidden">
+    @if($u->avatar)
+        <img src="{{ asset('storage/'.$u->avatar) }}" alt="{{ $u->name }}" style="width:100%;height:100%;object-fit:cover">
+    @else
+        {{ $u->initials() }}
+    @endif
+</div>
+    <div class="name">{{ $u->name }}</div>
         <div class="role">{{ $u->role === 'medico' && $u->especialidad ? 'Psicólogo(a) · '.$u->especialidad->nombre : $u->role }}</div>
     </div>
 

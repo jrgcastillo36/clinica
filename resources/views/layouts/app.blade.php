@@ -11,8 +11,8 @@
             var pref = @json($prefs['tema'] ?? 'auto');
             var ls = localStorage.getItem('tema');
             var dark = ls ? (ls === 'dark') : (pref === 'oscuro');
-            if (dark) document.documentElement.setAttribute('data-theme','dark');
-                       var dens = @json($prefs['densidad'] ?? 'comodo');
+// if (dark) document.documentElement.setAttribute('data-theme','dark'); // modo oscuro deshabilitado temporalmente
+            var dens = @json($prefs['densidad'] ?? 'comodo');
             if (dens === 'compacto') document.documentElement.setAttribute('data-densidad','compacto');
 
             
@@ -55,7 +55,7 @@
                 @if(request()->routeIs('agenda.*'))
                 <a href="{{ route('dashboard') }}" class="icon-btn" title="Volver al menú"><i class="fa-solid fa-house"></i></a>
                 @endif
-                <button class="icon-btn" onclick="toggleTema()" title="Cambiar tema" type="button"><i class="fa-solid fa-moon" id="temaIcon"></i></button>
+{{-- <button class="icon-btn" onclick="toggleTema()" title="Cambiar tema" type="button"><i class="fa-solid fa-moon" id="temaIcon"></i></button> --}}
                 @php
                     $noLeidas = auth()->user()->empresa_id
                         ? \App\Models\Notificacion::where('empresa_id', auth()->user()->empresa_id)->where('leido', false)->count()

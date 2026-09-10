@@ -15,8 +15,12 @@
                 <i class="fa-solid fa-magnifying-glass"></i>
                 <input type="text" name="q" value="{{ $q }}" placeholder="Buscar por nombre, apellido o documento...">
             </div>
-            <button class="btn btn-primary">Buscar</button>
-            @if($q)<a href="{{ route('pacientes.index') }}" class="btn btn-ghost">Limpiar</a>@endif
+            <select name="orden" onchange="this.form.submit()" style="width:auto">
+    <option value="alfabetico" {{ $orden === 'alfabetico' ? 'selected' : '' }}>Alfabético</option>
+    <option value="recientes" {{ $orden === 'recientes' ? 'selected' : '' }}>Más recientes primero</option>
+</select>
+<button class="btn btn-primary">Buscar</button>
+@if($q)<a href="{{ route('pacientes.index') }}" class="btn btn-ghost">Limpiar</a>@endif
         </div>
     </form>
 

@@ -34,16 +34,26 @@
                     </td>
                     <td>{{ $p->metodo_label }}</td>
                     <td><b>@money($p->monto, null, 2)</b></td>
-                    <td>
-                        @php $mp=['pagado'=>'green','pendiente'=>'amber','anulado'=>'red'][$p->estado]??'gray'; @endphp
-                        <span class="pill {{ $mp }}">{{ ucfirst($p->estado) }}</span>
-                    </td>
+                   <td>
+    @php $mp=['pagado'=>'green','pendiente'=>'amber','anulado'=>'red'][$p->estado]??'gray'; @endphp
+    <span class="pill {{ $mp }}">{{ ucfirst($p->estado) }}</span>
+    @if($p->estado === 'anulado' && $p->motivo_anulacion)
+        <br><small class="muted" style="font-size:10.5px" title="{{ $p->motivo_anulacion }}">
+            <i class="fa-solid fa-circle-info"></i> {{ \Illuminate\Support\Str::limit($p->motivo_anulacion, 30) }}
+        </small>
+    @endif
+</td>
                     <td style="text-align:right;white-space:nowrap">
                         <a href="{{ route('pagos.recibo',$p) }}" target="_blank" class="btn btn-light btn-sm"><i class="fa-solid fa-receipt"></i></a>
                         <a href="{{ route('pagos.edit',$p) }}" class="btn btn-light btn-sm"><i class="fa-solid fa-pen"></i></a>
-                        @if(auth()->user()->role === 'admin')
-                        <form method="POST" action="{{ route('pagos.destroy',$p) }}" style="display:inline" onsubmit="return confirm('¿Eliminar pago? Esta acción no se puede deshacer.')">@csrf @method('DELETE')<button class="btn btn-danger btn-sm"><i class="fa-solid fa-trash"></i></button></form>
-                        @endif
+                     @if(auth()->user()->role === 'admin' && $p->estado !== 'anulado')
+<form method="POST" action="{{ route('pagos.anular',$p) }}" style="display:inline" onsubmit="return prepararAnulacion(this)">
+    @csrf
+    <input type="hidden" name="motivo">
+    <button type="submit" class="btn btn-danger btn-sm" title="Anular pago"><i class="fa-solid fa-ban"></i></button>
+</form>
+@endif
+
                     </td>
                 </tr>
             @empty
@@ -53,4 +63,17 @@
         </table>
     </div>
     {{ $pagos->links() }}
+
+<script>
+function prepararAnulacion(form) {
+    const motivo = prompt('¿Por qué se anula este pago? (obligatorio, quedará guardado en el historial)');
+    if (!motivo || !motivo.trim()) {
+        alert('Debes escribir un motivo para anular el pago.');
+        return false;
+    }
+    form.querySelector('input[name=motivo]').value = motivo.trim();
+    return confirm('¿Confirmas anular este pago?\n\nMotivo: ' + motivo.trim() + '\n\nEsto NO borra el registro, solo lo marca como anulado.');
+}
+</script>
+
 @endsection

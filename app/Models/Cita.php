@@ -39,6 +39,8 @@ class Cita extends Model
     {
         $tel = preg_replace('/[^0-9]/', '', (string) optional($this->paciente)->telefono);
         if (! $tel) return null;
+        if (! $tel) return null;
+if (! $this->medico) return null;
 
         $empresa = $this->empresa;
         $paciente = $this->paciente;

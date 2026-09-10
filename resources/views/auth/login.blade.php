@@ -25,11 +25,11 @@
         ===================================================== */
 
         :root {
-            --primary: #1f0670;
-            --primary-dark: #14054d;
-            --primary-light: #7B5DD9;
-            --primary-gradient: linear-gradient(145deg, #140447 0%, #7B5DD9 100%);
-            --primary-glow: rgba(91, 60, 196, 0.20);
+            --primary: #1088ba;
+--primary-dark: #0a5f7f;
+--primary-light: #4fb3d9;
+--primary-gradient: linear-gradient(145deg, #0a3d52 0%, #4fb3d9 100%);
+--primary-glow: rgba(16, 136, 186, 0.20);
 
             --secondary: #0D8ABF;
             --secondary-dark: #0A6E99;
@@ -46,8 +46,7 @@
             --white: #FFFFFF;
             --border: #E2E8F0;
 
-            --shadow-xl: 0 30px 80px rgba(91, 60, 196, 0.15);
-
+--shadow-xl: 0 30px 80px rgba(16, 136, 186, 0.15);
             --radius-sm: 10px;
             --radius-md: 16px;
             --radius-lg: 24px;
@@ -145,14 +144,14 @@
 
             overflow: hidden;
 
-            background:
-                linear-gradient(
-                    155deg,
-                    #4A2DA8 0%,
-                    #5B3CC4 35%,
-                    #6B4FD4 70%,
-                    #7B5DD9 100%
-                );
+          background:
+    linear-gradient(
+        155deg,
+        #0a4d66 0%,
+        #0d6688 35%,
+        #0f7ba3 70%,
+        #4fb3d9 100%
+    );
         }
 
 
@@ -372,8 +371,7 @@
         .promo h2 .highlight {
             display: block;
 
-            color: #D4C4F7;
-
+color: #BEE6F2;
             font-weight: 700;
 
             text-shadow: 0 0 40px rgba(212, 196, 247, 0.2);
@@ -393,11 +391,12 @@
             border-radius: 20px;
 
             background:
-                linear-gradient(
-                    90deg,
-                    #D4C4F7,
-                    #A58BE0
-                );
+            background:
+    linear-gradient(
+        90deg,
+        #BEE6F2,
+        #3E9EC4
+    );
 
             box-shadow: 0 0 20px rgba(212, 196, 247, 0.3);
         }
@@ -511,8 +510,7 @@
 
             border-radius: 11px;
 
-            color: #D4C4F7;
-
+color: #BEE6F2;
             background: rgba(255,255,255,0.08);
 
             border: 1px solid rgba(255,255,255,0.06);

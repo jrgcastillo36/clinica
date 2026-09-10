@@ -242,20 +242,21 @@ class AgendaController extends Controller
             $inicio = \Carbon\Carbon::parse(substr($c->hora, 0, 5));
             $finCita = $inicio->copy()->addMinutes($c->duracion ?: 30);
 
-            foreach ($slots as $s) {
-                $slotTime = \Carbon\Carbon::parse($s);
-                if ($slotTime->gte($inicio) && $slotTime->lt($finCita)) {
-                    if ($c->medico_id) {
-                        $ocupado[$c->medico_id][$s] = $c->paciente->nombre_completo ?? 'Ocupado';
-                    }
-                    if ($c->consultorio_id) {
-                        $ocupadoConsultorio[$c->consultorio_id][$s] = [
-                            'texto' => $c->paciente->nombre_completo ?? 'Ocupado',
-                            'medicoId' => $c->medico_id,
-                        ];
-                    }
-                }
-            }
+           foreach ($slots as $s) {
+    $slotTime = \Carbon\Carbon::parse($s);
+    if ($slotTime->gte($inicio) && $slotTime->lt($finCita)) {
+        $texto = $c->es_bloqueo ? 'No disponible' : ($c->paciente->nombre_completo ?? 'Ocupado');
+        if ($c->medico_id) {
+            $ocupado[$c->medico_id][$s] = $texto;
+        }
+        if ($c->consultorio_id) {
+            $ocupadoConsultorio[$c->consultorio_id][$s] = [
+                'texto' => $texto,
+                'medicoId' => $c->medico_id,
+            ];
+        }
+    }
+}
         }
 
         return view('agenda.disponibilidad', compact('medicos', 'slots', 'ocupado', 'fecha', 'consultorios', 'ocupadoConsultorio'));
@@ -264,8 +265,7 @@ class AgendaController extends Controller
     public function mover(Request $request, Cita $cita)
     {
         abort_unless($cita->empresa_id === $this->empresaId(), 403);
-        abort_if(auth()->user()->isMedico(), 403, 'El médico no puede reprogramar citas.');
-
+abort_if(auth()->user()->isMedico(), 403, 'El psicólogo(a) no puede reprogramar citas.');
         // Validación de choque de horario (médico y/o consultorio)
         if ($cita->medico_id || $cita->consultorio_id) {
             $fechaNueva = $request->fecha;

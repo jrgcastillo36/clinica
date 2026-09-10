@@ -3,8 +3,8 @@
 
 @section('content')
     <div class="page-head">
-        <div><h1>Disponibilidad</h1><p>Mapa de médicos y consultorios ocupados/libres por horario.</p></div>
-        <form method="GET" class="flex gap">
+<div><h1>Disponibilidad</h1><p>Mapa de psicólogos(as) y consultorios ocupados/libres por horario.</p></div>
+    <form method="GET" class="flex gap">
             <input type="date" name="fecha" value="{{ $fecha }}" onchange="this.form.submit()">
             <a href="{{ route('agenda.index') }}" class="btn btn-ghost"><i class="fa-solid fa-calendar-days"></i> Ver calendario</a>
         </form>
@@ -38,7 +38,7 @@
                         @endforeach
                     </tr>
                 @empty
-                    <tr><td colspan="100"><div class="empty"><i class="fa-solid fa-user-doctor"></i><p>No hay médicos registrados.</p></div></td></tr>
+<tr><td colspan="100"><div class="empty"><i class="fa-solid fa-user-doctor"></i><p>No hay psicólogos(as) registrados.</p></div></td></tr>
                 @endforelse
             </tbody>
         </table>

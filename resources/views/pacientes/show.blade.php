@@ -14,6 +14,9 @@
                 <a href="{{ route('vacunas.index', $paciente) }}" class="btn btn-light"><i class="fa-solid fa-syringe"></i> Vacunas</a>
             @endif
             <a href="{{ route('historia.pdf', $paciente) }}" target="_blank" class="btn btn-light"><i class="fa-solid fa-file-pdf"></i> Historia PDF</a>
+           @unless(auth()->user()->isMedico())
+<a href="{{ route('pagos.estado-cuenta-paciente', $paciente) }}" target="_blank" class="btn btn-light"><i class="fa-solid fa-file-invoice-dollar"></i> Estado de cuenta</a>
+@endunless
             @if(auth()->user()->isMedico())
 <a href="{{ route('consultas.create', ['paciente_id' => $paciente->id]) }}" class="btn btn-primary"><i class="fa-solid fa-notes-medical"></i> Nueva consulta</a>
 @endif

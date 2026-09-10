@@ -255,7 +255,52 @@ class ReporteController extends Controller
 
         return $pdf->stream('reporte-financiero-'.now()->format('Ymd').'.pdf');
     }
+public function resumenDiario(Request $request)
+{
+    return view('reportes.resumen-diario', $this->datosResumenDiario($request));
+}
 
+public function resumenDiarioPdf(Request $request)
+{
+    $datos = $this->datosResumenDiario($request);
+    $pdf = Pdf::loadView('reportes.resumen-diario-pdf', $datos)->setPaper('a4');
+    return $pdf->stream('resumen-diario-'.$datos['fecha']->format('Ymd').'.pdf');
+}
+
+private function datosResumenDiario(Request $request): array
+{
+    $eid = $this->empresaId();
+    $fecha = Carbon::parse($request->get('fecha', now()->toDateString()));
+
+    $citasDelDia = Cita::where('empresa_id', $eid)->where('es_bloqueo', false)->whereDate('fecha', $fecha);
+
+    $totalCitas = (clone $citasDelDia)->count();
+    $atendidas = (clone $citasDelDia)->where('estado', 'atendida')->count();
+    $pendientes = (clone $citasDelDia)->whereIn('estado', ['pendiente', 'confirmada'])->count();
+    $canceladas = (clone $citasDelDia)->whereIn('estado', ['cancelada', 'no_asistio'])->count();
+
+    $cobrosPorMetodo = Pago::where('empresa_id', $eid)->where('estado', 'pagado')
+        ->whereDate('fecha', $fecha)
+        ->selectRaw('metodo, sum(monto) total')->groupBy('metodo')->pluck('total', 'metodo');
+
+    $totalCobradoDia = $cobrosPorMetodo->sum();
+
+    $resumenDeuda = (new EstadoCuentaController())->resumenTotales();
+
+    return [
+        'fecha' => $fecha,
+        'empresa' => auth()->user()->empresa,
+        'totalCitas' => $totalCitas,
+        'atendidas' => $atendidas,
+        'pendientes' => $pendientes,
+        'canceladas' => $canceladas,
+        'cobrosPorMetodo' => $cobrosPorMetodo,
+        'totalCobradoDia' => $totalCobradoDia,
+        'totalDeuda' => $resumenDeuda['totalDeuda'],
+        'totalVencido' => $resumenDeuda['totalVencido'],
+        'cantidadDeudores' => $resumenDeuda['cantidadDeudores'],
+    ];
+}
     public function clinicoPdf()
     {
         $eid = $this->empresaId();

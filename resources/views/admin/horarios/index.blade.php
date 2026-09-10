@@ -2,7 +2,7 @@
 @section('title', 'Horarios')
 
 @section('content')
-    <div class="page-head"><div><h1>Horarios de atención</h1><p>Disponibilidad semanal de cada médico. La reserva online la respeta.</p></div></div>
+    <div class="page-head"><div><h1>Horarios de atención</h1><p>Disponibilidad semanal de cada psicólogo(a). La reserva online la respeta.</p></div></div>
 
     @forelse($medicos as $m)
         <div class="card mb">
@@ -34,7 +34,7 @@
             </form>
         </div>
         @empty
-        <div class="card"><div class="empty"><i class="fa-solid fa-user-doctor"></i><p>No hay médicos registrados. Créalos en Usuarios.</p></div></div>
+        <div class="card"><div class="empty"><i class="fa-solid fa-user-doctor"></i><p>No hay psicólogo(a) registrados. Créalos en Usuarios.</p></div></div>
     @endforelse
 
     <div class="card mt">

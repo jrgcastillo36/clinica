@@ -15,22 +15,27 @@ class PacienteController extends Controller
         return (int) auth()->user()->empresa_id;
     }
 
-    public function index(Request $request)
-    {
-        $q = $request->get('q');
-        $pacientes = Paciente::where('empresa_id', $this->empresaId())
-                    ->when(auth()->user()->isMedico(), fn ($q) => $q->whereHas('citas', fn ($c) => $c->where('medico_id', auth()->id())))
-            ->when($q, fn ($query) => $query->where(function ($sub) use ($q) {
-                $sub->where('nombres', 'like', "%{$q}%")
-                    ->orWhere('apellidos', 'like', "%{$q}%")
-                    ->orWhere('documento', 'like', "%{$q}%");
-            }))
-            ->with('especialidad')
-            ->orderBy('apellidos')
-            ->paginate(10)->withQueryString();
+ public function index(Request $request)
+{
+    $q = $request->get('q');
+    $orden = $request->get('orden', 'alfabetico');
 
-        return view('pacientes.index', compact('pacientes', 'q'));
-    }
+    $pacientes = Paciente::where('empresa_id', $this->empresaId())
+                ->when(auth()->user()->isMedico(), fn ($q) => $q->whereHas('citas', fn ($c) => $c->where('medico_id', auth()->id())))
+        ->when($q, fn ($query) => $query->where(function ($sub) use ($q) {
+            $sub->where('nombres', 'like', "%{$q}%")
+                ->orWhere('apellidos', 'like', "%{$q}%")
+                ->orWhere('documento', 'like', "%{$q}%");
+        }))
+        ->with('especialidad')
+        ->when($orden === 'recientes',
+            fn ($query) => $query->orderByDesc('created_at'),
+            fn ($query) => $query->orderBy('apellidos')
+        )
+        ->paginate(10)->withQueryString();
+
+    return view('pacientes.index', compact('pacientes', 'q', 'orden'));
+}
 
     public function create()
     {

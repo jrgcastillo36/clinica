@@ -71,219 +71,253 @@
 </style>
 
     @push('scripts')
-    <script>
-    document.addEventListener('DOMContentLoaded', function () {
-        // ===== Consultas pendientes de cobro (servicio_fijo + categoria) =====
-        const consultasPendientes = {!! json_encode($consultasPendientes->map(function($c) {
-            if ($c->tipoPendiente === 'categoria') {
-                return [
-                    'id' => $c->id,
-                    'paciente_id' => $c->paciente_id,
-                    'tipoPendiente' => 'categoria',
-                    'categoria' => $c->categoria_servicio,
-                    'fecha' => optional($c->fecha)->format('d/m/Y'),
-                ];
-            }
-            $pagado = $c->pago->sum('monto');
-            $precio = (float) ($c->servicio->precio ?? 0);
-            $saldo = max($precio - $pagado, 0);
+   <script>
+document.addEventListener('DOMContentLoaded', function () {
+    // ===== Consultas pendientes de cobro (servicio_fijo + categoria + pago_directo) =====
+    const consultasPendientes = {!! json_encode($consultasPendientes->map(function($c) {
+        if ($c->tipoPendiente === 'categoria') {
             return [
                 'id' => $c->id,
                 'paciente_id' => $c->paciente_id,
-                'tipoPendiente' => 'servicio_fijo',
-                'servicio' => $c->servicio->nombre ?? 'Servicio',
-                'saldo' => $saldo,
-                'pagado' => $pagado,
-                'total' => $precio,
+                'tipoPendiente' => 'categoria',
+                'categoria' => $c->categoria_servicio,
                 'fecha' => optional($c->fecha)->format('d/m/Y'),
             ];
-        })->values()->toArray()) !!};
-
-        function mostrarPendientesDe(pacienteId){
-            const wrap = document.getElementById('pendientesWrap');
-            const sel = document.getElementById('pendienteSel');
-            const encontradas = consultasPendientes.filter(c => c.paciente_id == pacienteId);
-            sel.innerHTML = '<option value="">— Ninguna / cobro manual —</option>';
-            if (!encontradas.length) { wrap.style.display = 'none'; return; }
-            encontradas.forEach(function (c) {
-                const opt = document.createElement('option');
-                opt.value = c.id;
-                opt.dataset.tipo = c.tipoPendiente;
-                if (c.tipoPendiente === 'categoria') {
-                    opt.dataset.categoria = c.categoria;
-                    opt.textContent = c.fecha + ' — Categoría: ' + c.categoria + ' (pendiente de cobro)';
-                } else {
-                    opt.dataset.servicio = c.servicio;
-                    opt.dataset.precio = c.saldo;
-                    const detalle = c.pagado > 0 ? ' (pagado S/' + Number(c.pagado).toFixed(2) + ' de S/' + Number(c.total).toFixed(2) + ')' : '';
-                    opt.textContent = c.fecha + ' — ' + c.servicio + ' — Saldo: S/ ' + Number(c.saldo).toFixed(2) + detalle;
-                }
-                sel.appendChild(opt);
-            });
-            wrap.style.display = 'block';
         }
+        if ($c->tipoPendiente === 'pago_directo') {
+            return [
+                'id' => $c->id,
+                'paciente_id' => $c->paciente_id,
+                'tipoPendiente' => 'pago_directo',
+                'servicio' => $c->servicio->nombre ?? 'Servicio',
+                'servicio_id' => $c->servicio_id,
+                'saldo' => $c->saldo,
+                'pagado' => $c->pagado,
+                'total' => $c->total,
+                'fecha' => optional($c->fecha)->format('d/m/Y'),
+            ];
+        }
+        $pagado = $c->pago->sum('monto');
+        $precio = (float) ($c->servicio->precio ?? 0);
+        $saldo = max($precio - $pagado, 0);
+        return [
+            'id' => $c->id,
+            'paciente_id' => $c->paciente_id,
+            'tipoPendiente' => 'servicio_fijo',
+            'servicio' => $c->servicio->nombre ?? 'Servicio',
+            'saldo' => $saldo,
+            'pagado' => $pagado,
+            'total' => $precio,
+            'fecha' => optional($c->fecha)->format('d/m/Y'),
+        ];
+    })->values()->toArray()) !!};
 
-        window.aplicarPendiente = function(){
-            const sel = document.getElementById('pendienteSel');
-            const opt = sel.options[sel.selectedIndex];
-            document.getElementById('consultaId').value = sel.value || '';
-            if (!sel.value) { limpiarFiltroCategoria(); return; }
-
-            if (opt.dataset.tipo === 'categoria') {
-                document.querySelector('[name=concepto]').value = '';
-                document.querySelector('[name=monto]').value = '';
-                filtrarServiciosPorCategoria(opt.dataset.categoria);
+    function mostrarPendientesDe(pacienteId){
+        const wrap = document.getElementById('pendientesWrap');
+        const sel = document.getElementById('pendienteSel');
+        const encontradas = consultasPendientes.filter(c => c.paciente_id == pacienteId);
+        sel.innerHTML = '<option value="">— Ninguna / cobro manual —</option>';
+        if (!encontradas.length) { wrap.style.display = 'none'; return; }
+        encontradas.forEach(function (c) {
+            const opt = document.createElement('option');
+            opt.value = c.id;
+            opt.dataset.tipo = c.tipoPendiente;
+            if (c.tipoPendiente === 'categoria') {
+                opt.dataset.categoria = c.categoria;
+                opt.textContent = c.fecha + ' — Categoría: ' + c.categoria + ' (pendiente de cobro)';
+            } else if (c.tipoPendiente === 'pago_directo') {
+                opt.dataset.servicio = c.servicio;
+                opt.dataset.servicioId = c.servicio_id;
+                opt.dataset.precio = c.saldo;
+                const detalle = ' (ya pagó S/' + Number(c.pagado).toFixed(2) + ' de S/' + Number(c.total).toFixed(2) + ')';
+                opt.textContent = c.fecha + ' — ' + c.servicio + ' [sin cita] — Saldo: S/ ' + Number(c.saldo).toFixed(2) + detalle;
             } else {
-                document.querySelector('[name=concepto]').value = opt.dataset.servicio;
-                document.querySelector('[name=monto]').value = opt.dataset.precio;
-                limpiarFiltroCategoria();
+                opt.dataset.servicio = c.servicio;
+                opt.dataset.precio = c.saldo;
+                const detalle = c.pagado > 0 ? ' (pagado S/' + Number(c.pagado).toFixed(2) + ' de S/' + Number(c.total).toFixed(2) + ')' : '';
+                opt.textContent = c.fecha + ' — ' + c.servicio + ' — Saldo: S/ ' + Number(c.saldo).toFixed(2) + detalle;
             }
-        };
-
-        // ===== Buscador de pacientes =====
-        const pacientes = {!! json_encode($pacientes->map(function($p) {
-            return [
-                'id' => $p->id,
-                'nombre' => $p->nombre_completo,
-                'documento' => $p->documento,
-            ];
-        })->values()->toArray()) !!};
-
-        const input = document.getElementById('pacienteBuscar');
-        const hidden = document.getElementById('pacienteId');
-        const lista = document.getElementById('pacienteLista');
-
-        function render(items) {
-            lista.innerHTML = '';
-            if (!items.length) {
-                lista.style.display = 'none';
-                return;
-            }
-            items.slice(0, 30).forEach(function (p) {
-                const row = document.createElement('div');
-                row.innerHTML = p.nombre + ' <span class="doc">' + (p.documento || '') + '</span>';
-                row.addEventListener('click', function () {
-                    input.value = p.nombre + ' — ' + (p.documento || '');
-                    hidden.value = p.id;
-                    lista.style.display = 'none';
-                    mostrarPendientesDe(p.id);
-                });
-                lista.appendChild(row);
-            });
-            lista.style.display = 'block';
-        }
-
-        input.addEventListener('input', function () {
-            hidden.value = '';
-            const q = input.value.trim().toLowerCase();
-            if (!q) {
-                lista.style.display = 'none';
-                return;
-            }
-            render(pacientes.filter(function (p) {
-                return p.nombre.toLowerCase().includes(q) || (p.documento || '').toLowerCase().includes(q);
-            }));
+            sel.appendChild(opt);
         });
-        if (hidden.value) mostrarPendientesDe(hidden.value);
-        input.addEventListener('focus', function () {
-            if (input.value.trim()) {
-                input.dispatchEvent(new Event('input'));
-            }
-        });
-
-        document.addEventListener('click', function (e) {
-            if (!lista.contains(e.target) && e.target !== input) {
-                lista.style.display = 'none';
-            }
-        });
-
-        // ===== Buscador de servicios (reemplaza el <select> de 83 códigos) =====
-        const moneda = {!! json_encode(auth()->user()->empresa->moneda ?? 'S/') !!};
-
-        const servicios = {!! json_encode(collect($servicios ?? [])->map(function($s) {
-            return [
-                'id' => $s->id,
-                'codigo' => $s->codigo,
-                'nombre' => $s->nombre,
-                'categoria' => $s->categoria ?: 'Otros',
-                'precio' => $s->precio,
-            ];
-        })->values()->toArray()) !!};
-
-        let categoriaFiltro = null;
-        const servicioBuscar = document.getElementById('servicioBuscar');
-        const servicioListaEl = document.getElementById('servicioLista');
-        const servicioSelHidden = document.getElementById('servicioSel');
-
-        function serviciosFiltrados(q) {
-            let base = servicios;
-            if (categoriaFiltro) {
-                base = base.filter(function (s) { return s.categoria === categoriaFiltro; });
-            }
-            if (!q) return base;
-            return base.filter(function (s) {
-                return s.nombre.toLowerCase().includes(q) || (s.codigo || '').toLowerCase().includes(q);
-            });
-        }
-
-        function renderServicios(items) {
-            servicioListaEl.innerHTML = '';
-            if (!items.length) { servicioListaEl.style.display = 'none'; return; }
-            items.slice(0, 40).forEach(function (s) {
-                const row = document.createElement('div');
-                row.innerHTML = (s.codigo ? s.codigo + ' — ' : '') + s.nombre +
-                    ' <span class="doc">' + s.categoria + ' · ' + moneda + ' ' + Number(s.precio).toFixed(2) + '</span>';
-                row.addEventListener('click', function () {
-                    servicioBuscar.value = (s.codigo ? s.codigo + ' — ' : '') + s.nombre;
-                    servicioSelHidden.value = s.id;
-                    document.querySelector('[name=concepto]').value = s.nombre;
-                    document.querySelector('[name=monto]').value = s.precio;
-                    servicioListaEl.style.display = 'none';
-                });
-                servicioListaEl.appendChild(row);
-            });
-            servicioListaEl.style.display = 'block';
-        }
-
-      servicioBuscar.addEventListener('input', function () {
-    servicioSelHidden.value = '';
-    renderServicios(serviciosFiltrados(servicioBuscar.value.trim().toLowerCase()));
-});
-
-servicioBuscar.addEventListener('focus', function () {
-    servicioBuscar.select();
-    renderServicios(serviciosFiltrados(''));
-});
-
-servicioBuscar.addEventListener('click', function () {
-    renderServicios(serviciosFiltrados(''));
-});
-
-document.addEventListener('click', function (e) {
-    if (!servicioListaEl.contains(e.target) && e.target !== servicioBuscar) {
-        servicioListaEl.style.display = 'none';
+        wrap.style.display = 'block';
     }
-});
-        window.filtrarServiciosPorCategoria = function(categoria){
-            categoriaFiltro = categoria;
-            servicioBuscar.value = '';
-            servicioSelHidden.value = '';
+
+    window.aplicarPendiente = function(){
+        const sel = document.getElementById('pendienteSel');
+        const opt = sel.options[sel.selectedIndex];
+
+        if (!sel.value) {
+            document.getElementById('consultaId').value = '';
+            limpiarFiltroCategoria();
+            return;
+        }
+
+        if (opt.dataset.tipo === 'categoria') {
+            document.getElementById('consultaId').value = sel.value;
             document.querySelector('[name=concepto]').value = '';
             document.querySelector('[name=monto]').value = '';
-            document.getElementById('categoriaFiltroNombre').textContent = categoria;
-            document.getElementById('categoriaFiltroInfo').style.display = 'block';
-            servicioBuscar.placeholder = 'Buscar código en "' + categoria + '"...';
-            servicioBuscar.focus();
-            renderServicios(serviciosFiltrados(''));
-        };
+            filtrarServiciosPorCategoria(opt.dataset.categoria);
+        } else if (opt.dataset.tipo === 'pago_directo') {
+            // No hay consulta que vincular: se deja vacío a propósito.
+            document.getElementById('consultaId').value = '';
+            document.querySelector('[name=concepto]').value = opt.dataset.servicio;
+            document.querySelector('[name=monto]').value = opt.dataset.precio;
+            servicioSelHidden.value = opt.dataset.servicioId;
+            servicioBuscar.value = opt.dataset.servicio;
+            limpiarFiltroCategoria();
+        } else {
+            document.getElementById('consultaId').value = sel.value;
+            document.querySelector('[name=concepto]').value = opt.dataset.servicio;
+            document.querySelector('[name=monto]').value = opt.dataset.precio;
+            limpiarFiltroCategoria();
+        }
+    };
 
-        window.limpiarFiltroCategoria = function(){
-            categoriaFiltro = null;
-            document.getElementById('categoriaFiltroInfo').style.display = 'none';
-            servicioBuscar.placeholder = 'Buscar por código o nombre...';
-        };
+    // ===== Buscador de pacientes =====
+    const pacientes = {!! json_encode($pacientes->map(function($p) {
+        return [
+            'id' => $p->id,
+            'nombre' => $p->nombre_completo,
+            'documento' => $p->documento,
+        ];
+    })->values()->toArray()) !!};
+
+    const input = document.getElementById('pacienteBuscar');
+    const hidden = document.getElementById('pacienteId');
+    const lista = document.getElementById('pacienteLista');
+
+    function render(items) {
+        lista.innerHTML = '';
+        if (!items.length) {
+            lista.style.display = 'none';
+            return;
+        }
+        items.slice(0, 30).forEach(function (p) {
+            const row = document.createElement('div');
+            row.innerHTML = p.nombre + ' <span class="doc">' + (p.documento || '') + '</span>';
+            row.addEventListener('click', function () {
+                input.value = p.nombre + ' — ' + (p.documento || '');
+                hidden.value = p.id;
+                lista.style.display = 'none';
+                mostrarPendientesDe(p.id);
+            });
+            lista.appendChild(row);
+        });
+        lista.style.display = 'block';
+    }
+
+    input.addEventListener('input', function () {
+        hidden.value = '';
+        const q = input.value.trim().toLowerCase();
+        if (!q) {
+            lista.style.display = 'none';
+            return;
+        }
+        render(pacientes.filter(function (p) {
+            return p.nombre.toLowerCase().includes(q) || (p.documento || '').toLowerCase().includes(q);
+        }));
     });
-    </script>
+    if (hidden.value) mostrarPendientesDe(hidden.value);
+    input.addEventListener('focus', function () {
+        if (input.value.trim()) {
+            input.dispatchEvent(new Event('input'));
+        }
+    });
+
+    document.addEventListener('click', function (e) {
+        if (!lista.contains(e.target) && e.target !== input) {
+            lista.style.display = 'none';
+        }
+    });
+
+    // ===== Buscador de servicios (reemplaza el <select> de 83 códigos) =====
+    const moneda = {!! json_encode(auth()->user()->empresa->moneda ?? 'S/') !!};
+
+    const servicios = {!! json_encode(collect($servicios ?? [])->map(function($s) {
+        return [
+            'id' => $s->id,
+            'codigo' => $s->codigo,
+            'nombre' => $s->nombre,
+            'categoria' => $s->categoria ?: 'Otros',
+            'precio' => $s->precio,
+        ];
+    })->values()->toArray()) !!};
+
+    let categoriaFiltro = null;
+    const servicioBuscar = document.getElementById('servicioBuscar');
+    const servicioListaEl = document.getElementById('servicioLista');
+    const servicioSelHidden = document.getElementById('servicioSel');
+
+    function serviciosFiltrados(q) {
+        let base = servicios;
+        if (categoriaFiltro) {
+            base = base.filter(function (s) { return s.categoria === categoriaFiltro; });
+        }
+        if (!q) return base;
+        return base.filter(function (s) {
+            return s.nombre.toLowerCase().includes(q) || (s.codigo || '').toLowerCase().includes(q);
+        });
+    }
+
+    function renderServicios(items) {
+        servicioListaEl.innerHTML = '';
+        if (!items.length) { servicioListaEl.style.display = 'none'; return; }
+        items.slice(0, 40).forEach(function (s) {
+            const row = document.createElement('div');
+            row.innerHTML = (s.codigo ? s.codigo + ' — ' : '') + s.nombre +
+                ' <span class="doc">' + s.categoria + ' · ' + moneda + ' ' + Number(s.precio).toFixed(2) + '</span>';
+            row.addEventListener('click', function () {
+                servicioBuscar.value = (s.codigo ? s.codigo + ' — ' : '') + s.nombre;
+                servicioSelHidden.value = s.id;
+                document.querySelector('[name=concepto]').value = s.nombre;
+                document.querySelector('[name=monto]').value = s.precio;
+                servicioListaEl.style.display = 'none';
+            });
+            servicioListaEl.appendChild(row);
+        });
+        servicioListaEl.style.display = 'block';
+    }
+
+    servicioBuscar.addEventListener('input', function () {
+        servicioSelHidden.value = '';
+        renderServicios(serviciosFiltrados(servicioBuscar.value.trim().toLowerCase()));
+    });
+
+    servicioBuscar.addEventListener('focus', function () {
+        servicioBuscar.select();
+        renderServicios(serviciosFiltrados(''));
+    });
+
+    servicioBuscar.addEventListener('click', function () {
+        renderServicios(serviciosFiltrados(''));
+    });
+
+    document.addEventListener('click', function (e) {
+        if (!servicioListaEl.contains(e.target) && e.target !== servicioBuscar) {
+            servicioListaEl.style.display = 'none';
+        }
+    });
+
+    window.filtrarServiciosPorCategoria = function(categoria){
+        categoriaFiltro = categoria;
+        servicioBuscar.value = '';
+        servicioSelHidden.value = '';
+        document.querySelector('[name=concepto]').value = '';
+        document.querySelector('[name=monto]').value = '';
+        document.getElementById('categoriaFiltroNombre').textContent = categoria;
+        document.getElementById('categoriaFiltroInfo').style.display = 'block';
+        servicioBuscar.placeholder = 'Buscar código en "' + categoria + '"...';
+        servicioBuscar.focus();
+        renderServicios(serviciosFiltrados(''));
+    };
+
+    window.limpiarFiltroCategoria = function(){
+        categoriaFiltro = null;
+        document.getElementById('categoriaFiltroInfo').style.display = 'none';
+        servicioBuscar.placeholder = 'Buscar por código o nombre...';
+    };
+});
+</script>
     @endpush
 
 @endsection

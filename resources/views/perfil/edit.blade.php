@@ -5,10 +5,25 @@
     <div class="page-head"><div><h1>Mi perfil</h1><p>Actualiza tus datos y contraseña.</p></div></div>
 
     <div class="grid g-2">
-        <form method="POST" action="{{ route('perfil.update') }}" class="card">
-            @csrf @method('PUT')
+<form method="POST" action="{{ route('perfil.update') }}" class="card" enctype="multipart/form-data">
+    
+    @csrf @method('PUT')
             <h3 class="mb">Datos personales</h3>
             <div class="field mb"><label>Nombre</label><input name="name" value="{{ old('name',$usuario->name) }}" required></div>
+           <div class="field mb" style="display:flex;align-items:center;gap:16px">
+    <div style="width:64px;height:64px;border-radius:50%;overflow:hidden;background:var(--grad);display:flex;align-items:center;justify-content:center;color:#fff;font-size:24px;font-weight:600;flex-shrink:0">
+        @if($usuario->avatar)
+            <img src="{{ asset('storage/'.$usuario->avatar) }}" alt="Foto de perfil" style="width:100%;height:100%;object-fit:cover">
+        @else
+            {{ $usuario->initials() }}
+        @endif
+    </div>
+    <div>
+        <label style="display:block;margin-bottom:4px">Foto de perfil</label>
+        <input type="file" name="avatar" accept="image/*">
+        @error('avatar')<span class="err">{{ $message }}</span>@enderror
+    </div>
+</div>
             <div class="field mb"><label>Correo</label><input type="email" name="email" value="{{ old('email',$usuario->email) }}" required></div>
             <div class="field mb"><label>Teléfono</label><input name="telefono" value="{{ old('telefono',$usuario->telefono) }}"></div>
             <div class="field mb"><label>Título profesional</label><input name="titulo_profesional" value="{{ old('titulo_profesional',$usuario->titulo_profesional) }}" placeholder="Dr., Dra., Lic."></div>
@@ -31,8 +46,8 @@
             <button class="btn btn-primary"><i class="fa-solid fa-floppy-disk"></i> Guardar</button>
         </form>
 
-        <form method="POST" action="{{ route('perfil.password') }}" class="card">
-            @csrf @method('PUT')
+<form method="POST" action="{{ route('perfil.update') }}" class="card" enctype="multipart/form-data">
+        @csrf @method('PUT')
             <h3 class="mb">Cambiar contraseña</h3>
             <div class="field mb"><label>Contraseña actual</label><input type="password" name="actual" required>@error('actual')<span class="err">{{ $message }}</span>@enderror</div>
             <div class="field mb"><label>Nueva contraseña</label><input type="password" name="password" required></div>

@@ -53,6 +53,14 @@ class PagoController extends Controller
     {
         $data = $this->validated($request);
         $data['empresa_id'] = $this->empresaId();
+
+        // Si no hay consulta clínica vinculada pero sí se eligió un servicio del
+        // catálogo, se guarda ese servicio directo en el pago para poder calcular
+        // su saldo pendiente igual que se hace con las consultas.
+        if (! $request->filled('consulta_id') && $request->filled('servicio_elegido_id')) {
+            $data['servicio_id'] = $request->servicio_elegido_id;
+        }
+
         $pago = Pago::create($data);
 
         // Si esta consulta era tipo "categoría" (sin precio fijo) y recepción eligió
@@ -71,20 +79,7 @@ class PagoController extends Controller
             'url' => route('pagos.index'),
         ]);
 
-        // Facturación electrónica: si está habilitada, genera el comprobante.
-        $aviso = 'Pago registrado.';
-        if ($pago->estado === 'pagado') {
-            try {
-                $comp = \App\Support\Facturacion::generarDesdePago($pago->load('paciente'));
-                if ($comp) {
-                    $aviso .= ' Comprobante '.$comp->numero.' ('.$comp->estado.').';
-                }
-            } catch (\Throwable $e) {
-                // No interrumpe el registro del pago si la facturación falla.
-            }
-        }
-
-        return redirect()->route('pagos.index')->with('ok', $aviso);
+        return redirect()->route('pagos.index')->with('ok', 'Pago registrado.');
     }
 
       public function edit(Pago $pago)
@@ -103,7 +98,13 @@ class PagoController extends Controller
     public function update(Request $request, Pago $pago)
     {
         abort_unless($pago->empresa_id === $this->empresaId(), 403);
-        $pago->update($this->validated($request));
+        $data = $this->validated($request);
+
+        if (! $request->filled('consulta_id') && $request->filled('servicio_elegido_id')) {
+            $data['servicio_id'] = $request->servicio_elegido_id;
+        }
+
+        $pago->update($data);
 
         // Mismo ajuste que en store(): fija el servicio/precio elegido en la
         // consulta la primera vez que se cobra un pendiente tipo "categoría".
@@ -117,12 +118,23 @@ class PagoController extends Controller
         return redirect()->route('pagos.index')->with('ok', 'Pago actualizado.');
     }
 
-    public function destroy(Pago $pago)
+    public function anular(Request $request, Pago $pago)
     {
         abort_unless($pago->empresa_id === $this->empresaId(), 403);
-        $pago->delete();
+        abort_unless(auth()->user()->role === 'admin', 403, 'Solo un administrador puede anular pagos.');
 
-        return redirect()->route('pagos.index')->with('ok', 'Pago eliminado.');
+        $data = $request->validate([
+            'motivo' => ['required', 'string', 'max:500'],
+        ]);
+
+        $pago->update([
+            'estado' => 'anulado',
+            'motivo_anulacion' => $data['motivo'],
+            'anulado_por_id' => auth()->id(),
+            'anulado_at' => now(),
+        ]);
+
+        return redirect()->route('pagos.index')->with('ok', 'Pago anulado. Queda registrado en el historial con el motivo indicado.');
     }
 
     public function recibo(Pago $pago)
@@ -135,41 +147,167 @@ class PagoController extends Controller
         return $pdf->stream('recibo-'.$pago->id.'.pdf');
     }
 
+    public function estadoCuentaPdf(Paciente $paciente)
+    {
+        abort_unless($paciente->empresa_id === $this->empresaId(), 403);
+
+        $movimientos = collect();
+
+        // 1. Cargos y pagos de consultas con servicio asignado (flujo normal)
+        $consultas = \App\Models\Consulta::where('paciente_id', $paciente->id)
+            ->where('empresa_id', $this->empresaId())
+            ->whereNotNull('servicio_id')
+            ->with(['servicio', 'pago' => fn ($q) => $q->where('estado', 'pagado')->orderBy('fecha')])
+            ->orderBy('fecha')
+            ->get();
+
+        foreach ($consultas as $c) {
+            $precio = (float) ($c->servicio->precio ?? 0);
+            $movimientos->push([
+                'fecha' => $c->fecha,
+                'tipo' => 'cargo',
+                'descripcion' => $c->servicio->nombre ?? 'Servicio',
+                'monto' => $precio,
+            ]);
+
+            foreach ($c->pago as $p) {
+                $movimientos->push([
+                    'fecha' => $p->fecha,
+                    'tipo' => 'pago',
+                    'descripcion' => 'Pago — '.$p->metodo_label,
+                    'monto' => -1 * (float) $p->monto,
+                ]);
+            }
+        }
+
+        // 2. Cargos y pagos directos a una cita, sin consulta clínica de por medio
+        $pagosDirectos = Pago::where('paciente_id', $paciente->id)
+            ->where('empresa_id', $this->empresaId())
+            ->whereNull('consulta_id')
+            ->whereNotNull('servicio_id')
+            ->where('estado', 'pagado')
+            ->with('servicio')
+            ->orderBy('fecha')
+            ->get()
+
+->groupBy(fn ($p) => $p->paciente_id.'-'.$p->cita_id.'-'.$p->servicio_id);
+
+        foreach ($pagosDirectos as $grupo) {
+
+            $primero = $grupo->first();
+            $precio = (float) ($primero->servicio->precio ?? 0);
+            $movimientos->push([
+                'fecha' => $primero->fecha,
+                'tipo' => 'cargo',
+                'descripcion' => $primero->servicio->nombre ?? 'Servicio',
+                'monto' => $precio,
+            ]);
+
+            foreach ($grupo as $p) {
+                $movimientos->push([
+                    'fecha' => $p->fecha,
+                    'tipo' => 'pago',
+                    'descripcion' => 'Pago — '.$p->metodo_label,
+                    'monto' => -1 * (float) $p->monto,
+                ]);
+            }
+        }
+
+        $movimientos = $movimientos->sortBy('fecha')->values();
+
+        $saldoCorrido = 0;
+        $movimientos = $movimientos->map(function ($m) use (&$saldoCorrido) {
+            $saldoCorrido += $m['monto'];
+            $m['saldo'] = $saldoCorrido;
+            return $m;
+        });
+
+        $totalCargos = $movimientos->where('tipo', 'cargo')->sum('monto');
+        $totalPagos = abs($movimientos->where('tipo', 'pago')->sum('monto'));
+        $saldoFinal = $saldoCorrido;
+
+        $pdf = Pdf::loadView('pagos.estado-cuenta-paciente', [
+            'paciente' => $paciente,
+            'empresa' => auth()->user()->empresa,
+            'movimientos' => $movimientos,
+            'totalCargos' => $totalCargos,
+            'totalPagos' => $totalPagos,
+            'saldoFinal' => $saldoFinal,
+            'generadoEl' => now(),
+        ])->setPaper('a4');
+
+        return $pdf->stream('estado-cuenta-'.$paciente->id.'.pdf');
+    }
+
        private function servicios()
     {
         return Servicio::where('empresa_id', $this->empresaId())->where('activo', true)->orderBy('nombre')->get();
     }
 
-      private function consultasPendientesCobro()
-    {
-        // Sistema viejo: consulta con un servicio de precio fijo (calcula saldo real)
-        $conServicioFijo = \App\Models\Consulta::where('empresa_id', $this->empresaId())
-            ->whereNotNull('servicio_id')
-            ->with(['paciente', 'servicio', 'pago' => fn ($q) => $q->where('estado', 'pagado')])
-            ->get()
-            ->filter(function ($c) {
-                $pagado = $c->pago->sum('monto');
-                $precio = $c->servicio->precio ?? 0;
-                return $pagado < $precio;
-            })
-            ->map(function ($c) {
-                $c->tipoPendiente = 'servicio_fijo';
-                return $c;
-            });
+   private function consultasPendientesCobro()
+{
+    // Sistema viejo: consulta con un servicio de precio fijo (calcula saldo real)
+    $conServicioFijo = \App\Models\Consulta::where('empresa_id', $this->empresaId())
+        ->whereNotNull('servicio_id')
+        ->with(['paciente', 'servicio', 'pago' => fn ($q) => $q->where('estado', 'pagado')])
+        ->get()
+        ->filter(function ($c) {
+            $pagado = $c->pago->sum('monto');
+            $precio = $c->servicio->precio ?? 0;
+            return $pagado < $precio;
+        })
+        ->map(function ($c) {
+            $c->tipoPendiente = 'servicio_fijo';
+            return $c;
+        });
 
-        // Sistema nuevo: médico solo asignó una categoría, recepción define el código exacto
-        $conCategoria = \App\Models\Consulta::where('empresa_id', $this->empresaId())
-            ->whereNotNull('categoria_servicio')
-            ->whereDoesntHave('pago')
-            ->with(['paciente'])
-            ->get()
-            ->map(function ($c) {
-                $c->tipoPendiente = 'categoria';
-                return $c;
-            });
+    // Sistema nuevo: médico solo asignó una categoría, recepción define el código exacto
+    $conCategoria = \App\Models\Consulta::where('empresa_id', $this->empresaId())
+        ->whereNotNull('categoria_servicio')
+        ->whereDoesntHave('pago')
+        ->with(['paciente'])
+        ->get()
+        ->map(function ($c) {
+            $c->tipoPendiente = 'categoria';
+            return $c;
+        });
 
-        return $conServicioFijo->concat($conCategoria)->sortByDesc('fecha')->values();
-    }
+    // Pagos directos a una cita, sin consulta clínica de por medio, con saldo pendiente
+    $conPagoDirecto = \App\Models\Pago::where('empresa_id', $this->empresaId())
+        ->whereNull('consulta_id')
+        ->whereNotNull('servicio_id')
+        ->where('estado', 'pagado')
+        ->with(['paciente', 'servicio'])
+        ->get()
+->groupBy(fn ($p) => $p->paciente_id.'-'.$p->cita_id.'-'.$p->servicio_id)
+        ->map(function ($grupo) {
+            $primero = $grupo->first();
+            $precio = (float) ($primero->servicio->precio ?? 0);
+            $pagado = $grupo->sum('monto');
+            $saldo = max($precio - $pagado, 0);
+
+            if ($saldo <= 0 || ! $primero->paciente) {
+                return null;
+            }
+
+            return (object) [
+'id' => 'pd-'.$primero->paciente_id.'-'.$primero->cita_id.'-'.$primero->servicio_id,
+            'paciente_id' => $primero->paciente_id,
+                'paciente' => $primero->paciente,
+                'tipoPendiente' => 'pago_directo',
+                'servicio' => $primero->servicio,
+                'servicio_id' => $primero->servicio_id,
+                'saldo' => $saldo,
+                'pagado' => $pagado,
+                'total' => $precio,
+                'fecha' => $grupo->min('fecha'),
+            ];
+        })
+        ->filter()
+        ->values();
+
+    return $conServicioFijo->concat($conCategoria)->concat($conPagoDirecto)->sortByDesc('fecha')->values();
+}
 
     private function pacientes()
     {

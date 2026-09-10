@@ -8,7 +8,7 @@
             <h1>Hola, {{ explode(' ', auth()->user()->name)[0] }} 👋</h1>
             <p>Resumen de {{ $empresa->nombre ?? 'tu clínica' }} · {{ now()->locale('es')->isoFormat('dddd, D [de] MMMM YYYY') }}</p>
         </div>
-        <a href="{{ route('citas.create') }}" class="btn btn-primary"><i class="fa-solid fa-plus"></i> Nueva cita</a>
+{{-- <a href="{{ route('citas.create') }}" class="btn btn-primary"><i class="fa-solid fa-plus"></i> Nueva cita</a> --}}
     </div>
 
     <div class="grid g-4 mb">

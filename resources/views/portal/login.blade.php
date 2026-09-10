@@ -442,6 +442,9 @@
                 padding: 16px 18px;
             }
         }
+
+
+        
     </style>
 </head>
 <body>
@@ -449,20 +452,16 @@
         <!-- Panel izquierdo - Promo -->
         <div class="promo">
             <div class="z">
-                <div class="logo">
-                    <i class="fa-solid fa-user-shield"></i>
-                </div>
+                   <img src="{{ asset('images/logosistema.png') }}" alt="Grupo Libérate" style="width:150px;margin-bottom:20px">
+
                 <h2>Portal del<br>Paciente</h2>
-                <p>Consulta tus próximas citas, tu historia clínica y tus recibos de pago en un solo lugar.</p>
+                <p>Consulta tus próximas citas, Tareas Asignadas ,  tus Estados de pago en un solo lugar.</p>
                 <ul>
                     <li>
                         <i class="fa-regular fa-calendar-check"></i>
                         Tus próximas citas
                     </li>
-                    <li>
-                        <i class="fa-solid fa-notes-medical"></i>
-                        Tu historia clínica
-                    </li>
+                   
                     <li>
                         <i class="fa-solid fa-receipt"></i>
                         Tus pagos y recibos
@@ -474,9 +473,10 @@
         <!-- Panel derecho - Formulario -->
         <div class="panel">
             <div class="box">
-                <h1>Hola de nuevo 👋</h1>
-                <p class="sub">Ingresa con el correo registrado en tu clínica.</p>
-
+                <center>
+                <h1>Hola de Bienvenido 👋</h1>
+                <p class="sub">Ingresa con el correo registrado </p>
+</center>
                 @if(session('aviso'))
                     <div class="alert ok">
                         <i class="fa-solid fa-circle-info"></i>
@@ -495,7 +495,7 @@
                     @csrf
                     <div class="field">
                         <label for="email">
-                            <i class="fa-regular fa-envelope"></i> Correo
+                            <i class="fa-regular fa-envelope"></i> Usuario
                         </label>
                         <input type="email" id="email" name="email" 
                                value="{{ old('email') }}" 

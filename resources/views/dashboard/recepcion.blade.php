@@ -3,10 +3,9 @@
 @section('content')
     @php $mon = $empresa->moneda ?? 'S/'; @endphp
     <div class="page-head">
-        <div><h1>Recepción 🗂️</h1><p>{{ now()->locale('es')->isoFormat('dddd D [de] MMMM') }}</p></div>
+        <div><h1>Recepción 🪷</h1>...<p>{{ now()->locale('es')->isoFormat('dddd D [de] MMMM') }}</p></div>
         <div class="flex gap">
-            <a href="{{ route('citas.create') }}" class="btn btn-primary"><i class="fa-solid fa-calendar-plus"></i> Nueva cita</a>
-            <a href="{{ route('pagos.create') }}" class="btn btn-light"><i class="fa-solid fa-money-bill"></i> Cobrar</a>
+{{-- <a href="{{ route('citas.create') }}" class="btn btn-primary"><i class="fa-solid fa-calendar-plus"></i> Nueva cita</a> --}}
         </div>
     </div>
     @if($citasMananaSinConfirmar > 0)
@@ -43,7 +42,7 @@
         <div style="padding:18px 22px 8px"><h3 style="margin:0">Agenda de hoy</h3></div>
         <div class="table-wrap" style="box-shadow:none;border-radius:0">
             <table>
-                <thead><tr><th>Hora</th><th>Paciente</th><th>Especialidad</th><th>Médico</th><th>Estado</th><th></th></tr></thead>
+                <thead><tr><th>Hora</th><th>Paciente</th><th>Especialidad</th><th>Psicólogo(a)</th><th>Estado</th><th></th></tr></thead>
                 <tbody>
                 @forelse($agendaHoy as $c)
                     <tr>
@@ -73,8 +72,8 @@
 @php
     $consulta = $c->consulta;
     $estadoCobro = 'pendiente';
-    $saldoRestante = 0;
-    $montoAbonado = 0;
+    $montoACobrar = null;
+    $montoRegistrado = 0;
 
     if ($consulta && $consulta->servicio_id) {
         $pagado = $consulta->pago->sum('monto');
@@ -82,27 +81,38 @@
         $saldoRestante = max($precio - $pagado, 0);
         if ($saldoRestante <= 0) {
             $estadoCobro = 'cobrado';
-        } elseif ($pagado > 0) {
-            $estadoCobro = 'abono';
-            $montoAbonado = $pagado;
+        } else {
+            $montoACobrar = $saldoRestante;
         }
     } else {
-        $pagadoDirecto = $c->pagos->sum('monto');
-        if ($pagadoDirecto > 0) {
+        $pagosDirectos = $c->pagos->where('servicio_id', '!=', null);
+        if ($pagosDirectos->isNotEmpty()) {
+            $primero = $pagosDirectos->first();
+            $precio = (float) ($primero->servicio->precio ?? 0);
+            $pagado = $pagosDirectos->sum('monto');
+            $saldoRestante = max($precio - $pagado, 0);
+            if ($saldoRestante <= 0) {
+                $estadoCobro = 'cobrado';
+            } else {
+                $estadoCobro = 'registrado';
+                $montoACobrar = $saldoRestante;
+                $montoRegistrado = $pagado;
+            }
+        } elseif ($c->pagos->isNotEmpty()) {
             $estadoCobro = 'registrado';
-            $montoAbonado = $pagadoDirecto;
+            $montoRegistrado = $c->pagos->sum('monto');
         }
     }
 @endphp
 @if($estadoCobro === 'cobrado')
     <span class="pill" style="background:#dcfce7;color:#166534"><i class="fa-solid fa-check"></i> Cobrado</span>
 @else
-    @if($estadoCobro === 'abono')
-        <span class="pill" style="background:#fef3c7;color:#92400e;margin-right:6px">Abono {{ $mon }}{{ number_format($montoAbonado,2) }} (falta {{ $mon }}{{ number_format($saldoRestante,2) }})</span>
-    @elseif($estadoCobro === 'registrado')
-        <span class="pill" style="background:#fef3c7;color:#92400e;margin-right:6px">Pago registrado: {{ $mon }}{{ number_format($montoAbonado,2) }}</span>
+    @if($estadoCobro === 'registrado')
+        <span class="pill" style="background:#fef3c7;color:#92400e;margin-right:6px;font-size:10.5px">Ya: {{ $mon }}{{ number_format($montoRegistrado,2) }}</span>
     @endif
-    <a href="{{ route('pagos.create', ['paciente_id' => $c->paciente_id, 'cita_id' => $c->id]) }}" class="btn btn-primary btn-sm"><i class="fa-solid fa-money-bill"></i> Cobrar</a>
+    <a href="{{ route('pagos.create', ['paciente_id' => $c->paciente_id, 'cita_id' => $c->id]) }}" class="btn btn-primary btn-sm">
+        <i class="fa-solid fa-money-bill"></i> Cobrar{{ $montoACobrar !== null ? ' '.$mon.number_format($montoACobrar,2) : '' }}
+    </a>
 @endif
 
                         </td>

@@ -15,20 +15,26 @@ class PerfilController extends Controller
     }
 
     public function update(Request $request)
-    {
-        $user = $request->user();
-        $data = $request->validate([
-            'name' => ['required', 'string', 'max:120'],
-            'email' => ['required', 'email', Rule::unique('users', 'email')->ignore($user->id)],
-            'telefono' => ['nullable', 'string', 'max:30'],
-            'cmp' => ['nullable', 'string', 'max:30'],
-            'titulo_profesional' => ['nullable', 'string', 'max:40'],
-            'firma' => ['nullable', 'string'],
-        ]);
-        $user->update($data);
+{
+    $user = $request->user();
+    $data = $request->validate([
+        'name' => ['required', 'string', 'max:120'],
+        'email' => ['required', 'email', Rule::unique('users', 'email')->ignore($user->id)],
+        'telefono' => ['nullable', 'string', 'max:30'],
+        'cmp' => ['nullable', 'string', 'max:30'],
+        'titulo_profesional' => ['nullable', 'string', 'max:40'],
+        'firma' => ['nullable', 'string'],
+    ]);
 
-        return back()->with('ok', 'Perfil actualizado.');
+    if ($request->hasFile('avatar')) {
+        $request->validate(['avatar' => ['image', 'max:2048']]);
+        $data['avatar'] = $request->file('avatar')->store('avatars', 'public');
     }
+
+    $user->update($data);
+
+    return back()->with('ok', 'Perfil actualizado.');
+}
 
     public function password(Request $request)
     {

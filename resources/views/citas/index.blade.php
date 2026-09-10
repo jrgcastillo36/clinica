@@ -10,12 +10,22 @@
 
     </div>
 
-    <div class="flex gap mb" style="flex-wrap:wrap">
+     <div class="flex gap mb" style="flex-wrap:wrap">
         <a href="{{ route('citas.index') }}" class="btn {{ !$estado ? 'btn-primary' : 'btn-ghost' }} btn-sm">Todas</a>
         @foreach(['pendiente'=>'Pendientes','confirmada'=>'Confirmadas','atendida'=>'Atendidas','cancelada'=>'Canceladas'] as $k=>$v)
             <a href="{{ route('citas.index',['estado'=>$k]) }}" class="btn {{ $estado==$k ? 'btn-primary' : 'btn-ghost' }} btn-sm">{{ $v }}</a>
         @endforeach
     </div>
+
+    <form method="GET" class="card mb" style="padding:14px">
+        <input type="hidden" name="estado" value="{{ $estado }}">
+        <div class="flex gap" style="align-items:flex-end;flex-wrap:wrap">
+            <div class="field"><label>Desde</label><input type="date" name="desde" value="{{ $desde }}"></div>
+            <div class="field"><label>Hasta</label><input type="date" name="hasta" value="{{ $hasta }}"></div>
+            <button class="btn btn-primary btn-sm">Filtrar</button>
+            @if($desde || $hasta)<a href="{{ route('citas.index', ['estado' => $estado]) }}" class="btn btn-ghost btn-sm">Limpiar fechas</a>@endif
+        </div>
+    </form>
 
     <div class="table-wrap">
         <table>
