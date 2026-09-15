@@ -4,8 +4,8 @@
 @section('content')
     <div class="page-head">
         <div><h1>Indicadores clínicos</h1><p>Panorama de la actividad clínica de la clínica.</p></div>
-              <div class="flex gap">
-            <a href="{{ route('reportes.clinico.pdf') }}" target="_blank" class="btn btn-primary"><i class="fa-solid fa-file-pdf"></i> Exportar PDF</a>
+<div class="flex gap" style="flex-wrap:wrap">
+        <a href="{{ route('reportes.clinico.pdf') }}" target="_blank" class="btn btn-primary"><i class="fa-solid fa-file-pdf"></i> Exportar PDF</a>
             <a href="{{ route('reportes.index') }}" class="btn btn-ghost"><i class="fa-solid fa-arrow-left"></i> Reportes</a>
         </div>
 

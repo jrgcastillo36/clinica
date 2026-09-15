@@ -57,7 +57,14 @@
             </div>
 
             <input type="date" id="saltarFecha" style="position:absolute;opacity:0;pointer-events:none;width:1px;height:1px">
-            <div class="card ag-card"><div id="calendar"></div></div>
+<div id="vistaMenu" class="vista-menu">
+    <div data-view="dayGridMonth">Mes</div>
+    <div data-view="timeGridWeek">Semana</div>
+    <div data-view="tresDias">3 días</div>
+    <div data-view="timeGridDay">Día</div>
+    <div data-view="listWeek">Agenda</div>
+</div>
+<div class="card ag-card"><div id="calendar"></div></div>
         </div>
     </div>
 
@@ -138,8 +145,8 @@
     .agenda-sidebar-medicos{margin-top:16px;padding-top:14px;border-top:1px solid var(--line);max-height:360px;overflow-y:auto}
     .agenda-sidebar-titulo{display:flex;align-items:center;gap:8px;font-size:12px;font-weight:700;color:var(--ink-soft);
         text-transform:uppercase;letter-spacing:.4px;margin-bottom:10px;flex-wrap:wrap}
-    .agenda-main{flex:1;min-width:0}
-    @media(max-width:1000px){.agenda-layout{flex-direction:column}.agenda-sidebar{position:static;width:100%}}
+.agenda-main{flex:1;min-width:0;position:relative}
+        @media(max-width:1000px){.agenda-layout{flex-direction:column}.agenda-sidebar{position:static;width:100%}}
 
     .ag-stats{gap:14px}
     .ag-stat{display:flex;align-items:center;gap:14px;background:#fff;border:1px solid var(--line);border-radius:16px;padding:16px 18px;box-shadow:0 4px 14px rgba(90,70,160,.05)}
@@ -163,6 +170,11 @@
     .fc .fc-today-button:disabled{opacity:.5}
     .fc .fc-button .fc-icon{font-size:15px}
     .fc .fc-button-group{gap:6px;display:inline-flex}
+   .vista-menu{display:none;position:absolute;z-index:50;background:#fff;border:1px solid var(--line);
+    border-radius:10px;box-shadow:0 8px 20px rgba(0,0,0,.12);overflow:hidden;min-width:130px}
+.vista-menu div{padding:10px 16px;cursor:pointer;font-size:13.5px}
+.vista-menu div:hover{background:var(--bg-pink)}
+.vista-menu div.activo{font-weight:700;color:var(--violet)}
     .fc-theme-standard .fc-scrollgrid{border-radius:14px;overflow:hidden;border:1px solid var(--line)}
     .fc .fc-col-header-cell{padding:0;border-top:3px solid transparent}
     .fc .fc-col-header-cell-cushion{font-size:11.5px;font-weight:800;text-transform:uppercase;letter-spacing:.7px;padding:10px 6px;display:block;width:100%}
@@ -352,21 +364,34 @@
             expandRows: true,
             dayMaxEvents: 3,
             fixedWeekCount: false,
-            headerToolbar: { left:'prev,next today saltarFecha', center:'title', right:'dayGridMonth,timeGridWeek,tresDias,timeGridDay,listWeek' },
-                        views: {
-                tresDias: { type: 'timeGrid', duration: { days: 3 }, buttonText: '3 días' }
-            },
-            customButtons: {
-                saltarFecha: {
-                    text: '📅 Ir a fecha',
-                    click: function () {
-                        const input = document.getElementById('saltarFecha');
-                        input.value = cal.getDate().toISOString().substring(0, 10);
-                        input.showPicker ? input.showPicker() : input.click();
-                    }
-                }
-            },
-            buttonText: { today:'Hoy', month:'Mes', week:'Semana', day:'Día', list:'Agenda' },
+headerToolbar: { left:'prev,next today saltarFecha', center:'title', right:'vistaBtn' },
+customButtons: {
+    vistaBtn: {
+        text: 'HOY ▾',
+        click: function (ev) {
+            const menu = document.getElementById('vistaMenu');
+            if (menu.style.display === 'block') { menu.style.display = 'none'; return; }
+            const btn = ev.target.closest('button') || ev.target;
+            const btnRect = btn.getBoundingClientRect();
+            const parentRect = document.querySelector('.agenda-main').getBoundingClientRect();
+            menu.style.top = (btnRect.bottom - parentRect.top + 6) + 'px';
+            menu.style.left = (btnRect.left - parentRect.left) + 'px';
+            menu.style.right = 'auto';
+            menu.style.display = 'block';
+        }
+    },
+    saltarFecha: {
+        text: '📅 Ir a fecha',
+        click: function () {
+            const input = document.getElementById('saltarFecha');
+            input.value = cal.getDate().toISOString().substring(0, 10);
+            input.showPicker ? input.showPicker() : input.click();
+        }
+    }
+},
+views: {
+    tresDias: { type: 'timeGrid', duration: { days: 3 }, buttonText: '3 días' }
+},
 
             slotMinTime: '07:00:00',
             slotMaxTime: '21:00:00',
@@ -491,6 +516,18 @@
         }
 
         actualizarStats();
+        document.querySelectorAll('#vistaMenu div').forEach(function (opt) {
+    opt.addEventListener('click', function () {
+        cal.changeView(this.dataset.view);
+        document.getElementById('vistaMenu').style.display = 'none';
+    });
+});
+document.addEventListener('click', function (e) {
+    const menu = document.getElementById('vistaMenu');
+    if (!menu.contains(e.target) && !e.target.closest('.fc-vistaBtn-button')) {
+        menu.style.display = 'none';
+    }
+});
         cal.render();
 
                cal.on('datesSet', function (info) {

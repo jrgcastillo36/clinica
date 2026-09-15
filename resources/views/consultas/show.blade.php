@@ -9,8 +9,8 @@
             <p>{{ $consulta->paciente->nombre_completo }} · {{ $consulta->especialidad->nombre ?? 'General' }} · Dr(a). {{ $consulta->medico->name ?? '—' }}</p>
         </div>
         <div class="flex gap">
-            <a href="{{ route('consultas.receta',$consulta) }}" target="_blank" class="btn btn-primary"><i class="fa-solid fa-file-prescription"></i> Receta PDF</a>
-            <a href="{{ route('documentos.certificado',$consulta) }}" target="_blank" class="btn btn-light"><i class="fa-solid fa-file-lines"></i> Certificado</a>
+{{-- <a href="{{ route('consultas.receta',$consulta) }}" target="_blank" class="btn btn-primary"><i class="fa-solid fa-file-prescription"></i> Receta PDF</a> --}}
+        <a href="{{ route('documentos.certificado',$consulta) }}" target="_blank" class="btn btn-light"><i class="fa-solid fa-file-lines"></i> Certificado</a>
             @if(auth()->user()->isMedico() && $consulta->medico_id === auth()->id())
             <a href="{{ route('consultas.edit',$consulta) }}" class="btn btn-ghost"><i class="fa-solid fa-pen"></i> Editar</a>
        @endif

@@ -5,8 +5,8 @@
     @php $mon = $empresa->moneda ?? 'S/'; @endphp
     <div class="page-head">
         <div><h1>Reporte financiero</h1><p>Del {{ $desde->format('d/m/Y') }} al {{ $hasta->format('d/m/Y') }}</p></div>
-        <div class="flex gap">
-            <a href="{{ route('reportes.financiero.pdf', ['desde' => $desde->toDateString(), 'hasta' => $hasta->toDateString()]) }}" target="_blank" class="btn btn-primary"><i class="fa-solid fa-file-pdf"></i> Exportar PDF</a>
+<div class="flex gap" style="flex-wrap:wrap">
+        <a href="{{ route('reportes.financiero.pdf', ['desde' => $desde->toDateString(), 'hasta' => $hasta->toDateString()]) }}" target="_blank" class="btn btn-primary"><i class="fa-solid fa-file-pdf"></i> Exportar PDF</a>
             <a href="{{ route('reportes.index') }}" class="btn btn-ghost"><i class="fa-solid fa-arrow-left"></i> Reportes</a>
         </div>
     </div>

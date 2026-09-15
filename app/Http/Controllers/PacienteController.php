@@ -120,8 +120,10 @@ class PacienteController extends Controller
 
 
     public function exportar(Request $request)
-    {
-        $q = $request->get('q');
+{
+    abort_if(auth()->user()->isMedico(), 403, 'No tienes permiso para exportar el directorio de pacientes.');
+
+    $q = $request->get('q');
         $pacientes = Paciente::where('empresa_id', $this->empresaId())
             ->when($q, fn ($query) => $query->where(function ($sub) use ($q) {
                 $sub->where('nombres', 'like', "%{$q}%")

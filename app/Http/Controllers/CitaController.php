@@ -39,8 +39,8 @@ class CitaController extends Controller
             $cFin = $cInicio->copy()->addMinutes($c->duracion ?: 30);
             if ($inicio < $cFin && $cInicio < $fin) {
                 if ($medicoId && $c->medico_id == $medicoId) {
-                    if ($c->es_bloqueo) return 'El médico no está disponible en ese horario ('.($c->motivo ?: 'bloqueado').').';
-                    return 'El médico ya tiene otra cita en ese horario.';
+                    if ($c->es_bloqueo) return 'El psicólogo(a) no está disponible en ese horario ('.($c->motivo ?: 'bloqueado').').';
+return 'El psicólogo(a) ya tiene otra cita en ese horario.';
                 }
             if ($consultorioId && $c->consultorio_id == $consultorioId) return 'Ese consultorio ya está ocupado en ese horario.';
             }
@@ -106,8 +106,8 @@ class CitaController extends Controller
         }
 
         if (($data['medico_id'] ?? null) && ! $this->medicoDisponible($data['medico_id'], $data['fecha'], $data['hora'])) {
-            $mensajeHorario = 'El médico no atiende en ese horario. Elige otro.';
-            if ($request->wantsJson()) {
+$mensajeHorario = 'El psicólogo(a) no atiende en ese horario. Elige otro.';
+        if ($request->wantsJson()) {
                 return response()->json(['ok' => false, 'mensaje' => $mensajeHorario], 422);
             }
             return back()->withInput()->withErrors(['hora' => $mensajeHorario]);
@@ -161,7 +161,7 @@ class CitaController extends Controller
         }
 
         if (($data['medico_id'] ?? null) && ! $this->medicoDisponible($data['medico_id'], $data['fecha'], $data['hora'])) {
-            return back()->withInput()->withErrors(['hora' => 'El médico no atiende en ese horario. Elige otro.']);
+return back()->withInput()->withErrors(['hora' => 'El psicólogo(a) no atiende en ese horario. Elige otro.']);
         }
 
         $cita->update($data);
@@ -169,16 +169,18 @@ class CitaController extends Controller
         return redirect()->route('citas.index')->with('ok', 'Cita actualizada.');
     }
 
-    public function cambiarEstado(Request $request, Cita $cita)
-    {
-        $data = $request->validate([
-            'estado' => ['required', 'in:pendiente,confirmada,atendida,cancelada,no_asistio'],
-        ]);
+ public function cambiarEstado(Request $request, Cita $cita)
+{
+    abort_unless($cita->empresa_id === $this->empresaId(), 403);
 
-        $cita->update(['estado' => $data['estado']]);
+    $data = $request->validate([
+        'estado' => ['required', 'in:pendiente,confirmada,atendida,cancelada,no_asistio'],
+    ]);
 
-        return back()->with('ok', 'Estado de la cita actualizado.');
-    }
+    $cita->update(['estado' => $data['estado']]);
+
+    return back()->with('ok', 'Estado de la cita actualizado.');
+}
 
     public function destroy(Cita $cita)
     {

@@ -5,8 +5,8 @@
     @php $mon = $empresa->moneda ?? 'S/'; @endphp
     <div class="page-head">
         <div><h1>Reportes</h1><p>Del {{ $desde->format('d/m/Y') }} al {{ $hasta->format('d/m/Y') }}</p></div>
-        <div class="flex gap">
-            <a href="{{ route('reportes.pdf', request()->only('desde','hasta')) }}" target="_blank" class="btn btn-ghost"><i class="fa-solid fa-file-pdf"></i> PDF</a>
+        <div class="flex gap" style="flex-wrap:wrap">
+    <a href="{{ route('reportes.pdf', request()->only('desde','hasta')) }}" target="_blank" class="btn btn-ghost">
            <a href="{{ route('reportes.resumen-diario') }}" class="btn btn-light"><i class="fa-solid fa-calendar-day"></i> Resumen diario</a>
             <a href="{{ route('reportes.clinico') }}" class="btn btn-light"><i class="fa-solid fa-heart-pulse"></i> Clínico</a>
             <a href="{{ route('reportes.financiero') }}" class="btn btn-light"><i class="fa-solid fa-coins"></i> Financiero</a>

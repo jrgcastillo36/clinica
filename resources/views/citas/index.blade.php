@@ -41,7 +41,26 @@
                     <td>@include('citas.estado', ['estado' => $c->estado])</td>
                     <td style="text-align:right;white-space:nowrap">
 @if(in_array($c->estado, ['pendiente','confirmada']) && auth()->user()->isMedico() && $c->medico_id === auth()->id())
-                    <a href="{{ route('consultas.create', ['paciente_id' => $c->paciente_id, 'cita_id' => $c->id]) }}" class="btn btn-primary btn-sm"><i class="fa-solid fa-stethoscope"></i> Atender</a>
+@unless(auth()->user()->isMedico())
+    @if($c->estado === 'pendiente')
+    <form method="POST" action="{{ route('citas.estado.cambiar', $c) }}" style="display:inline">
+        @csrf @method('PUT')
+        <input type="hidden" name="estado" value="confirmada">
+        <button class="btn btn-light btn-sm"><i class="fa-solid fa-check"></i> Confirmar</button>
+    </form>
+    @endif
+    @php
+        $yaPaso = \Carbon\Carbon::parse($c->fecha->format('Y-m-d').' '.$c->hora)->isPast();
+    @endphp
+    @if($yaPaso && in_array($c->estado, ['pendiente', 'confirmada']))
+    <form method="POST" action="{{ route('citas.estado.cambiar', $c) }}" style="display:inline" onsubmit="return confirm('¿Marcar como No asistió?')">
+        @csrf @method('PUT')
+        <input type="hidden" name="estado" value="no_asistio">
+        <button class="btn btn-light btn-sm" style="color:#94a3b8"><i class="fa-solid fa-user-xmark"></i> No asistió</button>
+    </form>
+    @endif
+@endunless                   
+<a href="{{ route('consultas.create', ['paciente_id' => $c->paciente_id, 'cita_id' => $c->id]) }}" class="btn btn-primary btn-sm"><i class="fa-solid fa-stethoscope"></i> Atender</a>
 @endif
                         @if($c->es_teleconsulta)
                             <a href="{{ $c->sala_video_url }}" target="_blank" class="btn btn-light btn-sm" title="Videollamada"><i class="fa-solid fa-video"></i></a>

@@ -1,39 +1,69 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
+
     <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=yes">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=yes"
+    >
 
     <title>Iniciar sesión · Grupo Libérate</title>
+
+    <!-- =====================================================
+         FUENTES
+    ====================================================== -->
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet"
+    >
+
+    <!-- =====================================================
+         FONT AWESOME
+    ====================================================== -->
 
     <link
         rel="stylesheet"
         href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
     >
 
+    <!-- =====================================================
+         CSS PRINCIPAL
+    ====================================================== -->
+
     <link rel="stylesheet" href="{{ asset('css/app.css') }}">
+
 
     <style>
 
         /* =====================================================
-           ROOT VARIABLES
-        ===================================================== */
+           VARIABLES
+        ====================================================== */
 
         :root {
-            --primary: #1088ba;
---primary-dark: #0a5f7f;
---primary-light: #4fb3d9;
---primary-gradient: linear-gradient(145deg, #0a3d52 0%, #4fb3d9 100%);
---primary-glow: rgba(16, 136, 186, 0.20);
 
-            --secondary: #0D8ABF;
-            --secondary-dark: #0A6E99;
-            --secondary-light: #D6EEF7;
+            --primary: #1088BA;
+            --primary-dark: #0A5F7F;
+            --primary-light: #4FB3D9;
+
+            --primary-gradient:
+                linear-gradient(
+                    145deg,
+                    #0A5F7F 0%,
+                    #1088BA 55%,
+                    #4FB3D9 100%
+                );
+
+            --primary-glow:
+                rgba(16, 136, 186, 0.14);
+
+            --secondary-light: #E8F6FB;
 
             --bg-start: #F6F8FC;
             --bg-end: #EEF2F8;
@@ -44,23 +74,36 @@
             --text-light: #94A3B8;
 
             --white: #FFFFFF;
-            --border: #E2E8F0;
 
---shadow-xl: 0 30px 80px rgba(16, 136, 186, 0.15);
+            --border: #E2E8F0;
+            --border-hover: #CBD5E1;
+
+            --success: #0B8A5E;
+            --danger: #DC2626;
+
             --radius-sm: 10px;
             --radius-md: 16px;
             --radius-lg: 24px;
             --radius-xl: 32px;
 
-            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            --shadow-xl:
+                0 30px 80px rgba(16, 136, 186, 0.15);
 
-            --success: #0B8A5E;
-            --danger: #DC2626;
+            --transition:
+                all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
 
-        * {
+        /* =====================================================
+           RESET
+        ====================================================== */
+
+        *,
+        *::before,
+        *::after {
+
             box-sizing: border-box;
+
             margin: 0;
             padding: 0;
         }
@@ -68,31 +111,49 @@
 
         html,
         body {
+
             width: 100%;
             min-height: 100%;
+
             margin: 0;
         }
 
 
+        /* =====================================================
+           BODY
+        ====================================================== */
+
         body {
+
             min-height: 100vh;
 
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-
-            background:
-                radial-gradient(
-                    circle at 10% 10%,
-                    rgba(91, 60, 196, 0.06),
-                    transparent 35%
-                ),
-                radial-gradient(
-                    circle at 90% 90%,
-                    rgba(13, 138, 191, 0.05),
-                    transparent 35%
-                ),
-                var(--bg-start);
+            font-family:
+                'Inter',
+                -apple-system,
+                BlinkMacSystemFont,
+                sans-serif;
 
             color: var(--text-primary);
+
+            background:
+
+                radial-gradient(
+                    circle at 10% 10%,
+                    rgba(16, 136, 186, 0.06),
+                    transparent 35%
+                ),
+
+                radial-gradient(
+                    circle at 90% 90%,
+                    rgba(79, 179, 217, 0.06),
+                    transparent 35%
+                ),
+
+                linear-gradient(
+                    135deg,
+                    var(--bg-start),
+                    var(--bg-end)
+                );
 
             overflow-x: hidden;
 
@@ -106,15 +167,20 @@
 
         /* =====================================================
            CONTENEDOR PRINCIPAL
-        ===================================================== */
+        ====================================================== */
 
         .login {
+
             width: 100%;
             max-width: 1200px;
+
             min-height: 640px;
 
             display: grid;
-            grid-template-columns: 1fr 1.2fr;
+
+            grid-template-columns:
+                1fr
+                1.2fr;
 
             background: var(--white);
 
@@ -125,18 +191,21 @@
             overflow: hidden;
 
             position: relative;
+
             z-index: 1;
         }
 
 
         /* =====================================================
-           PANEL IZQUIERDO - PROMO
-        ===================================================== */
+           PANEL IZQUIERDO
+        ====================================================== */
 
         .promo {
+
             position: relative;
 
             display: flex;
+
             align-items: center;
             justify-content: center;
 
@@ -144,22 +213,24 @@
 
             overflow: hidden;
 
-          background:
-    linear-gradient(
-        155deg,
-        #0a4d66 0%,
-        #0d6688 35%,
-        #0f7ba3 70%,
-        #4fb3d9 100%
-    );
+            background:
+
+                linear-gradient(
+                    155deg,
+                    #0A4D66 0%,
+                    #0D6688 35%,
+                    #0F7BA3 70%,
+                    #4FB3D9 100%
+                );
         }
 
 
         /* =====================================================
            DECORACIONES
-        ===================================================== */
+        ====================================================== */
 
         .promo::before {
+
             content: "";
 
             position: absolute;
@@ -173,6 +244,7 @@
             border-radius: 50%;
 
             background:
+
                 radial-gradient(
                     circle,
                     rgba(255,255,255,0.08) 0%,
@@ -180,11 +252,15 @@
                     transparent 70%
                 );
 
-            animation: floatingCircle 8s ease-in-out infinite;
+            animation:
+                floatingCircle 8s ease-in-out infinite;
+
+            pointer-events: none;
         }
 
 
         .promo::after {
+
             content: "";
 
             position: absolute;
@@ -198,13 +274,17 @@
             border-radius: 50%;
 
             background:
+
                 radial-gradient(
                     circle,
                     rgba(255,255,255,0.06),
                     transparent 70%
                 );
 
-            animation: floatingCircle 10s ease-in-out infinite reverse;
+            animation:
+                floatingCircle 10s ease-in-out infinite reverse;
+
+            pointer-events: none;
         }
 
 
@@ -212,20 +292,25 @@
 
             0%,
             100% {
-                transform: translate3d(0, 0, 0);
+
+                transform:
+                    translate3d(0, 0, 0);
             }
 
             50% {
-                transform: translate3d(0, 18px, 0);
+
+                transform:
+                    translate3d(0, 18px, 0);
             }
         }
 
 
         /* =====================================================
-           PUNTOS FLOTANTES
-        ===================================================== */
+           PUNTOS
+        ====================================================== */
 
         .floating-dot {
+
             position: absolute;
 
             border-radius: 50%;
@@ -237,41 +322,50 @@
 
 
         .dot-one {
+
             width: 10px;
             height: 10px;
 
             top: 12%;
             left: 12%;
 
-            background: rgba(255,255,255,0.3);
+            background:
+                rgba(255,255,255,0.3);
 
-            animation: floatDot 5s ease-in-out infinite;
+            animation:
+                floatDot 5s ease-in-out infinite;
         }
 
 
         .dot-two {
+
             width: 16px;
             height: 16px;
 
             top: 28%;
             right: 15%;
 
-            background: rgba(255,255,255,0.2);
+            background:
+                rgba(255,255,255,0.2);
 
-            animation: floatDot 7s ease-in-out infinite reverse;
+            animation:
+                floatDot 7s ease-in-out infinite reverse;
         }
 
 
         .dot-three {
+
             width: 8px;
             height: 8px;
 
             bottom: 20%;
             left: 18%;
 
-            background: rgba(255,255,255,0.25);
+            background:
+                rgba(255,255,255,0.25);
 
-            animation: floatDot 6s ease-in-out infinite;
+            animation:
+                floatDot 6s ease-in-out infinite;
         }
 
 
@@ -279,21 +373,27 @@
 
             0%,
             100% {
-                transform: translateY(0);
+
+                transform:
+                    translateY(0);
             }
 
             50% {
-                transform: translateY(-14px);
+
+                transform:
+                    translateY(-14px);
             }
         }
 
 
         /* =====================================================
-           CONTENIDO PROMOCIONAL
-        ===================================================== */
+           CONTENIDO PROMO
+        ====================================================== */
 
         .promo .z {
+
             position: relative;
+
             z-index: 5;
 
             width: 100%;
@@ -306,25 +406,31 @@
 
         /* =====================================================
            LOGO
-        ===================================================== */
+        ====================================================== */
 
         .promo .z img {
+
             display: block;
 
-            width: 160px !important;
+            width: 170px !important;
 
             max-width: 70%;
 
             height: auto;
 
-            margin: 0 auto 28px !important;
+            margin:
+                0 auto 28px !important;
 
             object-fit: contain;
 
             filter:
-                drop-shadow(0 8px 24px rgba(0,0,0,0.15));
+                drop-shadow(
+                    0 8px 24px
+                    rgba(0,0,0,0.15)
+                );
 
-            animation: logoFloat 5s ease-in-out infinite;
+            animation:
+                logoFloat 5s ease-in-out infinite;
         }
 
 
@@ -332,25 +438,31 @@
 
             0%,
             100% {
-                transform: translateY(0);
+
+                transform:
+                    translateY(0);
             }
 
             50% {
-                transform: translateY(-6px);
+
+                transform:
+                    translateY(-5px);
             }
         }
 
 
         /* =====================================================
-           TITULO
-        ===================================================== */
+           TITULO PROMO
+        ====================================================== */
 
         .promo h2 {
+
             display: block;
 
             width: 100%;
 
-            margin: 0 auto 14px;
+            margin:
+                0 auto 14px;
 
             color: #FFFFFF;
 
@@ -364,21 +476,30 @@
 
             text-align: center;
 
-            text-shadow: 0 2px 20px rgba(0,0,0,0.08);
+            text-shadow:
+                0 2px 20px
+                rgba(0,0,0,0.08);
         }
 
 
         .promo h2 .highlight {
+
             display: block;
 
-color: #BEE6F2;
+            color: #BEE6F2;
+
             font-weight: 700;
 
-            text-shadow: 0 0 40px rgba(212, 196, 247, 0.2);
+            text-shadow:
+                0 0 30px
+                rgba(190,230,242,0.18);
         }
 
 
+        /* Línea decorativa */
+
         .promo h2::after {
+
             content: "";
 
             display: block;
@@ -386,36 +507,42 @@ color: #BEE6F2;
             width: 56px;
             height: 3px;
 
-            margin: 18px auto 0;
+            margin:
+                18px auto 0;
 
             border-radius: 20px;
 
             background:
-            background:
-    linear-gradient(
-        90deg,
-        #BEE6F2,
-        #3E9EC4
-    );
 
-            box-shadow: 0 0 20px rgba(212, 196, 247, 0.3);
+                linear-gradient(
+                    90deg,
+                    #BEE6F2,
+                    #3E9EC4
+                );
+
+            box-shadow:
+                0 0 20px
+                rgba(190,230,242,0.25);
         }
 
 
         /* =====================================================
            DESCRIPCIÓN
-        ===================================================== */
+        ====================================================== */
 
         .promo p {
+
             display: block;
 
             width: 100%;
 
             max-width: 390px;
 
-            margin: 0 auto 28px;
+            margin:
+                0 auto 28px;
 
-            color: rgba(255,255,255,0.85);
+            color:
+                rgba(255,255,255,0.86);
 
             font-size: 13px;
 
@@ -428,15 +555,17 @@ color: #BEE6F2;
 
 
         /* =====================================================
-           LISTA DE BENEFICIOS
-        ===================================================== */
+           BENEFICIOS
+        ====================================================== */
 
         .promo ul {
+
             width: 100%;
 
             display: grid;
 
-            grid-template-columns: 1fr 1fr;
+            grid-template-columns:
+                1fr 1fr;
 
             gap: 10px;
 
@@ -450,11 +579,13 @@ color: #BEE6F2;
 
 
         .promo li {
+
             position: relative;
 
             min-width: 0;
 
             display: flex;
+
             align-items: center;
 
             gap: 12px;
@@ -468,13 +599,19 @@ color: #BEE6F2;
             background:
                 rgba(255,255,255,0.10);
 
-            border: 1px solid rgba(255,255,255,0.08);
+            border:
+                1px solid
+                rgba(255,255,255,0.08);
 
-            border-radius: var(--radius-sm);
+            border-radius:
+                var(--radius-sm);
 
-            backdrop-filter: blur(10px);
+            backdrop-filter:
+                blur(10px);
 
-            box-shadow: 0 4px 16px rgba(0,0,0,0.06);
+            box-shadow:
+                0 4px 16px
+                rgba(0,0,0,0.06);
 
             transition:
                 transform .25s ease,
@@ -484,36 +621,49 @@ color: #BEE6F2;
 
 
         .promo li:hover {
-            transform: translateY(-4px);
 
-            background: rgba(255,255,255,0.18);
+            transform:
+                translateY(-3px);
 
-            box-shadow: 0 8px 30px rgba(0,0,0,0.12);
+            background:
+                rgba(255,255,255,0.16);
 
-            border-color: rgba(255,255,255,0.15);
+            box-shadow:
+                0 8px 30px
+                rgba(0,0,0,0.12);
+
+            border-color:
+                rgba(255,255,255,0.15);
         }
 
 
         /* =====================================================
-           ICONOS DE BENEFICIOS
-        ===================================================== */
+           ICONOS BENEFICIOS
+        ====================================================== */
 
         .promo li i {
+
             width: 40px;
             height: 40px;
 
-            flex: 0 0 40px;
+            flex:
+                0 0 40px;
 
             display: flex;
+
             align-items: center;
             justify-content: center;
 
             border-radius: 11px;
 
-color: #BEE6F2;
-            background: rgba(255,255,255,0.08);
+            color: #BEE6F2;
 
-            border: 1px solid rgba(255,255,255,0.06);
+            background:
+                rgba(255,255,255,0.08);
+
+            border:
+                1px solid
+                rgba(255,255,255,0.06);
 
             font-size: 15px;
 
@@ -525,26 +675,28 @@ color: #BEE6F2;
 
 
         .promo li:hover i {
-            transform: rotate(-5deg) scale(1.08);
+
+            transform:
+                scale(1.06);
 
             color: #FFFFFF;
 
-            background: rgba(255,255,255,0.18);
+            background:
+                rgba(255,255,255,0.18);
 
-            border-color: rgba(255,255,255,0.15);
+            border-color:
+                rgba(255,255,255,0.15);
         }
 
 
-        /* =====================================================
-           TEXTO DE BENEFICIOS
-        ===================================================== */
-
         .promo li span {
+
             display: block;
 
             min-width: 0;
 
-            color: rgba(255,255,255,0.92);
+            color:
+                rgba(255,255,255,0.92);
 
             font-size: 11px;
 
@@ -555,24 +707,29 @@ color: #BEE6F2;
 
 
         /* =====================================================
-           PANEL DERECHO - LOGIN
-        ===================================================== */
+           PANEL DERECHO
+        ====================================================== */
 
         .panel {
+
             width: 100%;
+
             min-width: 0;
 
             display: flex;
+
             align-items: center;
             justify-content: center;
 
             padding: 55px 65px;
 
-            background: var(--white);
+            background:
+                var(--white);
         }
 
 
         .box {
+
             width: 100%;
 
             max-width: 410px;
@@ -580,42 +737,83 @@ color: #BEE6F2;
 
 
         /* =====================================================
-           ICONO DE BIENVENIDA
-        ===================================================== */
+           CABECERA LOGIN
+        ====================================================== */
+
+        .box-header {
+
+            text-align: center;
+        }
+
+
+        /* =====================================================
+           ICONO BIENVENIDA
+        ====================================================== */
 
         .welcome-icon {
+
             width: 52px;
             height: 52px;
 
             display: flex;
+
             align-items: center;
             justify-content: center;
 
-            margin-bottom: 20px;
+            margin:
+                0 auto 20px;
 
-            border-radius: var(--radius-sm);
+            border-radius:
+                var(--radius-sm);
 
-            color: var(--primary);
+            color:
+                var(--primary);
 
-            background: var(--secondary-light);
+            background:
+                var(--secondary-light);
 
-            box-shadow: 0 4px 16px rgba(13, 138, 191, 0.12);
+            border:
+                1px solid
+                rgba(16,136,186,0.08);
+
+            box-shadow:
+                0 6px 20px
+                rgba(13,138,191,0.10);
+
+            transition:
+                transform .25s ease,
+                box-shadow .25s ease;
+        }
+
+
+        .welcome-icon:hover {
+
+            transform:
+                translateY(-2px);
+
+            box-shadow:
+                0 10px 26px
+                rgba(13,138,191,0.14);
         }
 
 
         .welcome-icon i {
+
             font-size: 20px;
         }
 
 
         /* =====================================================
            TITULO LOGIN
-        ===================================================== */
+        ====================================================== */
 
         .box h1 {
-            margin: 0 0 8px;
 
-            color: var(--text-primary);
+            margin:
+                0 0 8px;
+
+            color:
+                var(--text-primary);
 
             font-size: 28px;
 
@@ -628,9 +826,12 @@ color: #BEE6F2;
 
 
         .sub {
-            margin: 0 0 30px;
 
-            color: var(--text-secondary);
+            margin:
+                0 0 30px;
+
+            color:
+                var(--text-secondary);
 
             font-size: 14px;
 
@@ -640,12 +841,14 @@ color: #BEE6F2;
 
         /* =====================================================
            ALERTAS
-        ===================================================== */
+        ====================================================== */
 
         .alert {
+
             width: 100%;
 
             display: flex;
+
             align-items: flex-start;
 
             gap: 12px;
@@ -654,7 +857,8 @@ color: #BEE6F2;
 
             margin-bottom: 20px;
 
-            border-radius: var(--radius-sm);
+            border-radius:
+                var(--radius-sm);
 
             font-size: 13px;
 
@@ -662,47 +866,65 @@ color: #BEE6F2;
 
             overflow-wrap: anywhere;
 
-            border: 1px solid transparent;
+            border:
+                1px solid transparent;
         }
 
 
         .alert.ok {
-            color: var(--success);
 
-            background: #ECFDF5;
+            color:
+                var(--success);
 
-            border-color: #BBF7D0;
+            background:
+                #ECFDF5;
+
+            border-color:
+                #BBF7D0;
         }
 
 
         .alert.ok i {
-            color: var(--success);
+
+            color:
+                var(--success);
+
             font-size: 16px;
+
             margin-top: 1px;
         }
 
 
         .alert.error {
-            color: var(--danger);
 
-            background: #FEF2F2;
+            color:
+                var(--danger);
 
-            border-color: #FECACA;
+            background:
+                #FEF2F2;
+
+            border-color:
+                #FECACA;
         }
 
 
         .alert.error i {
-            color: var(--danger);
+
+            color:
+                var(--danger);
+
             font-size: 16px;
+
             margin-top: 1px;
         }
 
 
         /* =====================================================
-           CAMPOS DE FORMULARIO
-        ===================================================== */
+           CAMPOS
+        ====================================================== */
 
         .field {
+
             width: 100%;
 
             margin-bottom: 20px;
@@ -710,11 +932,13 @@ color: #BEE6F2;
 
 
         .field label {
+
             display: block;
 
             margin-bottom: 7px;
 
-            color: var(--text-secondary);
+            color:
+                var(--text-secondary);
 
             font-size: 13px;
 
@@ -722,24 +946,81 @@ color: #BEE6F2;
         }
 
 
+        /* =====================================================
+           INPUT CON ICONO
+        ====================================================== */
+
+        /* =====================================================
+   CAMPO CON ICONO
+===================================================== */
+
+.input-icon {
+    position: relative;
+    width: 100%;
+}
+
+.input-icon > i {
+    position: absolute;
+    left: 16px;
+    top: 50%;
+
+    transform: translateY(-50%);
+
+    width: 18px;
+
+    color: #94A3B8;
+    font-size: 14px;
+
+    text-align: center;
+
+    pointer-events: none;
+
+    z-index: 2;
+
+    transition: color .2s ease;
+}
+
+.input-icon input {
+    width: 100%;
+
+    padding-left: 48px !important;
+    padding-right: 16px;
+}
+
+.input-icon:focus-within > i {
+    color: var(--primary);
+}
+
+
+        /* =====================================================
+           INPUTS
+        ====================================================== */
+
         .field input {
+
             width: 100%;
 
             height: 52px;
 
             display: block;
 
-            padding: 0 16px;
+            padding:
+                0 16px;
 
-            border: 2px solid var(--border);
+            border:
+                1px solid
+                var(--border);
 
-            border-radius: var(--radius-sm);
+            border-radius:
+                12px;
 
             outline: none;
 
-            color: var(--text-primary);
+            color:
+                var(--text-primary);
 
-            background: var(--bg-start);
+            background:
+                #F8FAFC;
 
             font-family: inherit;
 
@@ -749,57 +1030,190 @@ color: #BEE6F2;
                 border-color .2s ease,
                 box-shadow .2s ease,
                 background .2s ease;
-
-            -webkit-appearance: none;
-            appearance: none;
         }
 
 
         .field input::placeholder {
-            color: var(--text-light);
+
+            color:
+                var(--text-light);
         }
 
 
         .field input:hover {
-            border-color: #CBD5E1;
+
+            border-color:
+                var(--border-hover);
         }
 
 
         .field input:focus {
-            background: var(--white);
 
-            border-color: var(--primary);
+            background:
+                var(--white);
 
-            box-shadow: 0 0 0 4px var(--primary-glow);
+            border-color:
+                var(--primary);
+
+            box-shadow:
+                0 0 0 4px
+                var(--primary-glow);
+        }
+
+
+        /* =====================================================
+           CONTRASEÑA
+        ====================================================== */
+
+        .password-field {
+
+            position: relative;
+
+            width: 100%;
+        }
+
+
+        .password-field input {
+
+            padding-left: 45px;
+
+            padding-right: 52px;
+        }
+
+
+        .password-icon {
+
+            position: absolute;
+
+            left: 16px;
+            top: 50%;
+
+            transform:
+                translateY(-50%);
+
+            color:
+                var(--text-light);
+
+            font-size: 14px;
+
+            pointer-events: none;
+
+            z-index: 2;
+
+            transition:
+                color .2s ease;
+        }
+
+
+        .password-field:focus-within .password-icon {
+
+            color:
+                var(--primary);
+        }
+
+
+        /* =====================================================
+           BOTON MOSTRAR CONTRASEÑA
+        ====================================================== */
+
+        .password-toggle {
+
+            position: absolute;
+
+            right: 10px;
+            top: 50%;
+
+            width: 34px;
+            height: 34px;
+
+            display: flex;
+
+            align-items: center;
+            justify-content: center;
+
+            transform:
+                translateY(-50%);
+
+            padding: 0;
+
+            border: 0;
+
+            border-radius: 8px;
+
+            background:
+                transparent;
+
+            color:
+                var(--text-light);
+
+            cursor: pointer;
+
+            transition:
+                color .2s ease,
+                background .2s ease;
+        }
+
+
+        .password-toggle:hover {
+
+            color:
+                var(--primary);
+
+            background:
+                rgba(16,136,186,0.08);
+        }
+
+
+        .password-toggle:focus-visible {
+
+            outline:
+                2px solid
+                var(--primary);
+
+            outline-offset:
+                2px;
+        }
+
+
+        .password-toggle i {
+
+            font-size: 14px;
         }
 
 
         /* =====================================================
            RECORDAR
-        ===================================================== */
+        ====================================================== */
 
         .remember {
+
             width: 100%;
 
             display: flex;
+
             align-items: center;
+
             justify-content: space-between;
 
             gap: 15px;
 
-            margin: 4px 0 24px;
+            margin:
+                4px 0 24px;
 
             font-size: 13px;
         }
 
 
         .remember label {
+
             display: flex;
+
             align-items: center;
 
             gap: 8px;
 
-            color: var(--text-secondary);
+            color:
+                var(--text-secondary);
 
             cursor: pointer;
 
@@ -808,12 +1222,14 @@ color: #BEE6F2;
 
 
         .remember input[type="checkbox"] {
+
             width: 17px;
             height: 17px;
 
             margin: 0;
 
-            accent-color: var(--primary);
+            accent-color:
+                var(--primary);
 
             cursor: pointer;
 
@@ -822,31 +1238,54 @@ color: #BEE6F2;
 
 
         .remember a {
-            color: var(--primary) !important;
+
+            color:
+                var(--primary) !important;
 
             font-weight: 600;
 
             text-decoration: none;
 
-            transition: var(--transition);
+            transition:
+                var(--transition);
         }
 
 
         .remember a:hover {
-            color: var(--primary-dark) !important;
-            text-decoration: underline;
+
+            color:
+                var(--primary-dark) !important;
+
+            text-decoration:
+                underline;
+        }
+
+
+        .remember a:focus-visible {
+
+            outline:
+                2px solid
+                var(--primary);
+
+            outline-offset:
+                3px;
+
+            border-radius: 3px;
         }
 
 
         /* =====================================================
-           BOTÓN
-        ===================================================== */
+           BOTON LOGIN
+        ====================================================== */
 
         .btn-primary {
+
             width: 100%;
+
             height: 54px;
 
             display: flex;
+
             align-items: center;
             justify-content: center;
 
@@ -854,11 +1293,14 @@ color: #BEE6F2;
 
             border: 0;
 
-            border-radius: var(--radius-sm);
+            border-radius:
+                var(--radius-sm);
 
-            color: white;
+            color:
+                #FFFFFF;
 
-            background: var(--primary-gradient);
+            background:
+                var(--primary-gradient);
 
             font-family: inherit;
 
@@ -868,653 +1310,725 @@ color: #BEE6F2;
 
             cursor: pointer;
 
-            box-shadow: 0 8px 24px rgba(91, 60, 196, 0.25);
+            box-shadow:
+                0 8px 24px
+                rgba(16,136,186,0.24);
 
             transition:
                 transform .2s ease,
-                box-shadow .2s ease;
+                box-shadow .2s ease,
+                filter .2s ease;
 
-            -webkit-tap-highlight-color: transparent;
+            -webkit-tap-highlight-color:
+                transparent;
         }
 
 
         .btn-primary:hover {
-            transform: translateY(-2px);
 
-            box-shadow: 0 12px 36px rgba(91, 60, 196, 0.35);
+            transform:
+                translateY(-2px);
+
+            box-shadow:
+                0 12px 32px
+                rgba(16,136,186,0.32);
+
+            filter:
+                brightness(1.02);
         }
 
 
         .btn-primary:active {
-            transform: translateY(0) scale(0.98);
+
+            transform:
+                translateY(0)
+                scale(0.985);
+        }
+
+
+        .btn-primary:focus-visible {
+
+            outline:
+                3px solid
+                rgba(16,136,186,0.22);
+
+            outline-offset:
+                3px;
         }
 
 
         .btn-primary i {
+
             font-size: 16px;
         }
 
 
         /* =====================================================
            LINKS INFERIORES
-        ===================================================== */
+        ====================================================== */
 
         .bottom-links {
+
+            position: relative;
+
             text-align: center;
-            margin-top: 20px;
-            font-size: 13px;
-            line-height: 2;
-            color: var(--text-muted) !important;
+
+            margin-top: 30px;
+
+            padding-top: 24px;
+
+            font-size: 12px;
+
+            line-height: 1.6;
+
+            color:
+                var(--text-muted);
+        }
+
+
+        .bottom-links::before {
+
+            content: "";
+
+            position: absolute;
+
+            top: 0;
+            left: 50%;
+
+            width: 32px;
+            height: 1px;
+
+            transform:
+                translateX(-50%);
+
+            background:
+                var(--border);
         }
 
 
         .bottom-links a {
-            color: var(--primary) !important;
+
+            display: inline-block;
+
+            margin-left: 4px;
+
+            color:
+                var(--primary) !important;
 
             font-weight: 600;
 
             text-decoration: none;
 
-            transition: var(--transition);
+            transition:
+                var(--transition);
         }
 
 
         .bottom-links a:hover {
-            color: var(--primary-dark) !important;
-            text-decoration: underline;
+
+            color:
+                var(--primary-dark) !important;
+
+            text-decoration:
+                underline;
         }
 
 
-        .bottom-links .separator {
-            display: inline-block;
-            width: 30px;
-            height: 1px;
-            background: var(--border);
-            margin: 0 8px;
-            vertical-align: middle;
+        .bottom-links a:focus-visible {
+
+            outline:
+                2px solid
+                var(--primary);
+
+            outline-offset:
+                3px;
+
+            border-radius: 3px;
         }
 
 
         /* =====================================================
-           RESPONSIVE - TABLET (<= 992px)
-        ===================================================== */
+           RESPONSIVE - TABLET
+        ====================================================== */
 
         @media (max-width: 992px) {
 
             .login {
-                grid-template-columns: 1fr 1fr;
-                min-height: auto;
-                border-radius: var(--radius-lg);
+
+                grid-template-columns:
+                    1fr 1fr;
+
+                min-height:
+                    auto;
+
+                border-radius:
+                    var(--radius-lg);
             }
 
 
             .promo {
-                padding: 40px 30px 38px;
+
+                padding:
+                    40px 30px 38px;
             }
 
 
             .promo .z {
-                max-width: 500px;
+
+                max-width:
+                    500px;
             }
 
 
             .promo .z img {
-                width: 145px !important;
+
+                width:
+                    145px !important;
             }
 
 
             .promo h2 {
-                font-size: 27px;
+
+                font-size:
+                    27px;
             }
 
 
             .promo p {
-                max-width: 470px;
+
+                max-width:
+                    470px;
             }
 
 
             .promo ul {
-                max-width: 500px;
-                margin-left: auto;
-                margin-right: auto;
+
+                max-width:
+                    500px;
+
+                margin-left:
+                    auto;
+
+                margin-right:
+                    auto;
             }
 
 
             .panel {
-                padding: 40px 35px 45px;
+
+                padding:
+                    40px 35px 45px;
             }
 
 
             .box {
-                max-width: 440px;
+
+                max-width:
+                    440px;
             }
         }
 
 
         /* =====================================================
-           RESPONSIVE - MÓVIL (<= 768px)
-        ===================================================== */
+           RESPONSIVE - MOVIL
+        ====================================================== */
 
         @media (max-width: 768px) {
 
             body {
-                padding: 0;
-                background: var(--white);
+
+                padding:
+                    0;
+
+                background:
+                    var(--white);
             }
 
 
             .login {
-                grid-template-columns: 1fr;
-                border-radius: 0;
-                box-shadow: none;
-                min-height: 100vh;
+
+                grid-template-columns:
+                    1fr;
+
+                border-radius:
+                    0;
+
+                box-shadow:
+                    none;
+
+                min-height:
+                    100vh;
             }
 
 
             /* -------------------------------------------------
-               PROMO MÓVIL
+               PANEL PROMOCIONAL OCULTO
             ------------------------------------------------- */
 
             .promo {
-                width: 100%;
 
-                padding: 30px 20px 32px;
-
-                min-height: auto;
-            }
-
-
-            .promo .z {
-                width: 100%;
-
-                max-width: 400px;
-            }
-
-
-            .promo .z img {
-                width: 130px !important;
-
-                max-width: 55%;
-
-                margin-bottom: 18px !important;
-            }
-
-
-            .promo h2 {
-                width: 100%;
-
-                margin-bottom: 12px;
-
-                font-size: 24px;
-
-                line-height: 1.35;
-            }
-
-
-            .promo h2::after {
-                width: 42px;
-
-                height: 2px;
-
-                margin-top: 14px;
-            }
-
-
-            .promo p {
-                width: 100%;
-
-                max-width: 350px;
-
-                margin-bottom: 22px;
-
-                font-size: 12px;
-
-                line-height: 1.7;
+                display:
+                    none !important;
             }
 
 
             /* -------------------------------------------------
-               BENEFICIOS MÓVIL
-            ------------------------------------------------- */
-
-            .promo ul {
-                width: 100%;
-
-                grid-template-columns: 1fr 1fr;
-
-                gap: 8px;
-            }
-
-
-            .promo li {
-                width: 100%;
-
-                min-height: 52px;
-
-                padding: 8px 10px;
-
-                gap: 10px;
-            }
-
-
-            .promo li i {
-                width: 34px;
-                height: 34px;
-
-                flex-basis: 34px;
-
-                border-radius: 9px;
-
-                font-size: 13px;
-            }
-
-
-            .promo li span {
-                font-size: 10px;
-
-                line-height: 1.4;
-            }
-
-
-            /* -------------------------------------------------
-               LOGIN MÓVIL
+               LOGIN
             ------------------------------------------------- */
 
             .panel {
-                width: 100%;
 
-                padding: 30px 20px 40px;
+                width:
+                    100%;
 
-                align-items: flex-start;
+                padding:
+                    30px 20px 40px;
+
+                align-items:
+                    flex-start;
             }
 
 
             .box {
-                width: 100%;
 
-                max-width: none;
+                width:
+                    100%;
+
+                max-width:
+                    none;
             }
 
 
             .welcome-icon {
-                width: 46px;
-                height: 46px;
 
-                margin-bottom: 16px;
+                width:
+                    46px;
 
-                border-radius: var(--radius-sm);
+                height:
+                    46px;
+
+                margin-bottom:
+                    16px;
             }
 
 
             .welcome-icon i {
-                font-size: 17px;
+
+                font-size:
+                    17px;
             }
 
 
             .box h1 {
-                font-size: 24px;
+
+                font-size:
+                    24px;
             }
 
 
             .sub {
-                margin-bottom: 24px;
 
-                font-size: 13px;
+                margin-bottom:
+                    24px;
+
+                font-size:
+                    13px;
             }
 
 
             .field input {
-                height: 50px;
-                font-size: 14px;
+
+                height:
+                    50px;
+
+                font-size:
+                    14px;
             }
 
 
             .remember {
-                align-items: flex-start;
 
-                flex-direction: column;
+                align-items:
+                    flex-start;
 
-                gap: 9px;
+                flex-direction:
+                    column;
+
+                gap:
+                    9px;
             }
 
 
             .remember a {
-                margin-left: 25px;
+
+                margin-left:
+                    25px;
             }
 
 
             .btn-primary {
-                height: 52px;
-                font-size: 15px;
+
+                height:
+                    52px;
+
+                font-size:
+                    15px;
             }
 
 
             .bottom-links {
-                font-size: 12px;
+
+                font-size:
+                    12px;
             }
         }
 
 
         /* =====================================================
-           RESPONSIVE - MÓVIL PEQUEÑO (<= 420px)
-        ===================================================== */
+           RESPONSIVE - MOVIL PEQUEÑO
+        ====================================================== */
 
         @media (max-width: 420px) {
 
-            .promo {
-                padding: 24px 16px 26px;
-            }
-
-
-            .promo .z img {
-                width: 110px !important;
-                max-width: 50%;
-            }
-
-
-            .promo h2 {
-                font-size: 21px;
-            }
-
-
-            .promo p {
-                font-size: 11px;
-                max-width: 100%;
-            }
-
-
-            /* Beneficios en 1 columna en móviles muy pequeños */
-            .promo ul {
-                grid-template-columns: 1fr;
-                gap: 6px;
-            }
-
-
-            .promo li {
-                min-height: 48px;
-                padding: 8px 12px;
-                gap: 10px;
-            }
-
-
-            .promo li i {
-                width: 32px;
-                height: 32px;
-                flex-basis: 32px;
-                font-size: 12px;
-            }
-
-
-            .promo li span {
-                font-size: 10px;
-            }
-
-
             .panel {
-                padding: 24px 16px 32px;
+
+                padding:
+                    24px 16px 32px;
             }
 
 
             .box h1 {
-                font-size: 22px;
+
+                font-size:
+                    22px;
             }
 
 
             .field input {
-                height: 48px;
-                font-size: 13px;
-                padding: 0 14px;
+
+                height:
+                    48px;
+
+                font-size:
+                    13px;
+
+                padding-left:
+                    43px;
+            }
+
+
+            .password-field input {
+
+                padding-left:
+                    43px;
+
+                padding-right:
+                    50px;
+            }
+
+
+            .input-icon > i,
+            .password-icon {
+
+                left:
+                    14px;
+
+                font-size:
+                    13px;
+            }
+
+
+            .password-toggle {
+
+                right:
+                    8px;
             }
 
 
             .btn-primary {
-                height: 50px;
-                font-size: 14px;
+
+                height:
+                    50px;
+
+                font-size:
+                    14px;
             }
 
 
             .bottom-links {
-                font-size: 11px;
+
+                font-size:
+                    11px;
             }
         }
 
 
         /* =====================================================
-           RESPONSIVE - MÓVIL MUY PEQUEÑO (<= 350px)
-        ===================================================== */
+           RESPONSIVE - MUY PEQUEÑO
+        ====================================================== */
 
         @media (max-width: 350px) {
 
-            .promo {
-                padding: 18px 12px 20px;
-            }
-
-
-            .promo .z img {
-                width: 90px !important;
-            }
-
-
-            .promo h2 {
-                font-size: 18px;
-            }
-
-
-            .promo p {
-                font-size: 10px;
-            }
-
-
-            .promo li {
-                min-height: 42px;
-                padding: 6px 8px;
-                gap: 8px;
-            }
-
-
-            .promo li i {
-                width: 28px;
-                height: 28px;
-                flex-basis: 28px;
-                font-size: 10px;
-                border-radius: 7px;
-            }
-
-
-            .promo li span {
-                font-size: 9px;
-            }
-
-
             .panel {
-                padding: 18px 12px 28px;
+
+                padding:
+                    18px 12px 28px;
             }
 
 
             .box h1 {
-                font-size: 20px;
+
+                font-size:
+                    20px;
             }
 
 
             .sub {
-                font-size: 12px;
+
+                font-size:
+                    12px;
             }
 
 
             .welcome-icon {
-                width: 40px;
-                height: 40px;
+
+                width:
+                    40px;
+
+                height:
+                    40px;
             }
 
 
             .welcome-icon i {
-                font-size: 15px;
+
+                font-size:
+                    15px;
             }
 
 
             .field input {
-                height: 44px;
-                font-size: 12px;
-                padding: 0 12px;
+
+                height:
+                    44px;
+
+                font-size:
+                    12px;
+
+                padding-left:
+                    40px;
+            }
+
+
+            .password-field input {
+
+                padding-left:
+                    40px;
+
+                padding-right:
+                    46px;
+            }
+
+
+            .input-icon > i,
+            .password-icon {
+
+                left:
+                    12px;
+
+                font-size:
+                    12px;
+            }
+
+
+            .password-toggle {
+
+                right:
+                    5px;
+
+                width:
+                    30px;
+
+                height:
+                    30px;
+            }
+
+
+            .password-toggle i {
+
+                font-size:
+                    12px;
             }
 
 
             .btn-primary {
-                height: 46px;
-                font-size: 13px;
+
+                height:
+                    46px;
+
+                font-size:
+                    13px;
             }
 
 
             .bottom-links {
-                font-size: 10px;
+
+                font-size:
+                    10px;
             }
         }
 
 
         /* =====================================================
-           RESPONSIVE - PANTALLAS ALTAS
-        ===================================================== */
+           PANTALLAS ALTAS
+        ====================================================== */
 
         @media (min-height: 900px) {
 
             .login {
-                min-height: 720px;
+
+                min-height:
+                    720px;
             }
 
 
             .promo {
-                padding: 60px 50px;
+
+                padding:
+                    60px 50px;
             }
 
 
             .panel {
-                padding: 60px 70px;
+
+                padding:
+                    60px 70px;
             }
         }
 
 
         /* =====================================================
-           RESPONSIVE - PANTALLAS ANCHAS
-        ===================================================== */
+           PANTALLAS ANCHAS
+        ====================================================== */
 
         @media (min-width: 1400px) {
 
             .login {
-                max-width: 1300px;
+
+                max-width:
+                    1300px;
             }
 
 
             .promo {
-                padding: 65px 55px;
+
+                padding:
+                    65px 55px;
             }
 
 
             .promo .z img {
-                width: 180px !important;
+
+                width:
+                    180px !important;
             }
 
 
             .promo h2 {
-                font-size: 36px;
+
+                font-size:
+                    36px;
             }
 
 
             .panel {
-                padding: 65px 75px;
+
+                padding:
+                    65px 75px;
             }
 
 
             .box h1 {
-                font-size: 32px;
+
+                font-size:
+                    32px;
             }
         }
 
 
         /* =====================================================
-           ORIENTACIÓN - PAISAJE EN MÓVIL
-        ===================================================== */
+           LANDSCAPE EN MOVIL
+        ====================================================== */
 
         @media (max-width: 768px) and (orientation: landscape) {
 
             .login {
-                min-height: 100vh;
-            }
 
-
-            .promo {
-                padding: 20px 30px;
-            }
-
-
-            .promo .z img {
-                width: 100px !important;
-                margin-bottom: 12px !important;
-            }
-
-
-            .promo h2 {
-                font-size: 20px;
-            }
-
-
-            .promo p {
-                font-size: 11px;
-                margin-bottom: 14px;
-            }
-
-
-            .promo ul {
-                grid-template-columns: 1fr 1fr 1fr;
-                gap: 6px;
-            }
-
-
-            .promo li {
-                min-height: 40px;
-                padding: 6px 10px;
-            }
-
-
-            .promo li i {
-                width: 28px;
-                height: 28px;
-                flex-basis: 28px;
-                font-size: 11px;
-            }
-
-
-            .promo li span {
-                font-size: 9px;
+                min-height:
+                    100vh;
             }
 
 
             .panel {
-                padding: 20px 25px 30px;
+
+                padding:
+                    20px 25px 30px;
             }
 
 
             .box h1 {
-                font-size: 22px;
+
+                font-size:
+                    22px;
             }
 
 
             .field input {
-                height: 44px;
+
+                height:
+                    44px;
             }
 
 
             .btn-primary {
-                height: 46px;
+
+                height:
+                    46px;
+            }
+        }
+
+
+        /* =====================================================
+           REDUCIR ANIMACIONES
+        ====================================================== */
+
+        @media (prefers-reduced-motion: reduce) {
+
+            *,
+            *::before,
+            *::after {
+
+                animation-duration:
+                    0.01ms !important;
+
+                animation-iteration-count:
+                    1 !important;
+
+                transition-duration:
+                    0.01ms !important;
             }
         }
 
     </style>
+
 </head>
 
 
 <body>
 
+
 <div class="login">
+
 
     <!-- =====================================================
          PANEL GRUPO LIBÉRATE
@@ -1522,49 +2036,70 @@ color: #BEE6F2;
 
     <div class="promo">
 
-        <!-- Elementos decorativos -->
-        <span class="floating-dot dot-one"></span>
-        <span class="floating-dot dot-two"></span>
-        <span class="floating-dot dot-three"></span>
+
+        <!-- Decoraciones -->
+
+        <span
+            class="floating-dot dot-one"
+            aria-hidden="true"
+        ></span>
+
+        <span
+            class="floating-dot dot-two"
+            aria-hidden="true"
+        ></span>
+
+        <span
+            class="floating-dot dot-three"
+            aria-hidden="true"
+        ></span>
 
 
         <div class="z">
 
-            <!-- =================================================
-                 LOGO
-            ================================================== -->
 
-            <img src="{{ asset('images/logosistema.png') }}" alt="Grupo Libérate" style="width:150px;margin-bottom:20px">
+            <!-- Logo -->
+
+            <img
+                src="{{ asset('images/logosistema.jpg') }}"
+                alt="Grupo Libérate"
+            >
 
 
-            <!-- =================================================
-                 TITULO
-            ================================================== -->
+            <!-- Título -->
 
             <h2>
+
                 Un espacio para
+
                 <span class="highlight">
                     volver a encontrarte
                 </span>
+
             </h2>
 
 
+            <!-- Descripción -->
+
             <p>
+
                 En Grupo Libérate acompañamos tu proceso de
                 bienestar emocional con atención psicológica
                 profesional, cercana y humana.
+
             </p>
 
 
-            <!-- =================================================
-                 BENEFICIOS
-            ================================================== -->
+            <!-- Beneficios -->
 
             <ul>
 
                 <li>
 
-                    <i class="fa-solid fa-brain"></i>
+                    <i
+                        class="fa-solid fa-brain"
+                        aria-hidden="true"
+                    ></i>
 
                     <span>
                         Acompañamiento psicológico
@@ -1572,13 +2107,13 @@ color: #BEE6F2;
 
                 </li>
 
-          
-
             </ul>
+
 
         </div>
 
     </div>
+
 
 
     <!-- =====================================================
@@ -1587,28 +2122,41 @@ color: #BEE6F2;
 
     <div class="panel">
 
+
         <div class="box">
 
-<center>
 
-            <div class="welcome-icon">
-                <i class="fa-solid fa-hand-holding-heart"></i>
+            <!-- =================================================
+                 CABECERA
+            ================================================== -->
+
+            <div class="box-header">
+
+
+                <div
+                    class="welcome-icon"
+                    aria-hidden="true"
+                >
+
+                    <i class="fa-solid fa-brain"></i>
+
+                </div>
+
+
+                <h1>
+                    Bienvenidos 🪷
+                </h1>
+
+
+                <p class="sub">
+                    Ingresa tus credenciales para acceder
+                    al sistema
+                </p>
+
+
             </div>
-</center>
-
-<center>
-
-            <h1>
-                Bienvenido 👋
-            </h1>
 
 
-            <p class="sub">
-                Ingresa tus credenciales para acceder
-                al sistema de Grupo Libérate.
-            </p>
-
-</center>
 
             <!-- =================================================
                  MENSAJE OK
@@ -1616,9 +2164,16 @@ color: #BEE6F2;
 
             @if(session('ok'))
 
-                <div class="alert ok">
+                <div
+                    class="alert ok"
+                    role="status"
+                    aria-live="polite"
+                >
 
-                    <i class="fa-solid fa-circle-check"></i>
+                    <i
+                        class="fa-solid fa-circle-check"
+                        aria-hidden="true"
+                    ></i>
 
                     <span>
                         {{ session('ok') }}
@@ -1629,15 +2184,23 @@ color: #BEE6F2;
             @endif
 
 
+
             <!-- =================================================
                  ERRORES
             ================================================== -->
 
             @if($errors->any())
 
-                <div class="alert error">
+                <div
+                    class="alert error"
+                    role="alert"
+                    aria-live="assertive"
+                >
 
-                    <i class="fa-solid fa-circle-exclamation"></i>
+                    <i
+                        class="fa-solid fa-circle-exclamation"
+                        aria-hidden="true"
+                    ></i>
 
                     <span>
                         {{ $errors->first() }}
@@ -1648,63 +2211,143 @@ color: #BEE6F2;
             @endif
 
 
+
             <!-- =================================================
                  FORMULARIO
             ================================================== -->
 
-            <form method="POST" action="{{ route('login') }}">
+            <form
+                method="POST"
+                action="{{ route('login') }}"
+            >
 
                 @csrf
 
 
+                <!-- =============================================
+                     CORREO
+                ============================================== -->
+
                 <div class="field">
+
 
                     <label for="email">
                         Correo electrónico
                     </label>
 
-                    <input
-                        id="email"
-                        type="email"
-                        name="email"
-                        value="{{ old('email') }}"
-                        placeholder="tucorreo@grupoliberate.com"
-                        required
-                        autofocus
-                    >
+
+                    <div class="input-icon">
+
+
+                        <i
+                            class="fa-solid fa-envelope"
+                            aria-hidden="true"
+                        ></i>
+
+
+                        <input
+                            id="email"
+                            type="email"
+                            name="email"
+                            value="{{ old('email') }}"
+                            placeholder="tucorreo@grupoliberate.com"
+                            autocomplete="email"
+                            required
+                            autofocus
+                        >
+
+
+                    </div>
+
 
                 </div>
 
 
+
+                <!-- =============================================
+                     CONTRASEÑA
+                ============================================== -->
+
                 <div class="field">
+
 
                     <label for="password">
                         Contraseña
                     </label>
 
-                    <input
-                        id="password"
-                        type="password"
-                        name="password"
-                        placeholder="••••••••"
-                        required
-                    >
+
+                    <div class="password-field">
+
+
+                        <!-- Icono candado -->
+
+                        <i
+                            class="fa-solid fa-lock password-icon"
+                            aria-hidden="true"
+                        ></i>
+
+
+                        <!-- Input -->
+
+                        <input
+                            id="password"
+                            type="password"
+                            name="password"
+                            autocomplete="current-password"
+                            placeholder="••••••••"
+                            required
+                        >
+
+
+                        <!-- Mostrar contraseña -->
+
+                        <button
+                            type="button"
+                            class="password-toggle"
+                            onclick="togglePassword()"
+                            aria-label="Mostrar contraseña"
+                            title="Mostrar contraseña"
+                        >
+
+                            <i
+                                class="fa-solid fa-eye"
+                                aria-hidden="true"
+                            ></i>
+
+                        </button>
+
+
+                    </div>
+
 
                 </div>
 
 
+
+                <!-- =============================================
+                     RECORDAR
+                ============================================== -->
+
                 <div class="remember">
 
-                    <label>
+
+                    <label for="remember">
+
 
                         <input
+                            id="remember"
                             type="checkbox"
                             name="remember"
                         >
 
-                        Recordarme
+
+                        <span>
+                            Recordarme
+                        </span>
+
 
                     </label>
+
 
 
                     <a
@@ -1713,44 +2356,52 @@ color: #BEE6F2;
                         ¿Olvidaste tu contraseña?
                     </a>
 
+
                 </div>
 
+
+
+                <!-- =============================================
+                     BOTÓN
+                ============================================== -->
 
                 <button
                     type="submit"
                     class="btn btn-primary"
                 >
 
-                    <i class="fa-solid fa-right-to-bracket"></i>
+                    <i
+                        class="fa-solid fa-right-to-bracket"
+                        aria-hidden="true"
+                    ></i>
 
-                    Iniciar sesión
+                    <span>
+                        Iniciar sesión
+                    </span>
 
                 </button>
+
 
             </form>
 
 
+
             <!-- =================================================
-                 LINKS
+                 PORTAL PACIENTE
             ================================================== -->
 
             <div class="bottom-links">
 
-              
-
-                <div>
-                    <span class="separator"></span>
-                </div>
-
-                <div>
+                <span>
                     ¿Eres paciente?
+                </span>
 
-                    <a
-                        href="{{ route('portal.login') }}"
-                    >
-                        Ingresa al Portal del Paciente →
-                    </a>
-                </div>
+
+                <a
+                    href="{{ route('portal.login') }}"
+                >
+                    Ingresa al Portal del Paciente →
+                </a>
 
             </div>
 
@@ -1759,7 +2410,81 @@ color: #BEE6F2;
 
     </div>
 
+
 </div>
 
+
+
+<!-- =========================================================
+     JAVASCRIPT
+========================================================= -->
+
+<script>
+
+    function togglePassword() {
+
+        const passwordInput =
+            document.getElementById('password');
+
+        const toggleButton =
+            document.querySelector('.password-toggle');
+
+        const icon =
+            toggleButton.querySelector('i');
+
+
+        if (passwordInput.type === 'password') {
+
+
+            passwordInput.type = 'text';
+
+
+            icon.classList.remove('fa-eye');
+
+            icon.classList.add('fa-eye-slash');
+
+
+            toggleButton.setAttribute(
+                'aria-label',
+                'Ocultar contraseña'
+            );
+
+
+            toggleButton.setAttribute(
+                'title',
+                'Ocultar contraseña'
+            );
+
+
+        } else {
+
+
+            passwordInput.type = 'password';
+
+
+            icon.classList.remove('fa-eye-slash');
+
+            icon.classList.add('fa-eye');
+
+
+            toggleButton.setAttribute(
+                'aria-label',
+                'Mostrar contraseña'
+            );
+
+
+            toggleButton.setAttribute(
+                'title',
+                'Mostrar contraseña'
+            );
+
+        }
+
+    }
+
+</script>
+
+
 </body>
+
 </html>

@@ -46,9 +46,10 @@
                         <p class="muted" style="font-size:12px;margin-top:6px">PNG o JPG, máx. 2 MB. Se muestra en el menú y en los documentos PDF.</p>
                     </div>
                 </div>
-                <div class="field" style="margin-top:12px"><label>Color primario (branding)</label>
-                    <input type="color" name="color_primario" value="{{ old('color_primario',$empresa->color_primario ?? '#7c3aed') }}" style="height:44px;width:100%"></div>
-            </div>
+               {{--
+<div class="field" style="margin-top:12px"><label>Color primario (branding)</label>
+    <input type="color" name="color_primario" value="{{ old('color_primario',$empresa->color_primario ?? '#7c3aed') }}" style="height:44px;width:100%"></div>
+--}}
         </div>
 
         {{-- Moneda y formato numérico --}}

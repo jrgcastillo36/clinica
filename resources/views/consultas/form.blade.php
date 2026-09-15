@@ -56,19 +56,20 @@
     </p>
 </div>
                     <div class="field mb"><label>Diagnóstico</label><textarea name="diagnostico">{{ old('diagnostico',$consulta->diagnostico) }}</textarea></div>
-                    <div class="field mb"><label>Tratamiento / Receta</label><textarea name="tratamiento" style="min-height:110px">{{ old('tratamiento',$consulta->tratamiento) }}</textarea></div>
+<div class="field mb"><label>Tratamiento</label><textarea name="tratamiento" style="min-height:110px">{{ old('tratamiento',$consulta->tratamiento) }}</textarea></div>
                     <div class="field"><label>Observaciones</label><textarea name="observaciones">{{ old('observaciones',$consulta->observaciones) }}</textarea></div>
                 </div>
-
-                {{-- Receta: medicamentos --}}
-                <div class="card mb">
-                    <div class="flex between mb">
-                        <h3 style="margin:0"><i class="fa-solid fa-prescription" style="color:var(--pink)"></i> Receta médica</h3>
-                        <button type="button" class="btn btn-light btn-sm" onclick="addMed()"><i class="fa-solid fa-plus"></i> Agregar</button>
-                    </div>
-                    <div id="meds"></div>
-                    <p class="muted" style="font-size:12px">Cada fila se imprime en la receta en PDF.</p>
-                </div>
+{{-- Receta: medicamentos --}}
+             {{--
+<div class="card mb">
+    <div class="flex between mb">
+        <h3 style="margin:0"><i class="fa-solid fa-prescription" style="color:var(--pink)"></i> Receta médica</h3>
+        <button type="button" class="btn btn-light btn-sm" onclick="addMed()"><i class="fa-solid fa-plus"></i> Agregar</button>
+    </div>
+    <div id="meds"></div>
+    <p class="muted" style="font-size:12px">Cada fila se imprime en la receta en PDF.</p>
+</div>
+--}}
             </div>
 
             {{-- Panel derecho: módulo por especialidad --}}
@@ -84,8 +85,7 @@
                 <div class="card">
                     <button class="btn btn-primary" style="width:100%;justify-content:center"><i class="fa-solid fa-floppy-disk"></i> Guardar consulta</button>
                     @if($consulta->exists)
-                        <a href="{{ route('consultas.receta',$consulta) }}" target="_blank" class="btn btn-light" style="width:100%;justify-content:center;margin-top:10px"><i class="fa-solid fa-file-prescription"></i> Imprimir receta (PDF)</a>
-                    @endif
+{{-- <a href="{{ route('consultas.receta',$consulta) }}" target="_blank" class="btn btn-light" style="width:100%;justify-content:center;margin-top:10px"><i class="fa-solid fa-file-prescription"></i> Imprimir receta (PDF)</a> --}}                    @endif
                 </div>
             </div>
         </div>

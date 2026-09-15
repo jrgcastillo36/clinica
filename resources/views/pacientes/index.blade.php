@@ -4,9 +4,12 @@
 @section('content')
     <div class="page-head">
         <div><h1>Pacientes</h1><p>Directorio de pacientes de la clínica.</p></div>
-        <div class="flex gap"><a href="{{ route('pacientes.exportar', request()->only('q')) }}" class="btn btn-light"><i class="fa-solid fa-file-excel"></i> Exportar</a>@unless(auth()->user()->isMedico())
+       <div class="flex gap">
+@unless(auth()->user()->isMedico())
+<a href="{{ route('pacientes.exportar', request()->only('q')) }}" class="btn btn-light"><i class="fa-solid fa-file-excel"></i> Exportar</a>
 <a href="{{ route('pacientes.create') }}" class="btn btn-primary"><i class="fa-solid fa-user-plus"></i> Nuevo paciente</a>
-@endunless</div>
+@endunless
+</div>
     </div>
 
     <form method="GET" class="card mb" style="padding:14px">

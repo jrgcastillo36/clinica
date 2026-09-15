@@ -8,7 +8,7 @@
                @if($paciente->especialidad) · <span class="pill pink"><i class="fa-solid {{ $paciente->especialidad->icono }}"></i> {{ $paciente->especialidad->nombre }}</span>@endif</p></div>
         <div class="flex gap">
             @if(optional($paciente->especialidad)->slug === 'pediatria' && $paciente->fecha_nacimiento && in_array($paciente->sexo, ['M','F']))
-                <a href="{{ route('pacientes.crecimiento', $paciente) }}" class="btn btn-light"><i class="fa-solid fa-chart-line"></i> Crecimiento OMS</a>
+{{-- <a href="{{ route('pacientes.crecimiento', $paciente) }}" class="btn btn-light"><i class="fa-solid fa-chart-line"></i> Crecimiento OMS</a> --}}
             @endif
             @if(optional($paciente->especialidad)->slug === 'pediatria')
                 <a href="{{ route('vacunas.index', $paciente) }}" class="btn btn-light"><i class="fa-solid fa-syringe"></i> Vacunas</a>
@@ -40,8 +40,7 @@
                         <div class="flex gap">
                             <span class="pill violet">{{ $c->especialidad->nombre ?? 'General' }}</span>
                             <a href="{{ route('consultas.show',$c) }}" class="btn btn-light btn-sm"><i class="fa-solid fa-eye"></i></a>
-                            <a href="{{ route('consultas.receta',$c) }}" target="_blank" class="btn btn-light btn-sm"><i class="fa-solid fa-file-prescription"></i></a>
-                        </div>
+{{-- <a href="{{ route('consultas.receta',$c) }}" target="_blank" class="btn btn-light btn-sm"><i class="fa-solid fa-file-prescription"></i></a> --}}                        </div>
                     </div>
                     <div class="muted" style="margin:4px 0"><b>Motivo:</b> {{ $c->motivo ?? '—' }}</div>
                     <div class="muted"><b>Diagnóstico:</b> {{ $c->diagnostico ?? '—' }}</div>

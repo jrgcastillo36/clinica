@@ -36,7 +36,7 @@
                     <canvas id="firmaCanvas" width="380" height="130" style="width:100%;height:130px;touch-action:none;cursor:crosshair;border-radius:8px;background:#fbfbfe"></canvas>
                     <div class="flex gap mt" style="justify-content:space-between">
                         <button type="button" class="btn btn-light btn-sm" onclick="limpiarFirma()"><i class="fa-solid fa-eraser"></i> Limpiar</button>
-                        <small class="muted">Dibuja tu firma; se usará en recetas y certificados.</small>
+<small class="muted">Dibuja tu firma; se usará en certificados.</small>
                     </div>
                 </div>
                 <input type="hidden" name="firma" id="firmaInput" value="{{ $usuario->firma }}">

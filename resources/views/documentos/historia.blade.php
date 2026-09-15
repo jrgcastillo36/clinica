@@ -44,13 +44,15 @@
                     @if($c->frecuencia_cardiaca)<span class="vit">FC {{ $c->frecuencia_cardiaca }}</span>@endif
                     @if($c->temperatura)<span class="vit">T° {{ $c->temperatura }}</span>@endif
                 </div>
-                @if($c->recetaItems->isNotEmpty())
+              {{--
+@if($c->recetaItems->isNotEmpty())
                     <table class="rx"><tr><th>Medicamento</th><th>Dosis</th><th>Frecuencia</th><th>Duración</th></tr>
                         @foreach($c->recetaItems as $it)
                             <tr><td>{{ $it->medicamento }}</td><td>{{ $it->dosis ?? '—' }}</td><td>{{ $it->frecuencia ?? '—' }}</td><td>{{ $it->duracion ?? '—' }}</td></tr>
                         @endforeach
                     </table>
                 @endif
+--}}
             </div>
         @empty
             <p>Sin consultas registradas.</p>

@@ -38,8 +38,8 @@
     @else
         {{-- Hay un turno abierto --}}
         <div class="card mb" style="background:#dbeafe">
-            <div class="flex gap" style="align-items:center">
-                <i class="fa-solid fa-door-open" style="font-size:20px;color:#1e40af"></i>
+<div class="flex gap" style="align-items:center;flex-wrap:wrap">
+        <i class="fa-solid fa-door-open" style="font-size:20px;color:#1e40af"></i>
                 <div>
                     <b style="color:#1e40af">Turno abierto{{ $cierre->turno_nombre ? ' — '.$cierre->turno_nombre : '' }}</b>
                     <p class="muted" style="margin:2px 0 0">
@@ -53,8 +53,8 @@
             </div>
         </div>
 
-        <div class="grid g-2" style="grid-template-columns:1fr 1fr">
-            <div class="card">
+<div class="grid g-2">
+        <div class="card">
                 <h3 class="mb">Resumen del sistema (este turno)</h3>
                 <div class="table-wrap" style="box-shadow:none">
                     <table>
@@ -71,8 +71,8 @@
                         </tfoot>
                     </table>
                 </div>
-               <div class="grid g-2 mt" style="grid-template-columns:1fr 1fr;gap:10px">
-    <div class="metric">
+<div class="grid g-2 mt" style="gap:10px">
+                <div class="metric">
         <div class="big">{{ $mon }} {{ number_format($cierre->efectivo_inicial + $efectivoSistema,2) }}</div>
         <div class="cap">Efectivo esperado (solo billetes/monedas)</div>
     </div>
