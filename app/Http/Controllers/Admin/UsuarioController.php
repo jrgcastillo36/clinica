@@ -31,25 +31,42 @@ class UsuarioController extends Controller
         ]);
     }
 
-    public function store(Request $request)
-    {
-        $data = $request->validate([
-            'name' => ['required', 'string', 'max:120'],
-            'email' => ['required', 'email', 'max:120', 'unique:users,email'],
-            'password' => ['required', 'string', 'min:6'],
-            'role' => ['required', 'in:admin,medico,recepcion'],
-            'especialidad_id' => ['nullable', 'exists:especialidades,id'],
-            'telefono' => ['nullable', 'string', 'max:30'],
-            'cmp' => ['nullable', 'string', 'max:30'],
-            'titulo_profesional' => ['nullable', 'string', 'max:40'],
-        ]);
-        $data['empresa_id'] = $this->empresaId();
-        $data['password'] = Hash::make($data['password']);
-        $data['activo'] = true;
-        User::create($data);
+  public function store(Request $request)
+{
+    $data = $request->validate([
+        'name' => ['required', 'string', 'max:120'],
+        'email' => ['required', 'email', 'max:120', 'unique:users,email'],
+        'password' => ['required', 'string', 'min:6'],
+        'role' => ['required', 'in:admin,medico,recepcion'],
+        'especialidad_id' => ['nullable', 'exists:especialidades,id'],
+        'telefono' => ['nullable', 'string', 'max:30'],
+        'cmp' => ['nullable', 'string', 'max:30'],
+        'titulo_profesional' => ['nullable', 'string', 'max:40'],
+    ]);
 
-        return redirect()->route('admin.usuarios.index')->with('ok', 'Usuario creado.');
+    $empresa = auth()->user()->empresa;
+    $plan = $empresa?->planRef;
+
+    if ($plan) {
+        $campoLimite = ['admin' => 'limite_admin', 'recepcion' => 'limite_recepcion', 'medico' => 'limite_medico'][$data['role']];
+        $limite = $plan->{$campoLimite};
+
+        if ($limite !== null) {
+            $actual = User::where('empresa_id', $this->empresaId())->where('role', $data['role'])->count();
+            if ($actual >= $limite) {
+                $etiquetaRol = ['admin' => 'administradores', 'recepcion' => 'recepcionistas', 'medico' => 'psicólogos(as)'][$data['role']];
+                return back()->withInput()->with('error', "Ya existe el usuario {$etiquetaRol} actual ({$limite}). Intente Con Otra Roll .");
+            }
+        }
     }
+
+    $data['empresa_id'] = $this->empresaId();
+    $data['password'] = Hash::make($data['password']);
+    $data['activo'] = true;
+    User::create($data);
+
+    return redirect()->route('admin.usuarios.index')->with('ok', 'Usuario creado.');
+}
 
     public function edit(User $usuario)
     {

@@ -6,7 +6,7 @@
         <div><h1>{{ $usuario->exists ? 'Editar usuario' : 'Nuevo usuario' }}</h1><p>Datos de acceso y rol del miembro del equipo.</p></div>
         <a href="{{ route('admin.usuarios.index') }}" class="btn btn-ghost"><i class="fa-solid fa-arrow-left"></i> Volver</a>
     </div>
-
+@if(session('error'))<div class="alert mb" style="background:#fef2f2;border-left:4px solid #ef4444;color:#991b1b">{{ session('error') }}</div>@endif
     <form method="POST" action="{{ $usuario->exists ? route('admin.usuarios.update',$usuario) : route('admin.usuarios.store') }}" class="card">
         @csrf
         @if($usuario->exists) @method('PUT') @endif

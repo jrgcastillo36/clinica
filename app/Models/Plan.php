@@ -12,10 +12,11 @@ class Plan extends Model
 
     protected $table = 'planes';
 
-    protected $fillable = [
-        'nombre', 'slug', 'precio', 'ciclo', 'descripcion',
-        'limite_especialidades', 'limite_usuarios', 'destacado', 'activo', 'orden',
-    ];
+  protected $fillable = [
+    'nombre', 'slug', 'precio', 'ciclo', 'descripcion',
+    'limite_especialidades', 'limite_usuarios', 'limite_admin', 'limite_recepcion', 'limite_medico',
+    'destacado', 'activo', 'orden',
+];
 
     protected function casts(): array
     {
