@@ -93,9 +93,12 @@ Route::prefix('portal')->group(function () {
         Route::get('/pagos', [PortalController::class, 'pagos'])->name('portal.pagos');
         Route::get('/archivos', [PortalController::class, 'archivos'])->name('portal.archivos');
         Route::get('/archivos/{adjunto}/descargar', [PortalController::class, 'descargarArchivo'])->name('portal.archivos.download');
+       Route::post('/archivos/subir', [PortalController::class, 'subirArchivo'])->name('portal.archivos.subir');
         Route::get('/reservar', [ReservaController::class, 'create'])->name('portal.reservar');
         Route::post('/reservar', [ReservaController::class, 'store'])->name('portal.reservar.store');
-        Route::get('/citas/{cita}/editar', [ReservaController::class, 'editar'])->name('portal.cita.editar');
+       Route::get('/reservar/franjas', [ReservaController::class, 'franjasAjax'])->name('portal.reservar.franjas');
+       Route::get('/citas/{cita}/franjas', [ReservaController::class, 'franjasEditarAjax'])->name('portal.cita.franjas');
+              Route::get('/citas/{cita}/editar', [ReservaController::class, 'editar'])->name('portal.cita.editar');
         Route::put('/citas/{cita}', [ReservaController::class, 'actualizar'])->name('portal.cita.actualizar');
         Route::post('/citas/{cita}/cancelar', [ReservaController::class, 'cancelar'])->name('portal.cita.cancelar');
         Route::post('/citas/{cita}/confirmar', [ReservaController::class, 'confirmar'])->name('portal.cita.confirmar');

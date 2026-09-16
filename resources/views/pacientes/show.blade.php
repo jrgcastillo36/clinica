@@ -127,8 +127,7 @@
                 @forelse($paciente->adjuntos->sortByDesc('created_at') as $a)
                     <div class="flex between" style="padding:8px 0;border-bottom:1px solid var(--line)">
                         <span class="flex gap"><i class="fa-solid {{ $a->es_imagen ? 'fa-image' : 'fa-file' }}" style="color:var(--violet-2)"></i>
-                            <span><b style="font-size:13px">{{ $a->nombre }}</b><br><small class="muted">{{ ucfirst($a->categoria) }} · {{ $a->tamano_legible }}</small></span></span>
-                        <span class="flex gap">
+<span><b style="font-size:13px">{{ $a->nombre }}</b> @if($a->origen === 'paciente')<span class="pill" style="font-size:9.5px;vertical-align:middle">📤 Subido por el paciente</span>@endif<br><small class="muted">{{ ucfirst($a->categoria) }} · {{ $a->tamano_legible }}</small></span></span>                        <span class="flex gap">
                             <a href="{{ route('adjuntos.download',$a) }}" class="btn btn-light btn-sm"><i class="fa-solid fa-download"></i></a>
                             <form method="POST" action="{{ route('adjuntos.destroy',$a) }}" onsubmit="return confirm('¿Eliminar archivo?')">@csrf @method('DELETE')<button class="btn btn-danger btn-sm"><i class="fa-solid fa-trash"></i></button></form>
                         </span>

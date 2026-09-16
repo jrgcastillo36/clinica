@@ -454,12 +454,12 @@ views: {
             eventClick: function (info) { info.jsEvent.preventDefault(); abrirModalCita(info.event); },
             select: function (info) {
                 const fecha = info.startStr.substring(0, 10);
-                let hora = '09:00', duracion = 30;
-                if (info.view.type !== 'dayGridMonth') {
-                    hora = info.startStr.substring(11, 16);
-                    duracion = Math.round((new Date(info.endStr) - new Date(info.startStr)) / 60000);
-                    if (!duracion || duracion < 5) duracion = 30;
-                }
+               let hora = '09:00', duracion = 90;
+if (info.view.type !== 'dayGridMonth') {
+    hora = info.startStr.substring(11, 16);
+    duracion = Math.round((new Date(info.endStr) - new Date(info.startStr)) / 60000);
+    if (!duracion || duracion < 5) duracion = 90;
+}
                 cal.unselect();
                 abrirNuevaCitaModal(fecha, hora, duracion);
             },
@@ -677,14 +677,14 @@ document.addEventListener('click', function (e) {
             ];
         })->values()->toArray()) !!};
 
-        window.abrirNuevaCitaModal = function (fecha, hora, duracion) {
-            document.getElementById('ncFecha').value = fecha;
-            document.getElementById('ncHora').value = hora;
-            document.getElementById('formNuevaCitaRapida').dataset.duracion = duracion;
-            document.getElementById('ncBuscarPaciente').value = '';
-            document.getElementById('ncPacienteId').value = '';
-                        document.getElementById('ncMedico').value = '';
-            document.getElementById('ncConsultorio').value = '';
+       window.abrirNuevaCitaModal = function (fecha, hora, duracion, medicoId) {
+    document.getElementById('ncFecha').value = fecha;
+    document.getElementById('ncHora').value = hora;
+    document.getElementById('formNuevaCitaRapida').dataset.duracion = duracion;
+    document.getElementById('ncBuscarPaciente').value = '';
+    document.getElementById('ncPacienteId').value = '';
+                document.getElementById('ncMedico').value = medicoId || '';
+    document.getElementById('ncConsultorio').value = '';
             document.getElementById('ncError').style.display = 'none';
             document.getElementById('ncMasOpciones').href = '{{ route('citas.create') }}?fecha=' + fecha + '&hora=' + hora + '&duracion=' + duracion;
             document.getElementById('nuevaCitaModalFondo').classList.add('abierto');
@@ -745,7 +745,7 @@ document.addEventListener('click', function (e) {
                     paciente_id: pacienteId,
                     fecha: document.getElementById('ncFecha').value,
                     hora: document.getElementById('ncHora').value,
-                    duracion: this.dataset.duracion || 30,
+                    duracion: this.dataset.duracion || 90,
                                         medico_id: document.getElementById('ncMedico').value || null,
                     consultorio_id: document.getElementById('ncConsultorio').value || null,
                     estado: 'pendiente'
@@ -767,6 +767,11 @@ document.addEventListener('click', function (e) {
         });
 
         cal.render();
+        const paramsUrl = new URLSearchParams(window.location.search);
+if (paramsUrl.get('medico_id') && paramsUrl.get('fecha') && paramsUrl.get('hora')) {
+    abrirNuevaCitaModal(paramsUrl.get('fecha'), paramsUrl.get('hora'), 90, paramsUrl.get('medico_id'));
+    window.history.replaceState({}, '', window.location.pathname);
+}
     });
     </script>
     @endpush

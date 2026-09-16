@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Portal;
 
 use App\Http\Controllers\Controller;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
 class PortalController extends Controller
@@ -40,6 +41,32 @@ class PortalController extends Controller
 
         return view('portal.historia', ['paciente' => $p, 'consultas' => $consultas]);
     }
+    public function subirArchivo(Request $request)
+{
+    $p = $this->paciente();
+
+    $data = $request->validate([
+        'archivo' => ['required', 'file', 'max:10240', 'mimes:pdf,jpg,jpeg,png'],
+    ]);
+
+    $file = $request->file('archivo');
+    $path = $file->store('adjuntos/'.$p->empresa_id, 'public');
+
+    \App\Models\Adjunto::create([
+        'empresa_id' => $p->empresa_id,
+        'paciente_id' => $p->id,
+        'user_id' => null,
+        'origen' => 'paciente',
+        'nombre' => $file->getClientOriginalName(),
+        'archivo' => $path,
+        'tipo' => $file->getClientMimeType(),
+        'tamano' => $file->getSize(),
+        'categoria' => 'tarea',
+        'visible_paciente' => true,
+    ]);
+
+    return back()->with('ok', 'Tu archivo fue subido correctamente.');
+}
     public function descargarArchivo(\App\Models\Adjunto $adjunto)
     {
         $p = $this->paciente();

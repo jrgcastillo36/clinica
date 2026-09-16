@@ -2061,7 +2061,7 @@
             <!-- Logo -->
 
             <img
-                src="{{ asset('images/logosistema.jpg') }}"
+                src="{{ asset('images/logosistema.png') }}"
                 alt="Grupo Libérate"
             >
 

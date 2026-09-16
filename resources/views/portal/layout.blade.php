@@ -47,5 +47,6 @@
         @if(session('ok'))<div class="alert ok"><i class="fa-solid fa-circle-check"></i> {{ session('ok') }}</div>@endif
         @yield('content')
     </main>
+    @stack('scripts')
 </body>
 </html>

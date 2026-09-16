@@ -11,13 +11,13 @@ class Empresa extends Model
 {
     use HasFactory;
 
-    protected $fillable = [
-        'nombre', 'slug', 'ruc', 'email', 'telefono', 'direccion', 'logo',
-        'color_primario', 'moneda', 'horario_inicio', 'horario_fin',
-        'dias_atencion', 'sitio_web', 'plan', 'activo',
-        'separador_decimal', 'separador_miles', 'decimales', 'moneda_posicion',
-        'plan_id', 'vence_suscripcion',
-    ];
+   protected $fillable = [
+    'nombre', 'slug', 'ruc', 'email', 'telefono', 'direccion', 'logo',
+    'color_primario', 'moneda', 'horario_inicio', 'horario_fin',
+    'dias_atencion', 'sitio_web', 'plan', 'activo',
+    'separador_decimal', 'separador_miles', 'decimales', 'moneda_posicion',
+    'plan_id', 'vence_suscripcion', 'banner_pago', 'info_pago',
+];
 
     protected $casts = ['activo' => 'boolean', 'decimales' => 'integer', 'vence_suscripcion' => 'date'];
 

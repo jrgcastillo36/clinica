@@ -83,15 +83,16 @@ return 'El psicólogo(a) ya tiene otra cita en ese horario.';
 }
 
     public function create(Request $request)
-    {
-        return view('citas.form', [
-            'cita' => new Cita([
-                'fecha' => $request->get('fecha', now()->toDateString()),
-                'hora' => $request->get('hora', '09:00'),
-                'duracion' => $request->get('duracion', 30),
-            ]),
-        ] + $this->opciones());
-    }
+{
+    return view('citas.form', [
+        'cita' => new Cita([
+            'fecha' => $request->get('fecha', now()->toDateString()),
+            'hora' => $request->get('hora', '09:00'),
+            'duracion' => $request->get('duracion', 90),
+            'medico_id' => $request->get('medico_id'),
+        ]),
+    ] + $this->opciones());
+}
 
     public function store(Request $request)
     {

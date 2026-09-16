@@ -3,7 +3,7 @@
 
 @section('content')
     <div class="page-head">
-<div><h1>Disponibilidad</h1><p>Mapa de psicólogos(as) y consultorios ocupados/libres por horario.</p></div>
+<div><h1>Disponibilidad</h1><p>Mapa de psicólogos(as) y consultorios ocupados/libres por horario. Haz clic en un espacio libre para agendar ahí.</p></div>
     <form method="GET" class="flex gap">
             <input type="date" name="fecha" value="{{ $fecha }}" onchange="this.form.submit()">
             <a href="{{ route('agenda.index') }}" class="btn btn-ghost"><i class="fa-solid fa-calendar-days"></i> Ver calendario</a>
@@ -29,12 +29,15 @@
                         <td class="disp-medico-col">
                             <span class="disp-dot" data-medico="{{ $m->id }}"></span> {{ $m->name }}
                         </td>
-                        @foreach($slots as $s)
-                            @php($ocupadoPor = $ocupado[$m->id][$s] ?? null)
-                            <td class="disp-celda {{ $ocupadoPor ? 'disp-ocupado' : 'disp-libre' }}"
-                                data-medico="{{ $ocupadoPor ? $m->id : '' }}"
-                                title="{{ $ocupadoPor ? $s.' · '.$ocupadoPor : $s.' · Libre' }}">
-                            </td>
+                        @foreach($bloquesMedico[$m->id] as $b)
+                            @if($b['texto'] === null)
+                                <td class="disp-celda disp-libre" colspan="{{ $b['span'] }}" title="{{ $b['slot'] }} · Libre — clic para agendar">
+<a href="{{ route('agenda.index', ['medico_id' => $m->id, 'fecha' => $fecha, 'hora' => $b['slot']]) }}" class="disp-link"></a>                                </td>
+                            @else
+                                <td class="disp-celda disp-ocupado" colspan="{{ $b['span'] }}" data-medico="{{ $m->id }}"
+                                    title="{{ $b['slot'] }} · {{ $b['texto'] }}">
+                                </td>
+                            @endif
                         @endforeach
                     </tr>
                 @empty
@@ -68,12 +71,14 @@
                         <td class="disp-medico-col">
                             <i class="fa-solid fa-door-open" style="color:var(--violet-2);margin-right:6px"></i>{{ $co->nombre }}
                         </td>
-                                                               @foreach($slots as $s)
-                            @php($ocupadoPor = $ocupadoConsultorio[$co->id][$s] ?? null)
-                            <td class="disp-celda {{ $ocupadoPor ? 'disp-ocupado' : 'disp-libre' }}"
-                                data-medico="{{ $ocupadoPor['medicoId'] ?? '' }}"
-                                title="{{ $ocupadoPor ? $s.' · '.$ocupadoPor['texto'] : $s.' · Libre' }}">
-                            </td>
+                        @foreach($bloquesConsultorio[$co->id] as $b)
+                            @if($b['texto'] === null)
+                                <td class="disp-celda disp-libre" colspan="{{ $b['span'] }}" title="{{ $b['slot'] }} · Libre"></td>
+                            @else
+                                <td class="disp-celda disp-ocupado" colspan="{{ $b['span'] }}" data-medico="{{ $b['medicoId'] ?? '' }}"
+                                    title="{{ $b['slot'] }} · {{ $b['texto'] }}">
+                                </td>
+                            @endif
                         @endforeach
                     </tr>
                 @empty
@@ -92,12 +97,12 @@
         font-weight:700;text-align:center;border-bottom:1px solid var(--line)}
     .disp-hora-en-punto{border-left:1px solid var(--line)}
     .disp-celda{width:22px;height:38px;border-right:1px solid #f1f5f9;border-bottom:1px solid #f1f5f9;
-        cursor:default;transition:.1s}
-    .disp-libre{background:#f8fafc}
+        cursor:default;transition:.1s;position:relative;padding:0}
+    .disp-libre{background:#f8fafc;cursor:pointer}
     .disp-ocupado{opacity:.9}
-    .disp-ocupado-consultorio{background:#0d9488}
     .disp-celda:hover{outline:2px solid #1f2937;outline-offset:-2px;position:relative;z-index:1}
     .disp-dot{width:9px;height:9px;border-radius:50%;display:inline-block;margin-right:4px}
+    .disp-link{position:absolute;inset:0;display:block}
     </style>
 
     @push('scripts')

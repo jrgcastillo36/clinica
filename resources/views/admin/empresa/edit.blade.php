@@ -32,7 +32,7 @@
             {{-- Logo --}}
             <div class="card mb">
                 <h3 class="mb"><i class="fa-solid fa-image" style="color:var(--pink)"></i> Logo de la empresa</h3>
-                <div class="flex gap" style="align-items:center">
+                             <div class="flex gap" style="align-items:center">
                     <div style="width:96px;height:96px;border-radius:14px;border:1.5px dashed var(--line);display:grid;place-items:center;overflow:hidden;background:#faf9ff;flex:0 0 96px">
                         @if($empresa->logo)
                             <img id="logoImg" src="{{ asset('storage/'.$empresa->logo) }}" style="max-width:100%;max-height:100%">
@@ -50,6 +50,25 @@
 <div class="field" style="margin-top:12px"><label>Color primario (branding)</label>
     <input type="color" name="color_primario" value="{{ old('color_primario',$empresa->color_primario ?? '#7c3aed') }}" style="height:44px;width:100%"></div>
 --}}
+            </div>
+        </div>
+
+        {{-- Medios de pago --}}
+        <div class="card mb">
+            <h3 class="mb"><i class="fa-solid fa-money-bill-wave" style="color:#0d9488"></i> Medios de pago (se muestran al paciente en el Portal)</h3>
+            <div class="field mb">
+                <label>Banner o imagen (QR de Yape/Plin, cuenta bancaria, etc.)</label>
+                @if($empresa->banner_pago)
+                    <div class="mb"><img src="{{ asset('storage/'.$empresa->banner_pago) }}" alt="Banner de pago" style="max-width:280px;border-radius:10px;border:1px solid var(--line)"></div>
+                @endif
+                <input type="file" name="banner_pago" accept="image/*">
+                <p class="muted" style="font-size:11.5px;margin-top:4px">Opcional. JPG o PNG, máx. 3 MB.</p>
+            </div>
+            <div class="field">
+                <label>Información adicional (texto libre)</label>
+                <textarea name="info_pago" style="min-height:90px" placeholder="Ej. Yape: 999-888-777 (a nombre de...), Cuenta BCP: 123-456789-0-12, CCI: 002-123...">{{ old('info_pago', $empresa->info_pago) }}</textarea>
+                <p class="muted" style="font-size:11.5px;margin-top:4px">Opcional. Aparece como texto debajo del banner.</p>
+            </div>
         </div>
 
         {{-- Moneda y formato numérico --}}

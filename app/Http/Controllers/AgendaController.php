@@ -202,65 +202,117 @@ class AgendaController extends Controller
     }
 
     public function disponibilidad(Request $request)
-    {
-        $fecha = $request->get('fecha', now()->toDateString());
+{
+    $fecha = $request->get('fecha', now()->toDateString());
 
-        $medicos = User::where('empresa_id', $this->empresaId())
-            ->where('role', 'medico')->orderBy('name')->get();
+    $medicos = User::where('empresa_id', $this->empresaId())
+        ->where('role', 'medico')->orderBy('name')->get();
 
-        $consultorios = \App\Models\Consultorio::where('empresa_id', $this->empresaId())
-            ->where('activo', true)->orderBy('nombre')->get();
+    $consultorios = \App\Models\Consultorio::where('empresa_id', $this->empresaId())
+        ->where('activo', true)->orderBy('nombre')->get();
 
-        $citas = Cita::where('empresa_id', $this->empresaId())
-            ->whereDate('fecha', $fecha)
-            ->whereNotIn('estado', ['cancelada', 'no_asistio'])
-            ->get();
+    $citas = Cita::where('empresa_id', $this->empresaId())
+        ->whereDate('fecha', $fecha)
+        ->whereNotIn('estado', ['cancelada', 'no_asistio'])
+        ->get();
 
-                $slots = [];
-        $cursor = \Carbon\Carbon::parse('07:00');
-        $fin = \Carbon\Carbon::parse('21:00');
-        while ($cursor < $fin) {
-            $slots[] = $cursor->format('H:i');
-            $cursor->addMinutes(60);
-        }
+    $slots = [];
+    $cursor = \Carbon\Carbon::parse('07:00');
+    $fin = \Carbon\Carbon::parse('21:00');
+    while ($cursor < $fin) {
+        $slots[] = $cursor->format('H:i');
+        $cursor->addMinutes(30);
+    }
 
-        $ocupado = [];
-        foreach ($medicos as $m) {
-            foreach ($slots as $s) {
-                $ocupado[$m->id][$s] = null;
-            }
-        }
-
-        $ocupadoConsultorio = [];
-        foreach ($consultorios as $co) {
-            foreach ($slots as $s) {
-                $ocupadoConsultorio[$co->id][$s] = null;
-            }
-        }
-
-        foreach ($citas as $c) {
-            $inicio = \Carbon\Carbon::parse(substr($c->hora, 0, 5));
-            $finCita = $inicio->copy()->addMinutes($c->duracion ?: 30);
-
-           foreach ($slots as $s) {
-    $slotTime = \Carbon\Carbon::parse($s);
-    if ($slotTime->gte($inicio) && $slotTime->lt($finCita)) {
-        $texto = $c->es_bloqueo ? 'No disponible' : ($c->paciente->nombre_completo ?? 'Ocupado');
-        if ($c->medico_id) {
-            $ocupado[$c->medico_id][$s] = $texto;
-        }
-        if ($c->consultorio_id) {
-            $ocupadoConsultorio[$c->consultorio_id][$s] = [
-                'texto' => $texto,
-                'medicoId' => $c->medico_id,
-            ];
+    $ocupado = [];
+    foreach ($medicos as $m) {
+        foreach ($slots as $s) {
+            $ocupado[$m->id][$s] = null;
         }
     }
+
+    $ocupadoConsultorio = [];
+    foreach ($consultorios as $co) {
+        foreach ($slots as $s) {
+            $ocupadoConsultorio[$co->id][$s] = null;
+        }
+    }
+
+    foreach ($citas as $c) {
+        $inicio = \Carbon\Carbon::parse(substr($c->hora, 0, 5));
+        $finCita = $inicio->copy()->addMinutes($c->duracion ?: 90);
+
+        foreach ($slots as $s) {
+            $slotTime = \Carbon\Carbon::parse($s);
+            if ($slotTime->gte($inicio) && $slotTime->lt($finCita)) {
+                $texto = $c->es_bloqueo ? 'No disponible' : ($c->paciente->nombre_completo ?? 'Ocupado');
+                if ($c->medico_id) {
+                    $ocupado[$c->medico_id][$s] = $texto;
+                }
+                if ($c->consultorio_id) {
+                    $ocupadoConsultorio[$c->consultorio_id][$s] = [
+                        'texto' => $texto,
+                        'medicoId' => $c->medico_id,
+                    ];
+                }
+            }
+        }
+    }
+
+    // Agrupa celdas ocupadas consecutivas con el mismo texto en un solo bloque
+    // (colspan), para que una cita de 90 min se vea como UNA barra, no 3 celdas sueltas.
+    $bloquesMedico = [];
+    foreach ($medicos as $m) {
+        $bloquesMedico[$m->id] = $this->agruparEnBloques($slots, $ocupado[$m->id]);
+    }
+
+    $bloquesConsultorio = [];
+    foreach ($consultorios as $co) {
+        $mapa = array_map(fn ($v) => $v['texto'] ?? null, $ocupadoConsultorio[$co->id]);
+        $bloques = $this->agruparEnBloques($slots, $mapa);
+        foreach ($bloques as &$b) {
+            if ($b['texto'] !== null) {
+                $b['medicoId'] = $ocupadoConsultorio[$co->id][$b['slot']]['medicoId'] ?? null;
+            }
+        }
+        unset($b);
+        $bloquesConsultorio[$co->id] = $bloques;
+    }
+
+    return view('agenda.disponibilidad', compact(
+        'medicos', 'slots', 'fecha', 'consultorios',
+        'bloquesMedico', 'bloquesConsultorio'
+    ));
 }
-        }
 
-        return view('agenda.disponibilidad', compact('medicos', 'slots', 'ocupado', 'fecha', 'consultorios', 'ocupadoConsultorio'));
+/**
+ * Agrupa una fila de slots consecutivos con el mismo valor "ocupado" en un
+ * solo bloque con colspan — los libres NUNCA se agrupan entre sí (deben
+ * quedar clickeables individualmente para poder agendar en ese horario exacto).
+ */
+private function agruparEnBloques(array $slotsOrdenados, array $mapaOcupado): array
+{
+    $bloques = [];
+    $actual = null;
+
+    foreach ($slotsOrdenados as $s) {
+        $texto = $mapaOcupado[$s] ?? null;
+
+        if ($texto !== null && $actual && $actual['texto'] === $texto) {
+            $actual['span']++;
+        } else {
+            if ($actual) {
+                $bloques[] = $actual;
+            }
+            $actual = ['slot' => $s, 'texto' => $texto, 'span' => 1];
+        }
     }
+    if ($actual) {
+        $bloques[] = $actual;
+    }
+
+      return $bloques;
+}
 
     public function mover(Request $request, Cita $cita)
     {
@@ -288,8 +340,8 @@ abort_if(auth()->user()->isMedico(), 403, 'El psicólogo(a) no puede reprogramar
                 $cFin = $cInicio->copy()->addMinutes($c->duracion ?: 30);
                 if ($inicio < $cFin && $cInicio < $fin) {
                     if ($cita->medico_id && $c->medico_id == $cita->medico_id) {
-                        return response()->json(['ok' => false, 'mensaje' => 'El médico ya tiene otra cita en ese horario.'], 422);
-                    }
+
+return response()->json(['ok' => false, 'mensaje' => 'El psicólogo(a) ya tiene otra cita en ese horario.'], 422);                    }
                     if ($cita->consultorio_id && $c->consultorio_id == $cita->consultorio_id) {
                         return response()->json(['ok' => false, 'mensaje' => 'Ese consultorio ya está ocupado en ese horario.'], 422);
                     }
