@@ -1326,11 +1326,9 @@
             }
 
 
-            .promo {
-
-                display: none;
-
-            }
+          .promo {
+    display: none !important;
+}
 
 
             .panel {
