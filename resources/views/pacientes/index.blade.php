@@ -18,9 +18,10 @@
                 <i class="fa-solid fa-magnifying-glass"></i>
                 <input type="text" name="q" value="{{ $q }}" placeholder="Buscar por nombre, apellido o documento...">
             </div>
-            <select name="orden" onchange="this.form.submit()" style="width:auto">
+          <select name="orden" onchange="this.form.submit()" style="width:auto">
     <option value="alfabetico" {{ $orden === 'alfabetico' ? 'selected' : '' }}>Alfabético</option>
     <option value="recientes" {{ $orden === 'recientes' ? 'selected' : '' }}>Más recientes primero</option>
+    <option value="atendidos" {{ $orden === 'atendidos' ? 'selected' : '' }}>Últimos atendidos primero</option>
 </select>
 <button class="btn btn-primary">Buscar</button>
 @if($q)<a href="{{ route('pacientes.index') }}" class="btn btn-ghost">Limpiar</a>@endif
@@ -29,8 +30,7 @@
 
     <div class="table-wrap">
         <table>
-            <thead><tr><th>Paciente</th><th>Documento</th><th>Edad</th><th>Sexo</th><th>Especialidad</th><th>Teléfono</th><th></th></tr></thead>
-            <tbody>
+<thead><tr><th>Paciente</th><th>Documento</th><th>Edad</th><th>Sexo</th><th>Especialidad</th><th>Teléfono</th>@if($orden === 'atendidos')<th>Última atención</th>@endif<th></th></tr></thead>            <tbody>
             @forelse($pacientes as $p)
                 <tr>
                     <td><span class="avatar-sm">{{ mb_substr($p->nombres,0,1) }}{{ mb_substr($p->apellidos,0,1) }}</span>{{ $p->nombre_completo }}</td>
@@ -38,8 +38,9 @@
                     <td>{{ $p->edad !== null ? $p->edad.' años' : '—' }}</td>
                     <td>{{ ['M'=>'Masculino','F'=>'Femenino','O'=>'Otro'][$p->sexo] ?? '—' }}</td>
                     <td>@if($p->especialidad)<span class="pill pink"><i class="fa-solid {{ $p->especialidad->icono }}"></i> {{ $p->especialidad->nombre }}</span>@else — @endif</td>
-                    <td>{{ $p->telefono ?? '—' }}</td>
-                    <td style="text-align:right;white-space:nowrap">
+<td>{{ $p->telefono ?? '—' }}</td>
+@if($orden === 'atendidos')<td>{{ $p->consultas_max_fecha ? \Carbon\Carbon::parse($p->consultas_max_fecha)->format('d/m/Y') : 'Sin consultas' }}</td>@endif
+<td style="text-align:right;white-space:nowrap">
                         <a href="{{ route('pacientes.show', $p) }}" class="btn btn-light btn-sm"><i class="fa-solid fa-eye"></i></a>
                       
                         @unless(auth()->user()->isMedico())

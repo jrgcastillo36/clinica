@@ -15,11 +15,10 @@ class PacienteController extends Controller
         return (int) auth()->user()->empresa_id;
     }
 
- public function index(Request $request)
+public function index(Request $request)
 {
     $q = $request->get('q');
-    $orden = $request->get('orden', 'alfabetico');
-
+$orden = $request->get('orden', 'atendidos');
     $pacientes = Paciente::where('empresa_id', $this->empresaId())
                 ->when(auth()->user()->isMedico(), fn ($q) => $q->whereHas('citas', fn ($c) => $c->where('medico_id', auth()->id())))
         ->when($q, fn ($query) => $query->where(function ($sub) use ($q) {
@@ -28,10 +27,10 @@ class PacienteController extends Controller
                 ->orWhere('documento', 'like', "%{$q}%");
         }))
         ->with('especialidad')
-        ->when($orden === 'recientes',
-            fn ($query) => $query->orderByDesc('created_at'),
-            fn ($query) => $query->orderBy('apellidos')
-        )
+        ->withMax('consultas', 'fecha')
+        ->when($orden === 'recientes', fn ($query) => $query->orderByDesc('created_at'))
+        ->when($orden === 'atendidos', fn ($query) => $query->orderByDesc('consultas_max_fecha'))
+        ->when(!in_array($orden, ['recientes', 'atendidos']), fn ($query) => $query->orderBy('apellidos'))
         ->paginate(10)->withQueryString();
 
     return view('pacientes.index', compact('pacientes', 'q', 'orden'));
