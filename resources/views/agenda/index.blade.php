@@ -454,11 +454,11 @@ views: {
             eventClick: function (info) { info.jsEvent.preventDefault(); abrirModalCita(info.event); },
             select: function (info) {
                 const fecha = info.startStr.substring(0, 10);
-               let hora = '09:00', duracion = 90;
+     let hora = '09:00', duracion = 90;
 if (info.view.type !== 'dayGridMonth') {
     hora = info.startStr.substring(11, 16);
     duracion = Math.round((new Date(info.endStr) - new Date(info.startStr)) / 60000);
-    if (!duracion || duracion < 5) duracion = 90;
+    if (!duracion || duracion < 90) duracion = 90;
 }
                 cal.unselect();
                 abrirNuevaCitaModal(fecha, hora, duracion);

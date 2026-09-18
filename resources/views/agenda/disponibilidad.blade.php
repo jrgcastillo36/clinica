@@ -89,7 +89,7 @@
     </div>
 
     <style>
-    .disp-table{border-collapse:collapse;width:100%;font-size:12px}
+.disp-table{border-collapse:collapse;width:100%;font-size:12px;table-layout:fixed}
         .disp-medico-col{position:sticky;left:0;background:#fff;z-index:2;text-align:left;
         padding:10px 16px;font-weight:600;white-space:nowrap;border-right:2px solid var(--line);
         width:180px;min-width:180px;max-width:180px;overflow:hidden;text-overflow:ellipsis}
