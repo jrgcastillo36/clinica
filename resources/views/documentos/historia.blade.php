@@ -17,8 +17,8 @@
     <div class="head"><h1>{{ $empresa->nombre ?? 'Clínica' }}</h1><p>Historia Clínica · generada {{ now()->format('d/m/Y H:i') }}</p></div>
     <div class="body">
         <div class="pdata">
-            <b style="font-size:14px">{{ $paciente->nombre_completo }}</b><br>
-            {{ $paciente->tipo_documento }} {{ $paciente->documento ?? '—' }} ·
+<b style="font-size:14px">{{ $paciente->nombre_completo }}</b> — <b>N° Historia: {{ str_pad($paciente->numero_historia ?? 0, 4, '0', STR_PAD_LEFT) }}</b><br>
+        {{ $paciente->tipo_documento }} {{ $paciente->documento ?? '—' }} ·
             {{ $paciente->edad !== null ? $paciente->edad.' años' : 'Edad N/D' }} ·
             {{ ['M'=>'Masculino','F'=>'Femenino','O'=>'Otro'][$paciente->sexo] ?? '—' }}<br>
             Tel: {{ $paciente->telefono ?? '—' }} · Contacto de emergencia: {{ $paciente->grupo_sanguineo ?? '—' }}<br>

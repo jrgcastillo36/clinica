@@ -13,12 +13,12 @@ class Paciente extends Authenticatable
 {
     use HasFactory, Notifiable, Auditable;
 
-    protected $fillable = [
-        'empresa_id', 'especialidad_id', 'nombres', 'apellidos', 'tipo_documento',
-        'documento', 'fecha_nacimiento', 'sexo', 'telefono', 'email', 'direccion',
-        'grupo_sanguineo', 'alergias', 'antecedentes', 'activo',
-        'password', 'acceso_portal',
-    ];
+   protected $fillable = [
+    'empresa_id', 'especialidad_id', 'numero_historia', 'nombres', 'apellidos', 'tipo_documento',
+    'documento', 'fecha_nacimiento', 'sexo', 'telefono', 'email', 'direccion',
+    'grupo_sanguineo', 'alergias', 'antecedentes', 'activo',
+    'password', 'acceso_portal',
+];
 
     protected $hidden = ['password', 'remember_token'];
 

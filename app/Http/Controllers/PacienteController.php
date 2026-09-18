@@ -46,13 +46,14 @@ class PacienteController extends Controller
     }
 
     public function store(Request $request)
-    {
-        $data = $this->validated($request);
-        $data['empresa_id'] = $this->empresaId();
-        Paciente::create($data);
+{
+    $data = $this->validated($request);
+    $data['empresa_id'] = $this->empresaId();
+    $data['numero_historia'] = (Paciente::where('empresa_id', $this->empresaId())->max('numero_historia') ?? 0) + 1;
+    Paciente::create($data);
 
-        return redirect()->route('pacientes.index')->with('ok', 'Paciente registrado correctamente.');
-    }
+    return redirect()->route('pacientes.index')->with('ok', 'Paciente registrado correctamente.');
+}
 
     public function show(Paciente $paciente)
     

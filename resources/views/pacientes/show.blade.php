@@ -3,10 +3,10 @@
 
 @section('content')
     <div class="page-head">
-        <div><h1>{{ $paciente->nombre_completo }}</h1>
-            <p>{{ $paciente->tipo_documento }} {{ $paciente->documento }} · {{ $paciente->edad !== null ? $paciente->edad.' años' : 'Edad no registrada' }}
-               @if($paciente->especialidad) · <span class="pill pink"><i class="fa-solid {{ $paciente->especialidad->icono }}"></i> {{ $paciente->especialidad->nombre }}</span>@endif</p></div>
-        <div class="flex gap">
+        <div><h1>{{ $paciente->nombre_completo }} <span class="pill" style="font-size:11px;vertical-align:middle">N° Historia: {{ str_pad($paciente->numero_historia ?? 0, 4, '0', STR_PAD_LEFT) }}</span></h1>
+    <p>{{ $paciente->tipo_documento }} {{ $paciente->documento }} · {{ $paciente->edad !== null ? $paciente->edad.' años' : 'Edad no registrada' }}
+       @if($paciente->especialidad) · <span class="pill pink"><i class="fa-solid {{ $paciente->especialidad->icono }}"></i> {{ $paciente->especialidad->nombre }}</span>@endif</p></div>
+               <div class="flex gap">
             @if(optional($paciente->especialidad)->slug === 'pediatria' && $paciente->fecha_nacimiento && in_array($paciente->sexo, ['M','F']))
 {{-- <a href="{{ route('pacientes.crecimiento', $paciente) }}" class="btn btn-light"><i class="fa-solid fa-chart-line"></i> Crecimiento OMS</a> --}}
             @endif
