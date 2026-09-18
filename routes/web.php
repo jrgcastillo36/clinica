@@ -136,6 +136,7 @@ Route::middleware('auth')->group(function () {
 Route::middleware('role:admin,recepcion')->group(function () {
     Route::get('/pacientes/create', [PacienteController::class,'create'])->name('pacientes.create');
     Route::post('/pacientes', [PacienteController::class,'store'])->name('pacientes.store');
+    Route::post('/pacientes/rapido', [PacienteController::class, 'storeRapido'])->name('pacientes.rapido');
 });
 Route::get('/pacientes/{paciente}', [PacienteController::class,'show'])->name('pacientes.show');
 

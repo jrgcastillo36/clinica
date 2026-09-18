@@ -20,7 +20,7 @@
     @if($medicosConBloqueo > 0)
         <div class="alert no-print" style="background:#fef3c7;color:#92400e">
             <i class="fa-solid fa-triangle-exclamation"></i>
-            {{ $medicosConBloqueo }} {{ $medicosConBloqueo === 1 ? 'médico tiene' : 'médicos tienen' }} un bloqueo de horario activo o próximo.
+{{ $medicosConBloqueo }} {{ $medicosConBloqueo === 1 ? 'psicólogo(a) tiene' : 'psicólogos(as) tienen' }} un bloqueo de horario activo o próximo.
         </div>
     @endif
 

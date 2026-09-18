@@ -44,7 +44,33 @@ class PacienteController extends Controller
             'especialidades' => $this->especialidades(),
         ]);
     }
+public function storeRapido(Request $request)
+{
+   $data = $request->validate([
+    'nombres' => ['required', 'string', 'max:120'],
+    'apellidos' => ['required', 'string', 'max:120'],
+    'documento' => [
+        'required', 'string', 'max:30',
+        Rule::unique('pacientes', 'documento')->where('empresa_id', $this->empresaId()),
+    ],
+    'telefono' => ['nullable', 'string', 'max:30'],
+], [
+    'nombres.required' => 'El nombre es obligatorio.',
+    'apellidos.required' => 'El apellido es obligatorio.',
+    'documento.required' => 'El DNI/Documento es obligatorio.',
+    'documento.unique' => 'Ya existe un paciente registrado con este DNI/Documento.',
+]);
 
+    $data['empresa_id'] = $this->empresaId();
+    $data['numero_historia'] = (Paciente::where('empresa_id', $this->empresaId())->max('numero_historia') ?? 0) + 1;
+
+    $paciente = Paciente::create($data);
+
+    return response()->json([
+        'id' => $paciente->id,
+        'nombre_completo' => $paciente->nombre_completo,
+    ]);
+}
     public function store(Request $request)
 {
     $data = $this->validated($request);
@@ -55,14 +81,24 @@ class PacienteController extends Controller
     return redirect()->route('pacientes.index')->with('ok', 'Paciente registrado correctamente.');
 }
 
-    public function show(Paciente $paciente)
-    
-    {
-        $this->authorizeEmpresa($paciente);
-        $paciente->load(['especialidad', 'consultas.medico', 'pagos', 'adjuntos.user', 'citas' => fn ($q) => $q->latest('fecha')]);
+  public function show(Paciente $paciente)
 
-        return view('pacientes.show', compact('paciente'));
+{
+    $this->authorizeEmpresa($paciente);
+    $paciente->load(['especialidad', 'consultas.medico', 'pagos', 'adjuntos.user', 'citas' => fn ($q) => $q->latest('fecha')]);
+
+    $proximaSesion = $paciente->consultas
+        ->sortByDesc('fecha')
+        ->map(fn ($c) => $c->datos_especialidad['siguiente_sesion'] ?? null)
+        ->filter()
+        ->first();
+
+    if ($proximaSesion && \Carbon\Carbon::parse($proximaSesion)->isPast()) {
+        $proximaSesion = null;
     }
+
+    return view('pacientes.show', compact('paciente', 'proximaSesion'));
+}
 
     public function edit(Paciente $paciente)
     {

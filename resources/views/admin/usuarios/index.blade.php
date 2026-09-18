@@ -3,7 +3,7 @@
 
 @section('content')
     <div class="page-head">
-        <div><h1>Usuarios</h1><p>Equipo de tu clínica: médicos, recepción y administradores.</p></div>
+        <div><h1>Usuarios</h1><p>Equipo de tu clínica: psicólogos(as), recepción y administradores.</p></div>
         <a href="{{ route('admin.usuarios.create') }}" class="btn btn-primary"><i class="fa-solid fa-user-plus"></i> Nuevo usuario</a>
     </div>
 

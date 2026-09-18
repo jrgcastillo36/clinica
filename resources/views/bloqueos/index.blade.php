@@ -3,7 +3,7 @@
 
 @section('content')
     <div class="page-head">
-        <div><h1>Bloqueos de horario</h1><p>Vacaciones, capacitaciones y días no disponibles por médico.</p></div>
+        <div><h1>Bloqueos de horario</h1><p>Vacaciones, capacitaciones y días no disponibles por psicólogo(a).</p></div>
         <a href="{{ route('agenda.index') }}" class="btn btn-ghost"><i class="fa-solid fa-calendar-days"></i> Ver Agenda</a>
     </div>
 
@@ -13,7 +13,7 @@
             <form method="POST" action="{{ route('bloqueos.store') }}">
                 @csrf
                 <div class="field mb">
-                    <label>Médico *</label>
+                    <label>Psicólogo(a) *</label>
                     <select name="medico_id" required>
                         <option value="">— Selecciona —</option>
                         @foreach($medicos as $m)
@@ -77,7 +77,7 @@
                         </td>
                         <td>{{ $b['motivo'] }}</td>
                         <td style="text-align:right">
-                            <form method="POST" action="{{ route('bloqueos.destroy', $b['grupo']) }}" onsubmit="return confirm('¿Eliminar este bloqueo? El médico volverá a estar disponible en esas fechas.')">
+                            <form method="POST" action="{{ route('bloqueos.destroy', $b['grupo']) }}" onsubmit="return confirm('¿Eliminar este bloqueo? El psicólogo(a) volverá a estar disponible en esas fechas.')">
                                 @csrf @method('DELETE')
                                 <button class="btn btn-danger btn-sm"><i class="fa-solid fa-trash"></i></button>
                             </form>

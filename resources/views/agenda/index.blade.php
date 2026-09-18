@@ -74,11 +74,28 @@
             <h3>Nueva cita</h3>
             <form id="formNuevaCitaRapida">
                 <div class="field" style="position:relative;margin-bottom:12px">
-                    <label>Paciente *</label>
-                    <input type="text" id="ncBuscarPaciente" autocomplete="off" placeholder="Busca por nombre o DNI...">
-                    <input type="hidden" id="ncPacienteId">
-                    <div id="ncPacienteLista" class="paciente-lista"></div>
-                </div>
+    <label>Paciente *</label>
+    <input type="text" id="ncBuscarPaciente" autocomplete="off" placeholder="Busca por nombre o DNI...">
+    <input type="hidden" id="ncPacienteId">
+    <div id="ncPacienteLista" class="paciente-lista"></div>
+    <a href="#" id="ncMostrarPacienteRapido" style="font-size:12px;font-weight:600;color:var(--violet);display:inline-block;margin-top:6px">+ Crear paciente nuevo</a>
+</div>
+
+<div id="ncPacienteRapido" style="display:none;border:1.5px dashed var(--line);border-radius:12px;padding:12px;margin-bottom:12px">
+    <div style="display:flex;gap:10px;margin-bottom:10px">
+        <div class="field" style="flex:1"><label>Nombres *</label><input type="text" id="ncrNombres"></div>
+        <div class="field" style="flex:1"><label>Apellidos *</label><input type="text" id="ncrApellidos"></div>
+    </div>
+    <div style="display:flex;gap:10px;margin-bottom:10px">
+        <div class="field" style="flex:1"><label>DNI/Documento *</label><input type="text" id="ncrDocumento"></div>
+        <div class="field" style="flex:1"><label>Teléfono</label><input type="text" id="ncrTelefono"></div>
+    </div>
+    <div id="ncrError" style="color:var(--danger);font-size:12px;margin-bottom:8px;display:none"></div>
+    <div style="display:flex;gap:8px;justify-content:flex-end">
+        <button type="button" class="btn btn-ghost btn-sm" onclick="cancelarPacienteRapido()">Cancelar</button>
+        <button type="button" class="btn btn-primary btn-sm" onclick="guardarPacienteRapido()"><i class="fa-solid fa-user-plus"></i> Crear y usar</button>
+    </div>
+</div>
                 <div style="display:flex;gap:10px;margin-bottom:12px">
                     <div class="field" style="flex:1">
                         <label>Fecha *</label>
@@ -573,8 +590,7 @@ document.addEventListener('click', function (e) {
                     acciones += '<a href="https://wa.me/' + p.telefono.replace(/\D/g,'') + '" target="_blank" class="btn btn-light btn-sm" style="color:#25d366"><i class="fa-brands fa-whatsapp"></i> WhatsApp</a>';
                 }
                 const fechaStr = event.start.getFullYear()+'-'+String(event.start.getMonth()+1).padStart(2,'0')+'-'+String(event.start.getDate()).padStart(2,'0');
-                acciones += '<button type="button" class="btn btn-primary btn-sm" onclick="cerrarModalCita(); abrirNuevaCitaModal(&quot;'+fechaStr+'&quot;,&quot;'+p.hora+'&quot;,30)"><i class="fa-solid fa-plus"></i> Agregar cita aquí</button>';
-            }
+acciones += '<button type="button" class="btn btn-primary btn-sm" onclick="cerrarModalCita(); abrirNuevaCitaModal(&quot;'+fechaStr+'&quot;,&quot;'+p.hora+'&quot;,90)"><i class="fa-solid fa-plus"></i> Agregar cita aquí</button>';            }
 
             document.getElementById('cmAcciones').innerHTML = acciones;
 
@@ -773,6 +789,56 @@ if (paramsUrl.get('medico_id') && paramsUrl.get('fecha') && paramsUrl.get('hora'
     window.history.replaceState({}, '', window.location.pathname);
 }
     });
+
+    document.getElementById('ncMostrarPacienteRapido').addEventListener('click', function (e) {
+    e.preventDefault();
+    document.getElementById('ncPacienteRapido').style.display = 'block';
+    document.getElementById('ncrNombres').focus();
+});
+
+window.cancelarPacienteRapido = function () {
+    document.getElementById('ncPacienteRapido').style.display = 'none';
+    document.getElementById('ncrError').style.display = 'none';
+    ['ncrNombres','ncrApellidos','ncrDocumento','ncrTelefono'].forEach(function (id) {
+        document.getElementById(id).value = '';
+    });
+};
+
+window.guardarPacienteRapido = function () {
+    const errorEl = document.getElementById('ncrError');
+    errorEl.style.display = 'none';
+    const nombres = document.getElementById('ncrNombres').value.trim();
+    const apellidos = document.getElementById('ncrApellidos').value.trim();
+    const documento = document.getElementById('ncrDocumento').value.trim();
+    if (!nombres || !apellidos || !documento) {
+        errorEl.textContent = 'Nombres, apellidos y DNI/Documento son obligatorios.';
+        errorEl.style.display = 'block';
+        return;
+    }
+    fetch('{{ route('pacientes.rapido') }}', {
+        method: 'POST',
+headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content, 'Accept': 'application/json' },        body: JSON.stringify({
+            nombres: nombres,
+            apellidos: apellidos,
+            documento: documento,
+            telefono: document.getElementById('ncrTelefono').value.trim() || null,
+        })
+    })
+    .then(async function (r) {
+        const data = await r.json().catch(function () { return {}; });
+        if (!r.ok) throw new Error(data.mensaje || (data.errors ? Object.values(data.errors)[0][0] : 'No se pudo crear el paciente.'));
+        return data;
+    })
+    .then(function (data) {
+        document.getElementById('ncPacienteId').value = data.id;
+        document.getElementById('ncBuscarPaciente').value = data.nombre_completo;
+        cancelarPacienteRapido();
+    })
+    .catch(function (err) {
+        errorEl.textContent = err.message;
+        errorEl.style.display = 'block';
+    });
+};
     </script>
     @endpush
 @endsection
