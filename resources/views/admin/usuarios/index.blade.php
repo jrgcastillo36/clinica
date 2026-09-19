@@ -15,8 +15,7 @@
                 <tr>
                     <td><span class="avatar-sm">{{ $u->initials() }}</span>{{ $u->name }}</td>
                     <td>{{ $u->email }}</td>
-                    <td><span class="pill violet">{{ ucfirst($u->role) }}</span></td>
-                    <td>{{ $u->especialidad->nombre ?? '—' }}</td>
+<td><span class="pill violet">{{ $u->role === 'medico' ? 'Psicólogo(a)' : ucfirst($u->role) }}</span></td>                    <td>{{ $u->especialidad->nombre ?? '—' }}</td>
                     <td>@if($u->activo)<span class="pill green">Activo</span>@else<span class="pill red">Inactivo</span>@endif</td>
                     <td style="text-align:right;white-space:nowrap">
                         <a href="{{ route('admin.usuarios.edit',$u) }}" class="btn btn-light btn-sm"><i class="fa-solid fa-pen"></i></a>
